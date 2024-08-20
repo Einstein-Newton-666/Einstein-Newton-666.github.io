@@ -1,101 +1,102 @@
-name: Einstein-Newton-666's Blog CI/CD # 脚本 workflow 名称
-
-on:
-  push:
-    branches: [main, master] # 当监测 main,master 的 push
-    paths: # 监测所有 source 目录下的文件变动，所有 yml,json 后缀文件的变动。
-      - '*.json'
-      - '**.yml'
-      - '**/source/**'
-
-jobs:
-  blog: # 任务名称
-    timeout-minutes: 30 # 设置 30 分钟超时
-    runs-on: ubuntu-latest # 指定最新 ubuntu 系统
-    steps:
-      - uses: actions/checkout@v2 # 拉取仓库代码
-      - uses: actions/setup-node@v2 # 设置 node.js 环境
-      - name: Cache node_modules # 缓存 node_modules，提高编译速度，毕竟每月只有 2000 分钟。
-        uses: actions/cache@v2 # 亲测 Github 服务器编译速度比我自己电脑都快，如果每次构建按5分钟计算，我们每个月可以免费部署 400 次，Github yyds！！！
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-      - name: Init Node.js # 安装源代码所需插件
-        run: |
-          npm install
-          echo "init node successful"
-      - name: Install Hexo-cli # 安装 Hexo
-        run: |
-          npm install -g hexo-cli --save
-          echo "install hexo successful"
-      - name: Build Blog # 编译创建静态博客文件
-        run: |
-          hexo clean
-          hexo g
-          echo "build blog successful"
-      - name: Deploy DoubleAm's Blog # 设置 git 信息并推送静态博客文件
-        run: |
-          git config --global user.email "gao87136715@qq.com"
-          git config --global user.name "Einstein-Newton-666"
-          hexo deploy
-
-      - run: echo "Deploy Successful!"
-
-
-
-# name: Pages
+# name: Einstein-Newton-666's Blog CI/CD # 脚本 workflow 名称
 
 # on:
 #   push:
-#     branches:
-#       - main # default branch
+#     branches: [main, master] # 当监测 main,master 的 push
+#     paths: # 监测所有 source 目录下的文件变动，所有 yml,json 后缀文件的变动。
+#       - '*.json'
+#       - '**.yml'
+#       - '**/source/**'
 
 # jobs:
-#   build:
-#     runs-on: ubuntu-latest
+#   blog: # 任务名称
+#     timeout-minutes: 30 # 设置 30 分钟超时
+#     runs-on: ubuntu-latest # 指定最新 ubuntu 系统
 #     steps:
-#       - uses: actions/checkout@v4
+#       - uses: actions/checkout@v2 # 拉取仓库代码
+#       - uses: actions/setup-node@v2 # 设置 node.js 环境
+#       - name: Cache node_modules # 缓存 node_modules，提高编译速度，毕竟每月只有 2000 分钟。
+#         uses: actions/cache@v2 # 亲测 Github 服务器编译速度比我自己电脑都快，如果每次构建按5分钟计算，我们每个月可以免费部署 400 次，Github yyds！！！
+#         env:
+#           cache-name: cache-node-modules
 #         with:
-#           token: ${{ secrets.GITHUB_TOKEN }}
-#           # If your repository depends on submodule, please see: https://github.com/actions/checkout
-#           submodules: recursive
-#       - name: Use Node.js 20
-#         uses: actions/setup-node@v4
-#         with:
-#           # Examples: 20, 18.19, >=16.20.2, lts/Iron, lts/Hydrogen, *, latest, current, node
-#           # Ref: https://github.com/actions/setup-node#supported-version-syntax
-#           node-version: "20"
-#       - name: Cache NPM dependencies
-#         uses: actions/cache@v4
-#         with:
-#           path: node_modules
-#           key: ${{ runner.OS }}-npm-cache
+#           path: ~/.npm
+#           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
 #           restore-keys: |
-#             ${{ runner.OS }}-npm-cache
-#       - name: Install Dependencies
-#         run: npm install
-#       - name: Build
-#         run: npm run build
-#       - name: Upload Pages artifact
-#         uses: actions/upload-pages-artifact@v3
-#         with:
-#           path: ./public
-#   deploy:
-#     needs: build
-#     permissions:
-#       pages: write
-#       id-token: write
-#     environment:
-#       name: github-pages
-#       url: ${{ steps.deployment.outputs.page_url }}
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Deploy to GitHub Pages
-#         id: deployment
-#         uses: actions/deploy-pages@v4
+#             ${{ runner.os }}-build-${{ env.cache-name }}-
+#             ${{ runner.os }}-build-
+#             ${{ runner.os }}-
+#       - name: Init Node.js # 安装源代码所需插件
+#         run: |
+#           npm install
+#           echo "init node successful"
+#       - name: Install Hexo-cli # 安装 Hexo
+#         run: |
+#           npm install -g hexo-cli --save
+#           echo "install hexo successful"
+#       - name: Build Blog # 编译创建静态博客文件
+#         run: |
+#           hexo clean
+#           hexo g
+#           echo "build blog successful"
+#       - name: Deploy DoubleAm's Blog # 设置 git 信息并推送静态博客文件
+#         run: |
+#           git config --global user.email "gao87136715@qq.com"
+#           git config --global user.name "Einstein-Newton-666"
+          
+#           hexo deploy
+
+#       - run: echo "Deploy Successful!"
+
+
+
+name: Pages
+
+on:
+  push:
+    branches:
+      - main # default branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # If your repository depends on submodule, please see: https://github.com/actions/checkout
+          submodules: recursive
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          # Examples: 20, 18.19, >=16.20.2, lts/Iron, lts/Hydrogen, *, latest, current, node
+          # Ref: https://github.com/actions/setup-node#supported-version-syntax
+          node-version: "20"
+      - name: Cache NPM dependencies
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.OS }}-npm-cache
+          restore-keys: |
+            ${{ runner.OS }}-npm-cache
+      - name: Install Dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+  deploy:
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
