@@ -41,11 +41,13 @@ jobs:
           echo "build blog successful"
       - name: Deploy DoubleAm's Blog # 设置 git 信息并推送静态博客文件
         run: |
-          git config --global user.name "Einstein-Newton-666"
-          git config --global user.email "gao87136715@qq.com"
+          # git config --global user.name "Einstein-Newton-666"
+          # git config --global user.email "gao87136715@qq.com"
           hexo deploy
 
       - run: echo "Deploy Successful!"
+
+
 
 # name: Pages
 
