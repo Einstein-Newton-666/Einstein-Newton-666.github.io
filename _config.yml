@@ -8,12 +8,13 @@ subtitle: ''
 description: ''
 keywords:
 author: Einstein-Newton-666
-language: zh-CN
+language: en
 timezone: 'Asia/Shanghai'
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: https://Einstein-Newton-666.github.io
+url: https://einstein-newton-666.github.io/
+root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 pretty_urls:
@@ -96,12 +97,12 @@ ignore:
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: redefine
+theme: landscape
 
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: git
-  repo: https://Einstein-Newton-666.github.io.git
+  repo: https://github.com/Einstein-Newton-666/Einstein-Newton-666.github.io.git
   branch: 'gh-page'    
   token:     
