@@ -14,6 +14,15 @@
 
 ---
 
+## 执行中发现的情况更新（2026-08-15）
+
+1. 仓库中已存在 `.github/workflows/pages.yml`（2024-08-21 创建，GitHub Pages starter 模式，从未运行过：API 显示 total_count: 0）。Task 7 改为**覆盖**该文件为计划版本，不新增。
+2. 本机未安装 `gh` CLI。所有依赖 `gh` 的步骤（Task 7 Step 3、Task 8、Task 10 Step 1）改用公开 API curl 验证（`api.github.com/repos/.../actions/runs` 匿名可访问，60 次/小时限额，注意节流）或线上站点内容验证。
+3. 远程已无 `gh-page` 分支（`git ls-remote` 证实），本地 `remotes/.../gh-page` 是过期引用。Task 8 不再有删除分支步骤，改为：push 后观察 Actions 部署结果——若 deploy 成功说明 Pages 源已是 "GitHub Actions"；若 deploy 失败，请用户在仓库 Settings → Pages → Source 手动切换为 "GitHub Actions" 后重跑。另加 `git remote prune` 清理过期引用。
+4. 远程名是 `Einstein-Newton-666.github.io`（无 origin）。所有 push 用该名字。
+5. 工作树中 `themes/redefine/` 是**已跟踪文件的删除**（用户旧的手工 clone 实验），`themes/reimu/` 是未跟踪目录。Task 2 需把前者删除提交、后者 rm 掉，否则 Hexo 会优先用 `themes/` 下的旧主题而不是 npm 包。
+6. `_config.landscape.yml` 的删除是工作树中遗留改动，Task 3 一并提交。
+
 ## 文件结构
 
 | 文件 | 操作 | 职责 |
