@@ -1,0 +1,42 @@
+# Redefine 主题配置覆盖（Hexo 自动与主题自带配置合并）
+# 主题默认配置见 node_modules/hexo-theme-redefine/_config.yml
+# 官方文档: https://redefine-docs.ohevan.com/
+
+# >>>>>>>>>> 基本信息
+info:
+  title: Einstein-Newton-666's blogs
+  subtitle: 日志与笔记
+  author: Einstein-Newton-666
+  url: https://einstein-newton-666.github.io/
+
+# >>>>>>>>>> 首页横幅
+home_banner:
+  enable: true
+  style: fixed
+  title: Einstein-Newton-666's blogs
+  subtitle: 记录学习与生活
+
+# >>>>>>>>>> 导航栏
+navbar:
+  links:
+    Home:
+      path: /
+      icon: fa-regular fa-house
+    Categories:
+      path: /categories
+      icon: fa-regular fa-folder
+    Tags:
+      path: /tags
+      icon: fa-regular fa-tags
+    Archives:
+      path: /archives
+      icon: fa-regular fa-archive
+  search:
+    enable: true
+    preload: true
+
+# >>>>>>>>>> 页脚
+footer:
+  runtime: true
+  start: 2024/08/21 00:00:00
+  statistics: true
