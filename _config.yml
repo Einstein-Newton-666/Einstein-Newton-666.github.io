@@ -8,7 +8,7 @@ subtitle: ''
 description: ''
 keywords:
 author: Einstein-Newton-666
-language: en
+language: zh-CN
 timezone: 'Asia/Shanghai'
 
 # URL
@@ -41,7 +41,7 @@ external_link:
   exclude: ''
 filename_case: 0
 render_drafts: false
-post_asset_folder: false
+post_asset_folder: true
 relative_link: false
 future: true
 syntax_highlighter: highlight.js
@@ -97,14 +97,14 @@ ignore:
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-# theme: landscape
 theme: redefine
 
+# Local search (for Redefine navbar search, requires hexo-generator-searchdb)
+search:
+  path: search.xml
+  field: post
+  content: true
+  format: html
 
-# Deployment
-## Docs: https://hexo.io/docs/one-command-deployment
-deploy:
-  type: git
-  repo: https://github.com/Einstein-Newton-666/Einstein-Newton-666.github.io.git
-  branch: 'gh-page'    
-  token:     
+# Math rendering (hexo-filter-mathjax, see Redefine docs)
+mathjax: true
