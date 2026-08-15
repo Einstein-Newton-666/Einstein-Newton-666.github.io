@@ -53,7 +53,7 @@
 1. 主题换成 Redefine：clone 官方仓库 `EvanNotFound/hexo-theme-redefine` 到 `themes/redefine` 并锁定提交版本；`_config.yml` 中 `theme: redefine`
 2. 主题配置开启：
    - 本地全文搜索：安装 `hexo-generator-searchdb`，主题配置中启用搜索（含 search.xml 生成）
-   - 公式：KaTeX。渲染器按 Redefine 官方推荐方案在实施时确定（首选 hexo-renderer-markdown-it + markdown-it-katex，若与现有 hexo-renderer-marked 冲突则退回主题内置 KaTeX auto-render 方案），必须实测公式渲染通过
+   - 公式：按 Redefine 官方文档（redefine-docs.ohevan.com/plugins/mathjax）使用 hexo-filter-mathjax（MathJax 服务端渲染，构建期生成公式 HTML），必须实测公式渲染通过
    - 代码高亮：主题内置
    - 语言：zh-CN
 3. 修复站点标题：主题配置填写站点名 "Einstein-Newton-666's blogs"（用户确认保留该标题），消除浏览器标签页显示 "Theme Redefine" 的问题
@@ -109,5 +109,5 @@ tags: [学习, 记录]
 ## 风险与回退
 
 - Actions 构建失败风险：回退方式为在 GitHub 上手动运行 workflow 查看日志修复；最坏情况可临时将 Pages 源改回分支模式用旧 `gh-page` 内容兜底（gh-page 删除前先记录其内容有旧构建可恢复）
-- 主题渲染器变更风险（marked → markdown-it）：现有文章仅 hello-world 一篇，风险极低；若公式渲染方案不兼容则退回主题内置 KaTeX 方案
+- 公式渲染风险：若 hexo-filter-mathjax 渲染不生效，按官方文档排查 `mathjax: true` 配置与插件安装状态，本地构建即可验证
 - 构建时长 1~2 分钟：属正常范围，不做额外优化（缓存已由 setup-node 内置 npm 缓存覆盖）
