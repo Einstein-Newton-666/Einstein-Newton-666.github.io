@@ -6,6 +6,93 @@
   --anime-paper: #f7faf9;
 }
 
+html[data-anime-page] body {
+  background: var(--anime-paper);
+}
+
+html[data-anime-page] .page-container {
+  position: relative;
+  z-index: 0;
+  min-height: 100dvh;
+  isolation: isolate;
+}
+
+html[data-anime-page] .page-container::before,
+html[data-anime-page] .page-container::after {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  content: '';
+  pointer-events: none;
+}
+
+html[data-anime-page] .page-container::before {
+  background-image: var(--anime-page-image);
+  background-position: var(--anime-page-position-desktop, 50% center);
+  background-size: cover;
+  filter: saturate(.82) brightness(1.04);
+}
+
+html[data-anime-page] .page-container::after {
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(247, 250, 249, .74), rgba(247, 250, 249, .91) 72%);
+}
+
+html[data-anime-page] .main-content-container {
+  background: transparent;
+}
+
+html[data-anime-page] .navbar-container {
+  border-bottom: 1px solid rgba(255, 255, 255, .58);
+  background: rgba(247, 250, 249, .82);
+  box-shadow: 0 8px 24px rgba(22, 43, 51, .08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+html[data-anime-page] .navbar-container .navbar-item a.active {
+  color: var(--anime-teal);
+}
+
+html[data-anime-page] :is(.page-template-container, .archive-container, .article-content-container, .toc-content-container) {
+  border: 1px solid rgba(255, 255, 255, .72);
+  border-radius: 8px;
+  background: rgba(250, 252, 251, .9);
+  box-shadow: 0 14px 36px rgba(22, 43, 51, .12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html[data-anime-page] :is(.page-template-container, .archive-container) h1,
+html[data-anime-page] .article-title {
+  font-family: STSong, 'Songti SC', SimSun, serif;
+  letter-spacing: 0;
+}
+
+html.dark[data-anime-page] body {
+  background: #111a21;
+}
+
+html.dark[data-anime-page] .page-container::before {
+  filter: saturate(.72) brightness(.55);
+}
+
+html.dark[data-anime-page] .page-container::after {
+  background: linear-gradient(180deg, rgba(13, 22, 28, .72), rgba(13, 22, 28, .91) 72%);
+}
+
+html.dark[data-anime-page] .navbar-container {
+  border-bottom-color: rgba(255, 255, 255, .08);
+  background: rgba(17, 26, 33, .84);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, .2);
+}
+
+html.dark[data-anime-page] :is(.page-template-container, .archive-container, .article-content-container, .toc-content-container) {
+  border-color: rgba(255, 255, 255, .1);
+  background: rgba(21, 31, 39, .9);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .24);
+}
+
 .home-banner-background {
   width: 100vw !important;
   height: 100svh !important;
@@ -281,6 +368,18 @@ html.dark .home-content-container .home-article-list .home-article-item .home-ar
 }
 
 @media (max-width: 768px) {
+  html[data-anime-page] .page-container::before {
+    background-position: var(--anime-page-position-mobile, 50% center);
+  }
+
+  html[data-anime-page] :is(.page-template-container, .archive-container, .article-content-container) {
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
   .home-banner-background::after {
     background: linear-gradient(0deg, rgba(9, 17, 23, .84) 0%, rgba(9, 17, 23, .46) 58%, rgba(9, 17, 23, .1) 100%);
   }

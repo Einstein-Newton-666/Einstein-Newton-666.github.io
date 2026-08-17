@@ -54,6 +54,7 @@ const categories = await read('public/categories/index.html');
 const tags = await read('public/tags/index.html');
 const archives = await read('public/archives/index.html');
 const feed = await read('public/atom.xml');
+const animeCss = await read('public/css/anime-theme.css');
 
 expect(home, /href="\/css\/anime-theme\.css"/, '首页未加载 anime-theme.css');
 for (const [name, content] of [
@@ -80,6 +81,10 @@ expect(post, /class="article-min2read/, '文章页未显示阅读时间');
 expect(post, /mjx-container[^>]+jax="SVG"/, '文章公式未生成 MathJax SVG');
 expect(about, /关于本站/, '关于页内容未生成');
 expect(feed, /<feed[\s>]/, 'atom.xml 不是有效的 Atom 订阅文件');
+expect(animeCss, /html\[data-anime-page\]/, '自定义样式缺少内页场景选择器');
+expect(animeCss, /--anime-page-image/, '自定义样式未使用内页背景变量');
+expect(animeCss, /html\.dark\[data-anime-page\]/, '内页场景缺少暗色模式');
+expect(animeCss, /--anime-page-position-mobile/, '内页场景缺少移动端裁切变量');
 
 for (const [name, content] of [['首页', home], ['文章页', post]]) {
   if (/example\.example\.com|waline/i.test(content)) failures.push(`${name}仍包含失效的 Waline 配置`);
