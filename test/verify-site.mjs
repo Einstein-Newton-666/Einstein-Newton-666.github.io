@@ -76,6 +76,9 @@ expect(home, /href="\/atom\.xml"/, '页面缺少 RSS 入口');
 expect(home, />归档</, '侧栏缺少中文“归档”链接');
 expect(home, />分类</, '侧栏缺少中文“分类”链接');
 expect(home, />标签</, '侧栏缺少中文“标签”链接');
+if (/class="tag-list"[^>]+data-show-value="true"/.test(tags)) {
+  failures.push('标签页仍使用默认模糊样式');
+}
 expect(post, /class="article-wordcount/, '文章页未显示字数');
 expect(post, /class="article-min2read/, '文章页未显示阅读时间');
 expect(post, /mjx-container[^>]+jax="SVG"/, '文章公式未生成 MathJax SVG');

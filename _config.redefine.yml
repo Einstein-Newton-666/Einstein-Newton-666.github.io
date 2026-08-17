@@ -120,3 +120,6 @@ inject:
 plugins:
   feed:
     enable: true
+
+page_templates:
+  tags_style: cloud
