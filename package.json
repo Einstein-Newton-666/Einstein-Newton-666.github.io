@@ -6,7 +6,8 @@
     "build": "hexo generate",
     "clean": "hexo clean",
     "server": "hexo server",
-    "test": "npm run build && node test/verify-site.mjs"
+    "test:unit": "node --test test/*.test.cjs",
+    "test": "npm run test:unit && npm run build && node test/verify-site.mjs"
   },
   "hexo": {
     "version": "7.3.0"
