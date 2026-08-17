@@ -29,7 +29,29 @@
     }
   ];
 
+  function applyInnerPageScene() {
+    const root = document.documentElement;
+    delete root.dataset.animePage;
+    root.style.removeProperty('--anime-page-image');
+    root.style.removeProperty('--anime-page-position-desktop');
+    root.style.removeProperty('--anime-page-position-mobile');
+
+    const resolver = globalThis.AnimePageScenes?.resolvePageScene;
+    if (!resolver) return;
+
+    const openGraphImage = document.querySelector('meta[property="og:image"]')?.content || '';
+    const scene = resolver(location.pathname, openGraphImage, location.origin);
+    if (!scene) return;
+
+    root.dataset.animePage = scene.type;
+    root.style.setProperty('--anime-page-image', `url("${scene.image}")`);
+    root.style.setProperty('--anime-page-position-desktop', scene.desktopPosition);
+    root.style.setProperty('--anime-page-position-mobile', scene.mobilePosition);
+  }
+
   function initialiseAnimeTheme() {
+    applyInnerPageScene();
+
     const hero = document.querySelector('.home-banner-container');
     const background = document.querySelector('.home-banner-background');
     const description = hero && hero.querySelector('.description');

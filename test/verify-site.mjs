@@ -50,10 +50,23 @@ if (imageHashes.length === expectedImages.length && new Set(imageHashes).size !=
 const home = await read('public/index.html');
 const post = await read('public/2026/08/15/welcome/index.html');
 const about = await read('public/about/index.html');
+const categories = await read('public/categories/index.html');
+const tags = await read('public/tags/index.html');
+const archives = await read('public/archives/index.html');
 const feed = await read('public/atom.xml');
 
 expect(home, /href="\/css\/anime-theme\.css"/, '首页未加载 anime-theme.css');
-expect(home, /src="\/js\/anime-theme\.js"/, '首页未加载 anime-theme.js');
+for (const [name, content] of [
+  ['首页', home],
+  ['分类页', categories],
+  ['标签页', tags],
+  ['归档页', archives],
+  ['关于页', about],
+  ['文章页', post],
+]) {
+  expect(content, /src="\/js\/anime-page-scenes\.js"/, `${name}未加载页面场景映射脚本`);
+  expect(content, /src="\/js\/anime-theme\.js"/, `${name}未加载 anime-theme.js`);
+}
 expect(home, /Einstein-Newton-666 的博客/, '站点标题尚未中文化');
 expect(home, /\/images\/brand\/castorice-avatar\.webp/, '首页未使用独立头像');
 expect(home, /\/images\/brand\/miku-field\.webp/, '首页未使用已选头图');

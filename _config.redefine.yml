@@ -114,6 +114,7 @@ inject:
   head:
     - '<link rel="stylesheet" href="/css/anime-theme.css">'
   footer:
+    - '<script src="/js/anime-page-scenes.js"></script>'
     - '<script src="/js/anime-theme.js"></script>'
 
 plugins:
