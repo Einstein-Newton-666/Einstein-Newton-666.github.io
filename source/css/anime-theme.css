@@ -1,0 +1,376 @@
+:root {
+  --anime-gold: #d2a548;
+  --anime-rose: #d27586;
+  --anime-teal: #3b8588;
+  --anime-ink: #18242d;
+  --anime-paper: #f7faf9;
+}
+
+.home-banner-background {
+  width: 100vw !important;
+  height: 100svh !important;
+  transform: none !important;
+}
+
+.home-banner-background::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background: linear-gradient(90deg, rgba(10, 20, 28, .76) 0%, rgba(10, 20, 28, .46) 42%, rgba(10, 20, 28, .08) 72%), linear-gradient(0deg, rgba(9, 17, 23, .42), transparent 46%);
+  pointer-events: none;
+}
+
+.home-banner-background img {
+  object-fit: cover;
+  object-position: var(--anime-hero-position-desktop, 50% center);
+  transform: none !important;
+  transition: opacity .24s ease;
+}
+
+.home-banner-container {
+  height: 92svh !important;
+  min-height: 640px !important;
+  max-height: 900px !important;
+  color: #fff;
+}
+
+.home-banner-container .content {
+  box-sizing: border-box;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: min(1200px, calc(100% - 80px)) !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 auto !important;
+  padding: 76px 0 118px;
+  text-align: left !important;
+}
+
+.home-banner-container .description {
+  display: block !important;
+  width: min(720px, 64vw) !important;
+  color: #fff;
+  text-align: left !important;
+  text-shadow: 0 2px 20px rgba(4, 10, 14, .38);
+}
+
+.anime-hero-copy {
+  animation: anime-hero-reveal .58s ease-out both;
+}
+
+.anime-hero-kicker {
+  display: block;
+  margin-bottom: 14px;
+  color: #f3d58e;
+  font: 700 .78rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0;
+}
+
+.anime-hero-copy h1 {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: .18em;
+  margin: 0;
+  color: #fff;
+  font-family: STSong, 'Songti SC', SimSun, serif;
+  font-size: 3.1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.anime-hero-copy h1 > span {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.anime-hero-scene {
+  margin: 18px 0 0;
+  color: rgba(255, 255, 255, .96);
+  font: 600 1.15rem/1.7 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: 0;
+}
+
+.anime-hero-note {
+  max-width: 34rem;
+  margin: 8px 0 0;
+  color: rgba(255, 255, 255, .82);
+  font: 400 .94rem/1.75 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: 0;
+}
+
+.anime-scene-switcher {
+  position: absolute;
+  right: 5vw;
+  bottom: 78px;
+  z-index: 3;
+  display: flex;
+  gap: 9px;
+}
+
+.anime-scene-switcher button {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  padding: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .66);
+  border-radius: 7px;
+  background: rgba(17, 26, 32, .38);
+  box-shadow: 0 6px 18px rgba(6, 12, 16, .22);
+  cursor: pointer;
+  transition: transform .2s ease, border-color .2s ease, background-color .2s ease;
+}
+
+.anime-scene-switcher button::after {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+  content: '';
+}
+
+.anime-scene-switcher button:hover,
+.anime-scene-switcher button:focus-visible {
+  border-color: #fff;
+  outline: 2px solid #f3d58e;
+  outline-offset: 2px;
+  transform: translateY(-3px);
+}
+
+.anime-scene-switcher button.is-active {
+  border-color: #f3d58e;
+  background: rgba(210, 165, 72, .3);
+}
+
+.anime-scene-switcher button.is-active::after {
+  background: #f3d58e;
+}
+
+.anime-scene-switcher img {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.anime-scroll-cue {
+  position: absolute;
+  bottom: 76px;
+  left: 50%;
+  z-index: 3;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, .58);
+  border-radius: 50%;
+  background: rgba(17, 26, 32, .34);
+  color: #fff;
+  cursor: pointer;
+  place-items: center;
+  transform: translateX(-50%);
+}
+
+.anime-scroll-cue:hover,
+.anime-scroll-cue:focus-visible {
+  border-color: #f3d58e;
+  color: #f3d58e;
+  outline: 2px solid #f3d58e;
+  outline-offset: 2px;
+}
+
+.home-banner-container + .main-content-container .main-content-body {
+  position: relative;
+  z-index: 4;
+  margin-top: -88px;
+}
+
+.home-sidebar-container .sidebar-content {
+  border-top: 3px solid var(--anime-gold);
+}
+
+.home-sidebar-container .avatar img {
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--anime-gold), 0 8px 24px rgba(12, 24, 31, .16);
+  object-fit: cover;
+}
+
+.home-sidebar-container .site-info .site-name,
+.navbar-container .navbar-content .left .logo-title {
+  font-family: STSong, 'Songti SC', SimSun, serif;
+  letter-spacing: 0;
+}
+
+.home-content-container .home-article-list {
+  display: grid;
+  gap: 22px;
+}
+
+.home-content-container .home-article-list .home-article-item {
+  display: grid;
+  grid-template-columns: 224px minmax(0, 1fr);
+  min-height: 208px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.home-content-container .home-article-list .home-article-item .home-article-thumbnail {
+  position: relative;
+  height: auto !important;
+  min-height: 208px;
+  overflow: hidden;
+  border-radius: 0;
+  background: #e8eeee;
+}
+
+.home-content-container .home-article-list .home-article-item .home-article-thumbnail a {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.home-content-container .home-article-list .home-article-item .home-article-thumbnail img {
+  position: absolute;
+  inset: 0;
+  top: 0 !important;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% center;
+  transform: none !important;
+  transition: filter .2s ease, transform .2s ease !important;
+}
+
+.home-content-container .home-article-list .home-article-item .home-article-thumbnail:hover img {
+  filter: saturate(1.08) brightness(1.03);
+  transform: scale(1.025) !important;
+}
+
+.home-content-container .home-article-list .home-article-item > .flex {
+  min-width: 0;
+  justify-content: center;
+}
+
+.home-content-container .home-article-list .home-article-title {
+  font-family: STSong, 'Songti SC', SimSun, serif;
+  letter-spacing: 0;
+}
+
+html.dark .home-sidebar-container .avatar img {
+  border-color: #222d35;
+}
+
+html.dark .home-content-container .home-article-list .home-article-item .home-article-thumbnail img {
+  filter: brightness(.82) saturate(.9);
+}
+
+@keyframes anime-hero-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .home-banner-background::after {
+    background: linear-gradient(0deg, rgba(9, 17, 23, .84) 0%, rgba(9, 17, 23, .46) 58%, rgba(9, 17, 23, .1) 100%);
+  }
+
+  .home-banner-background img {
+    object-position: var(--anime-hero-position-mobile, 50% center);
+  }
+
+  .home-banner-container {
+    height: 92svh !important;
+    min-height: 620px !important;
+    max-height: 780px !important;
+  }
+
+  .home-banner-container .content {
+    align-items: flex-end !important;
+    width: calc(100% - 40px) !important;
+    padding: 84px 0 188px;
+  }
+
+  .home-banner-container .description {
+    width: 100% !important;
+  }
+
+  .anime-hero-copy h1 {
+    font-size: 2.15rem;
+  }
+
+  .anime-hero-scene {
+    margin-top: 12px;
+    font-size: 1rem;
+  }
+
+  .anime-hero-note {
+    margin-top: 5px;
+    font-size: .86rem;
+    line-height: 1.65;
+  }
+
+  .anime-scene-switcher {
+    right: 20px;
+    bottom: 102px;
+    gap: 7px;
+  }
+
+  .anime-scene-switcher button {
+    width: 46px;
+    height: 46px;
+  }
+
+  .anime-scroll-cue {
+    bottom: 102px;
+    left: 20px;
+    width: 38px;
+    height: 38px;
+    transform: none;
+  }
+
+  .home-banner-container + .main-content-container .main-content-body {
+    margin-top: -50px;
+  }
+
+  .home-content-container .home-article-list .home-article-item {
+    grid-template-columns: 1fr;
+  }
+
+  .home-content-container .home-article-list .home-article-item .home-article-thumbnail {
+    min-height: 210px;
+    max-height: 240px;
+  }
+}
+
+@media (max-width: 420px) {
+  .anime-hero-copy h1 {
+    font-size: 1.95rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anime-hero-copy {
+    animation: none;
+  }
+
+  .home-banner-background img,
+  .anime-scene-switcher button,
+  .home-content-container .home-article-list .home-article-item .home-article-thumbnail img {
+    transition: none !important;
+  }
+
+  .anime-scroll-cue {
+    scroll-behavior: auto;
+  }
+}

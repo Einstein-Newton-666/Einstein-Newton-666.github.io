@@ -1,4 +1,7 @@
 ---
 title: {{ title }}
-tags:
+categories: []
+tags: []
+mathjax: false
+cover:
 ---

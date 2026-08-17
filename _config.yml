@@ -3,10 +3,10 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Einstein-Newton-666's blogs
-subtitle: ''
-description: ''
-keywords:
+title: Einstein-Newton-666 的博客
+subtitle: 日志与笔记
+description: 记录技术学习、生活片段与沿途灵感的个人博客。
+keywords: [技术笔记, 生活日志, Hexo]
 author: Einstein-Newton-666
 language: zh-CN
 timezone: 'Asia/Shanghai'
@@ -108,3 +108,11 @@ search:
 
 # Math rendering (hexo-filter-mathjax, see Redefine docs)
 mathjax: true
+
+# Atom 订阅
+feed:
+  type: atom
+  path: atom.xml
+  limit: 20
+  content: true
+  autodiscovery: true

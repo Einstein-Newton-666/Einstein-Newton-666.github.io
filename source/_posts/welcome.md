@@ -3,6 +3,9 @@ title: 你好，世界 —— 第一篇日志
 date: 2026-08-15 21:00:00
 categories: [日志]
 tags: [随笔, 第一篇]
+mathjax: true
+cover: /images/brand/firefly-side.webp
+excerpt: 欢迎来到这片记录技术、生活与灵感的私人空间。
 ---
 
 这是站点的第一篇文章，用于验证各类功能。

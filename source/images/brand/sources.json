@@ -1,0 +1,37 @@
+[
+  {
+    "slot": "hero-1",
+    "file": "miku-field.webp",
+    "sourcePage": "https://www.goodfon.com/anime/wallpaper-badfon-art-yuuko-san-devushka-hatsune.html"
+  },
+  {
+    "slot": "hero-2",
+    "file": "morning-mountains.webp",
+    "sourcePage": "https://wall.alphacoders.com/big.php?i=862038"
+  },
+  {
+    "slot": "hero-3",
+    "file": "river-sunrise.webp",
+    "sourcePage": "https://wall.alphacoders.com/big.php?i=1056636"
+  },
+  {
+    "slot": "cover-welcome",
+    "file": "firefly-side.webp",
+    "sourcePage": "https://firefly.cuteleaf.cn/"
+  },
+  {
+    "slot": "cover-tech",
+    "file": "tech-lab.webp",
+    "sourcePage": "https://konachan.net/post/show/340800"
+  },
+  {
+    "slot": "cover-life",
+    "file": "book-spring.webp",
+    "sourcePage": "https://art.alphacoders.com/arts/view/122414"
+  },
+  {
+    "slot": "avatar",
+    "file": "castorice-avatar.webp",
+    "sourcePage": "https://wall.alphacoders.com/big.php?i=1395160"
+  }
+]
