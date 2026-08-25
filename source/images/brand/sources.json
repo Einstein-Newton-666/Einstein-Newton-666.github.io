@@ -33,5 +33,11 @@
     "slot": "avatar",
     "file": "castorice-avatar.webp",
     "sourcePage": "https://wall.alphacoders.com/big.php?i=1395160"
+  },
+  {
+    "slot": "inner-categories",
+    "file": "category-library-glow.webp",
+    "author": "Tadokiari",
+    "sourcePage": "https://wall.alphacoders.com/big.php?i=1317278"
   }
 ]

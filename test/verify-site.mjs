@@ -11,6 +11,7 @@ const expectedImages = [
   'firefly-side.webp',
   'tech-lab.webp',
   'book-spring.webp',
+  'category-library-glow.webp',
   'castorice-avatar.webp',
 ];
 
@@ -30,6 +31,16 @@ function expect(content, pattern, message) {
 const packageJson = JSON.parse(await read('package.json'));
 for (const dependency of ['hexo-generator-feed', 'hexo-wordcount']) {
   if (!packageJson.dependencies?.[dependency]) failures.push(`缺少依赖：${dependency}`);
+}
+
+const brandSources = JSON.parse(await read('source/images/brand/sources.json'));
+const categorySource = brandSources.find((source) => source.slot === 'inner-categories');
+if (
+  categorySource?.file !== 'category-library-glow.webp'
+  || categorySource?.author !== 'Tadokiari'
+  || categorySource?.sourcePage !== 'https://wall.alphacoders.com/big.php?i=1317278'
+) {
+  failures.push('分类页背景缺少完整来源记录');
 }
 
 const imageHashes = [];
