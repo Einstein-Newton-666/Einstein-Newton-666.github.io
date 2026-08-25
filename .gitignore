@@ -6,6 +6,7 @@ node_modules/
 public/
 .deploy*/
 _multiconfig.yml
+.worktrees/
 
 # WSL 环境在仓库根目录产生的 /dev/null 占位文件（非项目内容）
 .bash_profile
