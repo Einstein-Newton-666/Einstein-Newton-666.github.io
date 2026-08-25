@@ -7,9 +7,9 @@
     {
       pattern: /^\/categories(?:\/|$)/,
       type: 'categories',
-      image: '/images/brand/book-spring.webp',
-      desktopPosition: '50% center',
-      mobilePosition: '68% center'
+      image: '/images/brand/category-library-glow.webp',
+      desktopPosition: '54% center',
+      mobilePosition: '57% center'
     },
     {
       pattern: /^\/tags(?:\/|$)/,

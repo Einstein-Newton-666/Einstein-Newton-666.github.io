@@ -6,8 +6,8 @@ const origin = 'https://einstein-newton-666.github.io';
 
 test('为索引型内页分配互不相同的固定场景', () => {
   const cases = [
-    ['/categories/', 'categories', '/images/brand/book-spring.webp'],
-    ['/categories/笔记/', 'categories', '/images/brand/book-spring.webp'],
+    ['/categories/', 'categories', '/images/brand/category-library-glow.webp'],
+    ['/categories/笔记/', 'categories', '/images/brand/category-library-glow.webp'],
     ['/tags/', 'tags', '/images/brand/morning-mountains.webp'],
     ['/tags/Hexo/', 'tags', '/images/brand/morning-mountains.webp'],
     ['/archives/', 'archives', '/images/brand/river-sunrise.webp'],
@@ -22,6 +22,10 @@ test('为索引型内页分配互不相同的固定场景', () => {
   });
 
   assert.equal(new Set(scenes).size, 4);
+
+  const categoryScene = resolvePageScene('/categories/', '', origin);
+  assert.equal(categoryScene.desktopPosition, '54% center');
+  assert.equal(categoryScene.mobilePosition, '57% center');
 });
 
 test('文章页优先使用同源 Open Graph 图片', () => {
