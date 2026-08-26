@@ -167,6 +167,16 @@ expect(animeCss, /background: rgba\(250, 252, 251, \.9\)/, '浅色内容卡片�
 expect(animeCss, /rgba\(13, 22, 28, \.72\).*rgba\(13, 22, 28, \.91\)/s, '暗色内页遮罩透明度发生变化');
 expect(animeCss, /background: rgba\(21, 31, 39, \.9\)/, '暗色内容卡片透明度发生变化');
 
+const neutralNavbarRule = animeCss.match(/html \.navbar-container\s*\{([^}]*)\}/)?.[1] || '';
+expect(neutralNavbarRule, /background:\s*rgba\(255, 255, 255, \.24\)/, '浅色导航栏未使用无色玻璃背景');
+expect(neutralNavbarRule, /backdrop-filter:\s*blur\(10px\) saturate\(115%\)/, '导航栏玻璃模糊参数缺失');
+if (/linear-gradient\(/.test(neutralNavbarRule)) {
+  failures.push('导航栏仍包含彩色渐变');
+}
+
+const darkNeutralNavbarRule = animeCss.match(/html\.dark \.navbar-container\s*\{([^}]*)\}/)?.[1] || '';
+expect(darkNeutralNavbarRule, /background:\s*rgba\(12, 18, 24, \.42\)/, '暗色导航栏未使用中性玻璃背景');
+
 const innerNavbarRule = animeCss.match(/html\[data-anime-page\] \.navbar-container\s*\{([^}]*)\}/)?.[1] || '';
 if (/\b(?:background|backdrop-filter|box-shadow|border(?:-bottom)?)\s*:/.test(innerNavbarRule)) {
   failures.push('内页导航栏仍覆盖 Redefine 官方透明样式');
