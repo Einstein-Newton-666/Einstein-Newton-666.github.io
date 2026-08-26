@@ -26,7 +26,7 @@
       scene: '把思路铺开，让答案逐渐清晰',
       note: '在明亮的天空下，整理技术笔记与生活片段。',
       desktopPosition: '50% center',
-      mobilePosition: '50% center',
+      mobilePosition: '54% center',
     },
     {
       period: 'sunset',
@@ -38,7 +38,7 @@
       scene: '在天色变深以前，收好今天的片段',
       note: '把完成的工作、未解的问题与沿途风景留在这里。',
       desktopPosition: '50% center',
-      mobilePosition: '50% center',
+      mobilePosition: '52% center',
     },
     {
       period: 'night',
@@ -50,7 +50,7 @@
       scene: '让安静的夜晚，收纳仍在延伸的思绪',
       note: '在星光与屏幕之间，为今天的记录留下结尾。',
       desktopPosition: '50% center',
-      mobilePosition: '50% center',
+      mobilePosition: '55% center',
     },
   ];
 

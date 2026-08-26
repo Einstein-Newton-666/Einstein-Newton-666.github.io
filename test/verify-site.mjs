@@ -132,18 +132,24 @@ for (const [name, content] of [
   ['关于页', about],
   ['文章页', post],
 ]) {
+  expect(content, /src="\/js\/anime-home-scenes\.js"/, `${name}未加载首页分时场景模块`);
   expect(content, /src="\/js\/anime-page-scenes\.js"/, `${name}未加载页面场景映射脚本`);
   expect(content, /src="\/js\/anime-theme\.js"/, `${name}未加载 anime-theme.js`);
 }
+expect(
+  home,
+  /src="\/js\/anime-home-scenes\.js"[\s\S]+src="\/js\/anime-page-scenes\.js"[\s\S]+src="\/js\/anime-theme\.js"/,
+  '首页分时场景模块未在主题脚本之前加载',
+);
 expect(home, /Einstein-Newton-666 的博客/, '站点标题尚未中文化');
 expect(home, /\/images\/brand\/castorice-avatar-display\.webp/, '首页未使用轻量头像展示版');
 if (/\/images\/brand\/castorice-avatar\.webp/.test(home)) {
   failures.push('首页仍引用 900x900 原头像');
 }
-expect(home, /\/images\/brand\/miku-field\.webp/, '首页未使用已选头图');
+expect(home, /\/images\/brand\/hero-day\.webp/, '首页无脚本回退未使用白日场景');
 expect(
   home,
-  /<img src="\/images\/brand\/miku-field\.webp"[^>]+class="[^"]*hidden dark:block"/,
+  /<img src="\/images\/brand\/hero-day\.webp"[^>]+class="[^"]*hidden dark:block"/,
   '首页暗色初始背景仍会抢先下载非当前场景',
 );
 expect(home, /href="\/about\/?"/, '导航栏缺少关于页');
