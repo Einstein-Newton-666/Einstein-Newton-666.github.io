@@ -21,6 +21,17 @@ test('首页三个场景都声明标准与 4K 候选', () => {
   }
 });
 
+test('场景按钮使用轻量缩略图而不是正式背景', () => {
+  for (const basename of ['miku-field', 'morning-mountains', 'river-sunrise']) {
+    assert.match(
+      script,
+      new RegExp(`thumb: '/images/brand/${basename}-thumb\\.webp'`),
+    );
+  }
+  assert.match(script, /<img src="\$\{slide\.thumb\}" alt="" loading="lazy" decoding="async">/);
+  assert.doesNotMatch(script, /<img src="\$\{slide\.src\}" alt="">/);
+});
+
 test('首页使用 srcset，内页按像素密度切档并防抖 resize', () => {
   assert.match(script, /image\.srcset = `\$\{slide\.src\} 1920w, \$\{slide\.src4k\} 3840w`/);
   assert.match(script, /image\.sizes = '100vw'/);

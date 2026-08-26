@@ -34,7 +34,7 @@ home_banner:
   style: fixed
   image:
     light: /images/brand/miku-field.webp
-    dark: /images/brand/river-sunrise.webp
+    dark: /images/brand/miku-field.webp
   title: Einstein-Newton-666 的博客
   subtitle:
     text:

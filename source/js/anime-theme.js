@@ -6,6 +6,7 @@
     {
       src: '/images/brand/miku-field.webp',
       src4k: '/images/brand/miku-field-4k.webp',
+      thumb: '/images/brand/miku-field-thumb.webp',
       alt: '风吹草地上的初音未来',
       kicker: 'WIND LOG · 01',
       scene: '让灵感沿着风的方向展开',
@@ -16,6 +17,7 @@
     {
       src: '/images/brand/morning-mountains.webp',
       src4k: '/images/brand/morning-mountains-4k.webp',
+      thumb: '/images/brand/morning-mountains-thumb.webp',
       alt: '晨光照亮云雾山谷',
       kicker: 'MORNING NOTE · 02',
       scene: '在晨雾散开之前，写下新的开始',
@@ -26,6 +28,7 @@
     {
       src: '/images/brand/river-sunrise.webp',
       src4k: '/images/brand/river-sunrise-4k.webp',
+      thumb: '/images/brand/river-sunrise-thumb.webp',
       alt: '河谷晨光中的二次元少女',
       kicker: 'VALLEY JOURNAL · 03',
       scene: '沿着河谷，把思绪带向更远的地方',
@@ -101,7 +104,7 @@
     switcher.setAttribute('aria-label', '切换首页场景');
     switcher.innerHTML = slides.map((slide, index) => `
       <button type="button" title="场景 ${index + 1}：${slide.scene}" aria-label="查看场景 ${index + 1}" aria-pressed="${index === 0}">
-        <img src="${slide.src}" alt="">
+        <img src="${slide.thumb}" alt="" loading="lazy" decoding="async">
       </button>`).join('');
 
     const scrollCue = document.createElement('button');

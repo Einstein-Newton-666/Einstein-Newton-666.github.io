@@ -7,10 +7,13 @@ const failures = [];
 const expectedImages = [
   'miku-field.webp',
   'miku-field-4k.webp',
+  'miku-field-thumb.webp',
   'morning-mountains.webp',
   'morning-mountains-4k.webp',
+  'morning-mountains-thumb.webp',
   'river-sunrise.webp',
   'river-sunrise-4k.webp',
+  'river-sunrise-thumb.webp',
   'firefly-side.webp',
   'tech-lab.webp',
   'book-spring.webp',
@@ -26,6 +29,12 @@ const expectedImages = [
   'about-sky-terminal-4k.webp',
   'castorice-avatar.webp',
 ];
+
+const imageSizeLimits = new Map([
+  ['miku-field-thumb.webp', 30 * 1024],
+  ['morning-mountains-thumb.webp', 30 * 1024],
+  ['river-sunrise-thumb.webp', 30 * 1024],
+]);
 
 async function read(relativePath) {
   try {
@@ -78,6 +87,10 @@ for (const image of expectedImages) {
     await access(path.join(root, relativePath));
     const buffer = await readFile(path.join(root, relativePath));
     imageHashes.push(createHash('sha256').update(buffer).digest('hex'));
+    const sizeLimit = imageSizeLimits.get(image);
+    if (sizeLimit && buffer.byteLength > sizeLimit) {
+      failures.push(`品牌图片超过体积上限：${relativePath}`);
+    }
   } catch {
     failures.push(`缺少品牌图片：${relativePath}`);
   }
@@ -120,6 +133,11 @@ for (const [name, content] of [
 expect(home, /Einstein-Newton-666 的博客/, '站点标题尚未中文化');
 expect(home, /\/images\/brand\/castorice-avatar\.webp/, '首页未使用独立头像');
 expect(home, /\/images\/brand\/miku-field\.webp/, '首页未使用已选头图');
+expect(
+  home,
+  /<img src="\/images\/brand\/miku-field\.webp"[^>]+class="[^"]*hidden dark:block"/,
+  '首页暗色初始背景仍会抢先下载非当前场景',
+);
 expect(home, /href="\/about\/?"/, '导航栏缺少关于页');
 expect(home, /href="\/atom\.xml"/, '页面缺少 RSS 入口');
 expect(home, />归档</, '侧栏缺少中文“归档”链接');
