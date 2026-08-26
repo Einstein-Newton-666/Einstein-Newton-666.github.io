@@ -131,11 +131,19 @@ expect(animeCss, /--anime-page-position-mobile/, '内页场景缺少移动端裁
 expect(animeScript, /\.srcset\s*=.*1920w.*3840w/s, '首页脚本未设置标准与 4K 候选');
 expect(animeScript, /window\.innerWidth, window\.devicePixelRatio/, '内页脚本未按视口和像素密度选图');
 expect(animeCss, /rgba\(247, 250, 249, \.74\).*rgba\(247, 250, 249, \.91\)/s, '浅色内页遮罩透明度发生变化');
-expect(animeCss, /background: rgba\(247, 250, 249, \.82\)/, '浅色导航透明度发生变化');
 expect(animeCss, /background: rgba\(250, 252, 251, \.9\)/, '浅色内容卡片透明度发生变化');
 expect(animeCss, /rgba\(13, 22, 28, \.72\).*rgba\(13, 22, 28, \.91\)/s, '暗色内页遮罩透明度发生变化');
-expect(animeCss, /background: rgba\(17, 26, 33, \.84\)/, '暗色导航透明度发生变化');
 expect(animeCss, /background: rgba\(21, 31, 39, \.9\)/, '暗色内容卡片透明度发生变化');
+
+const innerNavbarRule = animeCss.match(/html\[data-anime-page\] \.navbar-container\s*\{([^}]*)\}/)?.[1] || '';
+if (/\b(?:background|backdrop-filter|box-shadow|border(?:-bottom)?)\s*:/.test(innerNavbarRule)) {
+  failures.push('内页导航栏仍覆盖 Redefine 官方透明样式');
+}
+
+const darkInnerNavbarRule = animeCss.match(/html\.dark\[data-anime-page\] \.navbar-container\s*\{([^}]*)\}/)?.[1] || '';
+if (/\b(?:background|backdrop-filter|box-shadow|border(?:-bottom)?)\s*:/.test(darkInnerNavbarRule)) {
+  failures.push('暗色内页导航栏仍覆盖 Redefine 官方透明样式');
+}
 
 for (const [name, content] of [
   ['首页', home],

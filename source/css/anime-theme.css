@@ -42,14 +42,6 @@ html[data-anime-page] .main-content-container {
   background: transparent;
 }
 
-html[data-anime-page] .navbar-container {
-  border-bottom: 1px solid rgba(255, 255, 255, .58);
-  background: rgba(247, 250, 249, .82);
-  box-shadow: 0 8px 24px rgba(22, 43, 51, .08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
 html[data-anime-page] .navbar-container .navbar-item a.active {
   color: var(--anime-teal);
 }
@@ -79,12 +71,6 @@ html.dark[data-anime-page] .page-container::before {
 
 html.dark[data-anime-page] .page-container::after {
   background: linear-gradient(180deg, rgba(13, 22, 28, .72), rgba(13, 22, 28, .91) 72%);
-}
-
-html.dark[data-anime-page] .navbar-container {
-  border-bottom-color: rgba(255, 255, 255, .08);
-  background: rgba(17, 26, 33, .84);
-  box-shadow: 0 8px 26px rgba(0, 0, 0, .2);
 }
 
 html.dark[data-anime-page] :is(.page-template-container, .archive-container, .article-content-container, .toc-content-container) {
