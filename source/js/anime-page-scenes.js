@@ -8,44 +8,37 @@
       pattern: /^\/categories(?:\/|$)/,
       type: 'categories',
       image: '/images/brand/category-library-glow.webp',
+      image4k: '/images/brand/category-library-glow-4k.webp',
       desktopPosition: '54% center',
       mobilePosition: '57% center'
     },
     {
       pattern: /^\/tags(?:\/|$)/,
       type: 'tags',
-      image: '/images/brand/morning-mountains.webp',
+      image: '/images/brand/tag-cloud-city.webp',
+      image4k: '/images/brand/tag-cloud-city-4k.webp',
       desktopPosition: '50% center',
-      mobilePosition: '58% center'
+      mobilePosition: '50% center'
     },
     {
       pattern: /^\/archives(?:\/|$)/,
       type: 'archives',
-      image: '/images/brand/river-sunrise.webp',
+      image: '/images/brand/archive-star-bay.webp',
+      image4k: '/images/brand/archive-star-bay-4k.webp',
       desktopPosition: '50% center',
-      mobilePosition: '82% center'
+      mobilePosition: '50% center'
     },
     {
       pattern: /^\/about(?:\/|$)/,
       type: 'about',
-      image: '/images/brand/tech-lab.webp',
+      image: '/images/brand/about-sky-terminal.webp',
+      image4k: '/images/brand/about-sky-terminal-4k.webp',
       desktopPosition: '50% center',
-      mobilePosition: '72% center'
+      mobilePosition: '44% center'
     }
   ];
 
-  function localImagePath(value, origin) {
-    if (!value) return null;
-
-    try {
-      const url = new URL(value, origin);
-      return url.origin === origin ? `${url.pathname}${url.search}${url.hash}` : null;
-    } catch {
-      return null;
-    }
-  }
-
-  function resolvePageScene(pathname, openGraphImage, origin) {
+  function resolvePageScene(pathname) {
     const path = `/${String(pathname || '').replace(/^\/+|\/+$/g, '')}`;
     const fixed = fixedScenes.find((scene) => scene.pattern.test(path));
 
@@ -57,14 +50,28 @@
     if (/^\/\d{4}\/\d{2}\/\d{2}\/[^/]+$/.test(path)) {
       return {
         type: 'post',
-        image: localImagePath(openGraphImage, origin) || '/images/brand/firefly-side.webp',
-        desktopPosition: '50% center',
-        mobilePosition: '50% center'
+        image: '/images/brand/article-digital-library.webp',
+        image4k: '/images/brand/article-digital-library-4k.webp',
+        desktopPosition: '62% center',
+        mobilePosition: '62% center'
       };
     }
 
     return null;
   }
 
-  return { resolvePageScene };
+  function shouldUseHighResolution(viewportWidth, devicePixelRatio) {
+    const width = Math.max(0, Number(viewportWidth) || 0);
+    const pixelRatio = Math.max(1, Number(devicePixelRatio) || 1);
+    return width >= 2560 || (width >= 1200 && width * pixelRatio >= 2560);
+  }
+
+  function selectSceneImage(scene, viewportWidth, devicePixelRatio) {
+    if (shouldUseHighResolution(viewportWidth, devicePixelRatio) && scene.image4k) {
+      return scene.image4k;
+    }
+    return scene.image;
+  }
+
+  return { resolvePageScene, selectSceneImage, shouldUseHighResolution };
 }));

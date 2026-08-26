@@ -6,12 +6,24 @@ const root = process.cwd();
 const failures = [];
 const expectedImages = [
   'miku-field.webp',
+  'miku-field-4k.webp',
   'morning-mountains.webp',
+  'morning-mountains-4k.webp',
   'river-sunrise.webp',
+  'river-sunrise-4k.webp',
   'firefly-side.webp',
   'tech-lab.webp',
   'book-spring.webp',
   'category-library-glow.webp',
+  'category-library-glow-4k.webp',
+  'tag-cloud-city.webp',
+  'tag-cloud-city-4k.webp',
+  'archive-star-bay.webp',
+  'archive-star-bay-4k.webp',
+  'article-digital-library.webp',
+  'article-digital-library-4k.webp',
+  'about-sky-terminal.webp',
+  'about-sky-terminal-4k.webp',
   'castorice-avatar.webp',
 ];
 
@@ -34,13 +46,29 @@ for (const dependency of ['hexo-generator-feed', 'hexo-wordcount']) {
 }
 
 const brandSources = JSON.parse(await read('source/images/brand/sources.json'));
-const categorySource = brandSources.find((source) => source.slot === 'inner-categories');
-if (
-  categorySource?.file !== 'category-library-glow.webp'
-  || categorySource?.author !== 'Tadokiari'
-  || categorySource?.sourcePage !== 'https://wall.alphacoders.com/big.php?i=1317278'
-) {
-  failures.push('分类页背景缺少完整来源记录');
+const backgroundSources = new Map([
+  ['hero-1', ['miku-field.webp', 'miku-field-4k.webp', 1920, 1080]],
+  ['hero-2', ['morning-mountains.webp', 'morning-mountains-4k.webp', 1920, 1080]],
+  ['hero-3', ['river-sunrise.webp', 'river-sunrise-4k.webp', 1920, 1152]],
+  ['inner-categories', ['category-library-glow.webp', 'category-library-glow-4k.webp', 8736, 4896]],
+  ['inner-tags', ['tag-cloud-city.webp', 'tag-cloud-city-4k.webp', 4000, 1857]],
+  ['inner-archives', ['archive-star-bay.webp', 'archive-star-bay-4k.webp', 4000, 2500]],
+  ['inner-post', ['article-digital-library.webp', 'article-digital-library-4k.webp', 7200, 4050]],
+  ['inner-about', ['about-sky-terminal.webp', 'about-sky-terminal-4k.webp', 5910, 2944]],
+]);
+
+for (const [slot, [file, file4k, width, height]] of backgroundSources) {
+  const source = brandSources.find((candidate) => candidate.slot === slot);
+  if (
+    source?.file !== file
+    || source?.file4k !== file4k
+    || source?.originalDimensions?.width !== width
+    || source?.originalDimensions?.height !== height
+    || !source?.sourcePage
+    || !source?.processing
+  ) {
+    failures.push(`${slot} 缺少完整双分辨率来源记录`);
+  }
 }
 
 const imageHashes = [];
@@ -66,6 +94,7 @@ const tags = await read('public/tags/index.html');
 const archives = await read('public/archives/index.html');
 const feed = await read('public/atom.xml');
 const animeCss = await read('public/css/anime-theme.css');
+const animeScript = await read('public/js/anime-theme.js');
 
 expect(home, /href="\/css\/anime-theme\.css"/, '首页未加载 anime-theme.css');
 for (const [name, content] of [
@@ -99,6 +128,27 @@ expect(animeCss, /html\[data-anime-page\]/, '自定义样式缺少内页场景�
 expect(animeCss, /--anime-page-image/, '自定义样式未使用内页背景变量');
 expect(animeCss, /html\.dark\[data-anime-page\]/, '内页场景缺少暗色模式');
 expect(animeCss, /--anime-page-position-mobile/, '内页场景缺少移动端裁切变量');
+expect(animeScript, /\.srcset\s*=.*1920w.*3840w/s, '首页脚本未设置标准与 4K 候选');
+expect(animeScript, /window\.innerWidth, window\.devicePixelRatio/, '内页脚本未按视口和像素密度选图');
+expect(animeCss, /rgba\(247, 250, 249, \.74\).*rgba\(247, 250, 249, \.91\)/s, '浅色内页遮罩透明度发生变化');
+expect(animeCss, /background: rgba\(247, 250, 249, \.82\)/, '浅色导航透明度发生变化');
+expect(animeCss, /background: rgba\(250, 252, 251, \.9\)/, '浅色内容卡片透明度发生变化');
+expect(animeCss, /rgba\(13, 22, 28, \.72\).*rgba\(13, 22, 28, \.91\)/s, '暗色内页遮罩透明度发生变化');
+expect(animeCss, /background: rgba\(17, 26, 33, \.84\)/, '暗色导航透明度发生变化');
+expect(animeCss, /background: rgba\(21, 31, 39, \.9\)/, '暗色内容卡片透明度发生变化');
+
+for (const [name, content] of [
+  ['首页', home],
+  ['分类页', categories],
+  ['标签页', tags],
+  ['归档页', archives],
+  ['关于页', about],
+  ['文章页', post],
+]) {
+  if (/<img[^>]+src=["']https?:\/\//i.test(content)) {
+    failures.push(`${name}仍包含运行时外链图片`);
+  }
+}
 
 for (const [name, content] of [['首页', home], ['文章页', post]]) {
   if (/example\.example\.com|waline/i.test(content)) failures.push(`${name}仍包含失效的 Waline 配置`);

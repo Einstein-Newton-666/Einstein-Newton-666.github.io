@@ -1,7 +1,11 @@
 (function () {
+  const runtime = globalThis.__einsteinAnimeThemeRuntime || {};
+  globalThis.__einsteinAnimeThemeRuntime = runtime;
+
   const slides = [
     {
       src: '/images/brand/miku-field.webp',
+      src4k: '/images/brand/miku-field-4k.webp',
       alt: '风吹草地上的初音未来',
       kicker: 'WIND LOG · 01',
       scene: '让灵感沿着风的方向展开',
@@ -11,6 +15,7 @@
     },
     {
       src: '/images/brand/morning-mountains.webp',
+      src4k: '/images/brand/morning-mountains-4k.webp',
       alt: '晨光照亮云雾山谷',
       kicker: 'MORNING NOTE · 02',
       scene: '在晨雾散开之前，写下新的开始',
@@ -20,6 +25,7 @@
     },
     {
       src: '/images/brand/river-sunrise.webp',
+      src4k: '/images/brand/river-sunrise-4k.webp',
       alt: '河谷晨光中的二次元少女',
       kicker: 'VALLEY JOURNAL · 03',
       scene: '沿着河谷，把思绪带向更远的地方',
@@ -36,17 +42,38 @@
     root.style.removeProperty('--anime-page-position-desktop');
     root.style.removeProperty('--anime-page-position-mobile');
 
-    const resolver = globalThis.AnimePageScenes?.resolvePageScene;
-    if (!resolver) return;
+    if (runtime.innerSceneResizeHandler) {
+      window.removeEventListener('resize', runtime.innerSceneResizeHandler);
+      runtime.innerSceneResizeHandler = undefined;
+    }
+    clearTimeout(runtime.innerSceneResizeTimer);
 
-    const openGraphImage = document.querySelector('meta[property="og:image"]')?.content || '';
-    const scene = resolver(location.pathname, openGraphImage, location.origin);
+    const resolver = globalThis.AnimePageScenes?.resolvePageScene;
+    const selectImage = globalThis.AnimePageScenes?.selectSceneImage;
+    if (!resolver || !selectImage) return;
+
+    const scene = resolver(location.pathname);
     if (!scene) return;
 
     root.dataset.animePage = scene.type;
     root.style.setProperty('--anime-page-image', `url("${scene.image}")`);
     root.style.setProperty('--anime-page-position-desktop', scene.desktopPosition);
     root.style.setProperty('--anime-page-position-mobile', scene.mobilePosition);
+
+    let currentImage = scene.image;
+    const updateImage = () => {
+      const nextImage = selectImage(scene, window.innerWidth, window.devicePixelRatio);
+      if (nextImage === currentImage) return;
+      currentImage = nextImage;
+      root.style.setProperty('--anime-page-image', `url("${nextImage}")`);
+    };
+
+    updateImage();
+    runtime.innerSceneResizeHandler = () => {
+      clearTimeout(runtime.innerSceneResizeTimer);
+      runtime.innerSceneResizeTimer = setTimeout(updateImage, 150);
+    };
+    window.addEventListener('resize', runtime.innerSceneResizeHandler, { passive: true });
   }
 
   function initialiseAnimeTheme() {
@@ -94,6 +121,8 @@
     function setSlide(index) {
       const slide = slides[index];
       images.forEach((image) => {
+        image.srcset = `${slide.src} 1920w, ${slide.src4k} 3840w`;
+        image.sizes = '100vw';
         image.src = slide.src;
         image.alt = slide.alt;
       });
