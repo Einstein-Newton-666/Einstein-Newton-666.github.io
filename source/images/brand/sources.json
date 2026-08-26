@@ -2,17 +2,26 @@
   {
     "slot": "hero-1",
     "file": "miku-field.webp",
-    "sourcePage": "https://www.goodfon.com/anime/wallpaper-badfon-art-yuuko-san-devushka-hatsune.html"
+    "file4k": "miku-field-4k.webp",
+    "sourcePage": "https://www.goodfon.com/anime/wallpaper-badfon-art-yuuko-san-devushka-hatsune.html",
+    "originalDimensions": { "width": 1920, "height": 1080 },
+    "processing": "标准版沿用现有 WebP；4K 版使用 Lanczos 2 倍缩放与轻量锐化后编码为 WebP"
   },
   {
     "slot": "hero-2",
     "file": "morning-mountains.webp",
-    "sourcePage": "https://wall.alphacoders.com/big.php?i=862038"
+    "file4k": "morning-mountains-4k.webp",
+    "sourcePage": "https://wall.alphacoders.com/big.php?i=862038",
+    "originalDimensions": { "width": 1920, "height": 1080 },
+    "processing": "标准版沿用现有 WebP；4K 版使用 Lanczos 2 倍缩放与轻量锐化后编码为 WebP"
   },
   {
     "slot": "hero-3",
     "file": "river-sunrise.webp",
-    "sourcePage": "https://wall.alphacoders.com/big.php?i=1056636"
+    "file4k": "river-sunrise-4k.webp",
+    "sourcePage": "https://wall.alphacoders.com/big.php?i=1056636",
+    "originalDimensions": { "width": 1920, "height": 1152 },
+    "processing": "标准版沿用现有 WebP；4K 版使用 Lanczos 2 倍缩放与轻量锐化后编码为 WebP"
   },
   {
     "slot": "cover-welcome",
@@ -37,7 +46,43 @@
   {
     "slot": "inner-categories",
     "file": "category-library-glow.webp",
+    "file4k": "category-library-glow-4k.webp",
     "author": "Tadokiari",
-    "sourcePage": "https://wall.alphacoders.com/big.php?i=1317278"
+    "sourcePage": "https://wall.alphacoders.com/big.php?i=1317278",
+    "originalDimensions": { "width": 8736, "height": 4896 },
+    "processing": "标准版与 4K 版均从原始 PNG 直接缩放并编码为 WebP"
+  },
+  {
+    "slot": "inner-tags",
+    "file": "tag-cloud-city.webp",
+    "file4k": "tag-cloud-city-4k.webp",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7085343",
+    "originalDimensions": { "width": 4000, "height": 1857 },
+    "processing": "标准版与 4K 版均从 4000 像素原图直接编码为 WebP；为保留建筑和瀑布纹理采用质量 74",
+    "sizeException": "tag-cloud-city-4k.webp 为 1848076 bytes；继续压缩会损伤建筑细节和原有绘画纹理"
+  },
+  {
+    "slot": "inner-archives",
+    "file": "archive-star-bay.webp",
+    "file4k": "archive-star-bay-4k.webp",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7009209",
+    "originalDimensions": { "width": 4000, "height": 2500 },
+    "processing": "标准版与 4K 版均从 4000 像素原图直接编码为 WebP"
+  },
+  {
+    "slot": "inner-post",
+    "file": "article-digital-library.webp",
+    "file4k": "article-digital-library-4k.webp",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=6716883",
+    "originalDimensions": { "width": 7200, "height": 4050 },
+    "processing": "标准版与 4K 版均从 7200 像素原图直接缩放并编码为 WebP"
+  },
+  {
+    "slot": "inner-about",
+    "file": "about-sky-terminal.webp",
+    "file4k": "about-sky-terminal-4k.webp",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=6507788",
+    "originalDimensions": { "width": 5910, "height": 2944 },
+    "processing": "标准版与 4K 版均从原始 PNG 直接缩放并编码为 WebP"
   }
 ]
