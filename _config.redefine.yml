@@ -66,7 +66,7 @@ navbar:
       icon: fa-solid fa-rss
   search:
     enable: true
-    preload: true
+    preload: false
 
 # >>>>>>>>>> 首页与文章
 home:
@@ -123,3 +123,8 @@ plugins:
 
 page_templates:
   tags_style: cloud
+
+# 使用 Redefine 官方支持的版本化 CDN 分发主题静态资源。
+cdn:
+  enable: true
+  provider: npmmirror

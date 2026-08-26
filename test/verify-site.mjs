@@ -97,6 +97,15 @@ const animeCss = await read('public/css/anime-theme.css');
 const animeScript = await read('public/js/anime-theme.js');
 
 expect(home, /href="\/css\/anime-theme\.css"/, '首页未加载 anime-theme.css');
+expect(
+  home,
+  /https:\/\/registry\.npmmirror\.com\/hexo-theme-redefine\/2\.9\.0\/files\/source\/fontawesome\/fontawesome\.min\.css/,
+  '主题静态资源未使用 Redefine 官方 npmmirror CDN',
+);
+expect(home, /"search":\{"enable":true,"preload":false\}/, '搜索索引仍在首屏预加载');
+if (/href="\/fontawesome\/fontawesome\.min\.css"/.test(home)) {
+  failures.push('首页仍从 GitHub Pages 加载主题 Font Awesome');
+}
 for (const [name, content] of [
   ['首页', home],
   ['分类页', categories],
