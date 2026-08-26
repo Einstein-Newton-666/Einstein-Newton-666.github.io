@@ -14,7 +14,7 @@ test('为五类内页分配互不重复的固定双分辨率场景', () => {
     ['/categories/笔记/', 'categories', 'category-library-glow'],
     ['/tags/', 'tags', 'tag-cloud-city'],
     ['/tags/Hexo/', 'tags', 'tag-cloud-city'],
-    ['/archives/', 'archives', 'archive-star-bay'],
+    ['/archives/', 'archives', 'archive-warm-library'],
     ['/about/', 'about', 'about-sky-terminal'],
     ['/2026/08/15/welcome/', 'post', 'article-digital-library'],
   ];
@@ -30,9 +30,10 @@ test('为五类内页分配互不重复的固定双分辨率场景', () => {
 
   assert.equal(new Set(topLevelScenes.values()).size, 5);
   for (const heroImage of [
-    '/images/brand/miku-field.webp',
-    '/images/brand/morning-mountains.webp',
-    '/images/brand/river-sunrise.webp',
+    '/images/brand/hero-morning.webp',
+    '/images/brand/hero-day.webp',
+    '/images/brand/hero-sunset.webp',
+    '/images/brand/hero-night.webp',
   ]) {
     assert.equal(new Set(topLevelScenes.values()).has(heroImage), false);
   }
