@@ -39,7 +39,7 @@ expect(darkNeutralNavbarRule, /background:\s*rgba\(12, 18, 24, \.42\)/, '暗色�
 Run:
 
 ```bash
-node test/verify-site.mjs
+npm run build && node test/verify-site.mjs
 ```
 
 Expected: FAIL，包含 `浅色导航栏未使用无色玻璃背景`、`导航栏玻璃模糊参数缺失` 和 `暗色导航栏未使用中性玻璃背景`。
@@ -82,7 +82,7 @@ html.dark .navbar-container {
 Run:
 
 ```bash
-node test/verify-site.mjs
+npm run build && node test/verify-site.mjs
 ```
 
 Expected: 输出 `PASS: 站点资源、路由、RSS、字数统计与 MathJax 构建检查通过`。
@@ -131,4 +131,3 @@ git status --short --branch
 ```
 
 Expected: 没有格式错误；除用户已有的 `.superpowers/` 未跟踪目录外，没有遗漏的代码更改。
-
