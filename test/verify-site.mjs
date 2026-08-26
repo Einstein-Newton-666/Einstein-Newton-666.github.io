@@ -28,12 +28,14 @@ const expectedImages = [
   'about-sky-terminal.webp',
   'about-sky-terminal-4k.webp',
   'castorice-avatar.webp',
+  'castorice-avatar-display.webp',
 ];
 
 const imageSizeLimits = new Map([
   ['miku-field-thumb.webp', 30 * 1024],
   ['morning-mountains-thumb.webp', 30 * 1024],
   ['river-sunrise-thumb.webp', 30 * 1024],
+  ['castorice-avatar-display.webp', 50 * 1024],
 ]);
 
 async function read(relativePath) {
@@ -131,7 +133,10 @@ for (const [name, content] of [
   expect(content, /src="\/js\/anime-theme\.js"/, `${name}未加载 anime-theme.js`);
 }
 expect(home, /Einstein-Newton-666 的博客/, '站点标题尚未中文化');
-expect(home, /\/images\/brand\/castorice-avatar\.webp/, '首页未使用独立头像');
+expect(home, /\/images\/brand\/castorice-avatar-display\.webp/, '首页未使用轻量头像展示版');
+if (/\/images\/brand\/castorice-avatar\.webp/.test(home)) {
+  failures.push('首页仍引用 900x900 原头像');
+}
 expect(home, /\/images\/brand\/miku-field\.webp/, '首页未使用已选头图');
 expect(
   home,
