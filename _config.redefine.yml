@@ -25,7 +25,7 @@ global:
     enable: false
   open_graph:
     enable: true
-    image: /images/brand/miku-field.webp
+    image: /images/brand/hero-day.webp
     description: 记录技术学习、生活片段与沿途灵感的个人博客。
 
 # >>>>>>>>>> 首页横幅
@@ -33,8 +33,8 @@ home_banner:
   enable: true
   style: fixed
   image:
-    light: /images/brand/miku-field.webp
-    dark: /images/brand/miku-field.webp
+    light: /images/brand/hero-day.webp
+    dark: /images/brand/hero-day.webp
   title: Einstein-Newton-666 的博客
   subtitle:
     text:
@@ -114,6 +114,7 @@ inject:
   head:
     - '<link rel="stylesheet" href="/css/anime-theme.css">'
   footer:
+    - '<script src="/js/anime-home-scenes.js"></script>'
     - '<script src="/js/anime-page-scenes.js"></script>'
     - '<script src="/js/anime-theme.js"></script>'
 

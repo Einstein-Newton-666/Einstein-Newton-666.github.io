@@ -9,32 +9,20 @@ const script = readFileSync(
   'utf8',
 );
 
-test('首页三个场景都声明标准与 4K 候选', () => {
-  const pairs = [
-    ['miku-field.webp', 'miku-field-4k.webp'],
-    ['morning-mountains.webp', 'morning-mountains-4k.webp'],
-    ['river-sunrise.webp', 'river-sunrise-4k.webp'],
-  ];
-
-  for (const [standard, high] of pairs) {
-    assert.match(script, new RegExp(`src: '/images/brand/${standard}'[\\s\\S]+?src4k: '/images/brand/${high}'`));
-  }
+test('首页从分时模块读取四个场景并按本地时间初始化', () => {
+  assert.match(script, /globalThis\.AnimeHomeScenes/);
+  assert.match(script, /resolveHomeSceneIndex\(new Date\(\)\)/);
+  assert.match(script, /setSlide\(initialIndex\)/);
+  assert.doesNotMatch(script, /miku-field|morning-mountains|river-sunrise/);
 });
 
-test('场景按钮使用轻量缩略图而不是正式背景', () => {
-  for (const basename of ['miku-field', 'morning-mountains', 'river-sunrise']) {
-    assert.match(
-      script,
-      new RegExp(`thumb: '/images/brand/${basename}-thumb\\.webp'`),
-    );
-  }
+test('场景按钮继续使用缩略图并保留响应式正式图', () => {
   assert.match(script, /<img src="\$\{slide\.thumb\}" alt="" loading="lazy" decoding="async">/);
-  assert.doesNotMatch(script, /<img src="\$\{slide\.src\}" alt="">/);
-});
-
-test('首页使用 srcset，内页按像素密度切档并防抖 resize', () => {
   assert.match(script, /image\.srcset = `\$\{slide\.src\} 1920w, \$\{slide\.src4k\} 3840w`/);
   assert.match(script, /image\.sizes = '100vw'/);
+});
+
+test('内页按像素密度切档并防抖 resize', () => {
   assert.match(script, /selectImage\(scene, window\.innerWidth, window\.devicePixelRatio\)/);
   assert.match(script, /setTimeout\(updateImage, 150\)/);
 });

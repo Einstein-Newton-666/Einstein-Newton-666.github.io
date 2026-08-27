@@ -1,27 +1,42 @@
 [
   {
-    "slot": "hero-1",
-    "file": "miku-field.webp",
-    "file4k": "miku-field-4k.webp",
-    "sourcePage": "https://www.goodfon.com/anime/wallpaper-badfon-art-yuuko-san-devushka-hatsune.html",
-    "originalDimensions": { "width": 1920, "height": 1080 },
-    "processing": "标准版沿用现有 WebP；4K 版使用 Lanczos 2 倍缩放与轻量锐化后编码为 WebP"
+    "slot": "hero-morning",
+    "file": "hero-morning.webp",
+    "file4k": "hero-morning-4k.webp",
+    "thumb": "hero-morning-thumb.webp",
+    "sourcePage": "https://wall.alphacoders.com/big.php?i=1401622",
+    "author": "QuantumCurator",
+    "originalDimensions": { "width": 4128, "height": 2304 },
+    "processing": "标准版与 4K 版均从原始高分辨率文件直接缩放并编码为 WebP"
   },
   {
-    "slot": "hero-2",
-    "file": "morning-mountains.webp",
-    "file4k": "morning-mountains-4k.webp",
-    "sourcePage": "https://wall.alphacoders.com/big.php?i=862038",
-    "originalDimensions": { "width": 1920, "height": 1080 },
-    "processing": "标准版沿用现有 WebP；4K 版使用 Lanczos 2 倍缩放与轻量锐化后编码为 WebP"
+    "slot": "hero-day",
+    "file": "hero-day.webp",
+    "file4k": "hero-day-4k.webp",
+    "thumb": "hero-day-thumb.webp",
+    "sourcePage": "https://wall.alphacoders.com/big.php?i=1371387",
+    "author": "Maker_Production",
+    "originalDimensions": { "width": 8736, "height": 4896 },
+    "processing": "标准版与 4K 版均从原始高分辨率文件直接缩放并编码为 WebP"
   },
   {
-    "slot": "hero-3",
-    "file": "river-sunrise.webp",
-    "file4k": "river-sunrise-4k.webp",
-    "sourcePage": "https://wall.alphacoders.com/big.php?i=1056636",
-    "originalDimensions": { "width": 1920, "height": 1152 },
-    "processing": "标准版沿用现有 WebP；4K 版使用 Lanczos 2 倍缩放与轻量锐化后编码为 WebP"
+    "slot": "hero-sunset",
+    "file": "hero-sunset.webp",
+    "file4k": "hero-sunset-4k.webp",
+    "thumb": "hero-sunset-thumb.webp",
+    "sourcePage": "https://wall.alphacoders.com/big.php?i=1090380",
+    "author": "とちちま",
+    "originalDimensions": { "width": 3840, "height": 2400 },
+    "processing": "标准版与 4K 版均从原始高分辨率文件直接缩放并编码为 WebP"
+  },
+  {
+    "slot": "hero-night",
+    "file": "hero-night.webp",
+    "file4k": "hero-night-4k.webp",
+    "thumb": "hero-night-thumb.webp",
+    "sourcePage": "https://wall.alphacoders.com/big.php?i=1378781",
+    "originalDimensions": { "width": 3840, "height": 2160 },
+    "processing": "标准版与 4K 版均从原始高分辨率文件直接缩放并编码为 WebP"
   },
   {
     "slot": "cover-welcome",
@@ -63,11 +78,13 @@
   },
   {
     "slot": "inner-archives",
-    "file": "archive-star-bay.webp",
-    "file4k": "archive-star-bay-4k.webp",
-    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7009209",
-    "originalDimensions": { "width": 4000, "height": 2500 },
-    "processing": "标准版与 4K 版均从 4000 像素原图直接编码为 WebP"
+    "file": "archive-warm-library.webp",
+    "file4k": "archive-warm-library-4k.webp",
+    "author": "ibsukionsen",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7051655",
+    "originalDimensions": { "width": 5156, "height": 3402 },
+    "processing": "标准版与 4K 版均从原始高分辨率文件直接缩放并编码为 WebP",
+    "sizeException": "archive-warm-library.webp 为 708030 bytes，archive-warm-library-4k.webp 为 1810024 bytes；质量 74 已是允许下限，继续压缩会损伤密集书脊线条与人物轮廓"
   },
   {
     "slot": "inner-post",

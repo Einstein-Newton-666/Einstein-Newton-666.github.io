@@ -23,8 +23,8 @@
     {
       pattern: /^\/archives(?:\/|$)/,
       type: 'archives',
-      image: '/images/brand/archive-star-bay.webp',
-      image4k: '/images/brand/archive-star-bay-4k.webp',
+      image: '/images/brand/archive-warm-library.webp',
+      image4k: '/images/brand/archive-warm-library-4k.webp',
       desktopPosition: '50% center',
       mobilePosition: '50% center'
     },

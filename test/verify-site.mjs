@@ -4,16 +4,13 @@ import path from 'node:path';
 
 const root = process.cwd();
 const failures = [];
+const homePeriods = ['morning', 'day', 'sunset', 'night'];
 const expectedImages = [
-  'miku-field.webp',
-  'miku-field-4k.webp',
-  'miku-field-thumb.webp',
-  'morning-mountains.webp',
-  'morning-mountains-4k.webp',
-  'morning-mountains-thumb.webp',
-  'river-sunrise.webp',
-  'river-sunrise-4k.webp',
-  'river-sunrise-thumb.webp',
+  ...homePeriods.flatMap((period) => [
+    `hero-${period}.webp`,
+    `hero-${period}-4k.webp`,
+    `hero-${period}-thumb.webp`,
+  ]),
   'firefly-side.webp',
   'tech-lab.webp',
   'book-spring.webp',
@@ -21,8 +18,8 @@ const expectedImages = [
   'category-library-glow-4k.webp',
   'tag-cloud-city.webp',
   'tag-cloud-city-4k.webp',
-  'archive-star-bay.webp',
-  'archive-star-bay-4k.webp',
+  'archive-warm-library.webp',
+  'archive-warm-library-4k.webp',
   'article-digital-library.webp',
   'article-digital-library-4k.webp',
   'about-sky-terminal.webp',
@@ -32,9 +29,7 @@ const expectedImages = [
 ];
 
 const imageSizeLimits = new Map([
-  ['miku-field-thumb.webp', 30 * 1024],
-  ['morning-mountains-thumb.webp', 30 * 1024],
-  ['river-sunrise-thumb.webp', 30 * 1024],
+  ...homePeriods.map((period) => [`hero-${period}-thumb.webp`, 30 * 1024]),
   ['castorice-avatar-display.webp', 50 * 1024],
 ]);
 
@@ -58,12 +53,13 @@ for (const dependency of ['hexo-generator-feed', 'hexo-wordcount']) {
 
 const brandSources = JSON.parse(await read('source/images/brand/sources.json'));
 const backgroundSources = new Map([
-  ['hero-1', ['miku-field.webp', 'miku-field-4k.webp', 1920, 1080]],
-  ['hero-2', ['morning-mountains.webp', 'morning-mountains-4k.webp', 1920, 1080]],
-  ['hero-3', ['river-sunrise.webp', 'river-sunrise-4k.webp', 1920, 1152]],
+  ['hero-morning', ['hero-morning.webp', 'hero-morning-4k.webp', 4128, 2304]],
+  ['hero-day', ['hero-day.webp', 'hero-day-4k.webp', 8736, 4896]],
+  ['hero-sunset', ['hero-sunset.webp', 'hero-sunset-4k.webp', 3840, 2400]],
+  ['hero-night', ['hero-night.webp', 'hero-night-4k.webp', 3840, 2160]],
   ['inner-categories', ['category-library-glow.webp', 'category-library-glow-4k.webp', 8736, 4896]],
   ['inner-tags', ['tag-cloud-city.webp', 'tag-cloud-city-4k.webp', 4000, 1857]],
-  ['inner-archives', ['archive-star-bay.webp', 'archive-star-bay-4k.webp', 4000, 2500]],
+  ['inner-archives', ['archive-warm-library.webp', 'archive-warm-library-4k.webp', 5156, 3402]],
   ['inner-post', ['article-digital-library.webp', 'article-digital-library-4k.webp', 7200, 4050]],
   ['inner-about', ['about-sky-terminal.webp', 'about-sky-terminal-4k.webp', 5910, 2944]],
 ]);
@@ -79,6 +75,13 @@ for (const [slot, [file, file4k, width, height]] of backgroundSources) {
     || !source?.processing
   ) {
     failures.push(`${slot} 缺少完整双分辨率来源记录`);
+  }
+}
+
+for (const slot of ['hero-morning', 'hero-day', 'hero-sunset', 'hero-night', 'inner-archives']) {
+  const source = brandSources.find((candidate) => candidate.slot === slot);
+  if ((source?.originalDimensions?.width || 0) < 3840) {
+    failures.push(`${slot} 不是原生 4K 来源`);
   }
 }
 
@@ -129,18 +132,24 @@ for (const [name, content] of [
   ['关于页', about],
   ['文章页', post],
 ]) {
+  expect(content, /src="\/js\/anime-home-scenes\.js"/, `${name}未加载首页分时场景模块`);
   expect(content, /src="\/js\/anime-page-scenes\.js"/, `${name}未加载页面场景映射脚本`);
   expect(content, /src="\/js\/anime-theme\.js"/, `${name}未加载 anime-theme.js`);
 }
+expect(
+  home,
+  /src="\/js\/anime-home-scenes\.js"[\s\S]+src="\/js\/anime-page-scenes\.js"[\s\S]+src="\/js\/anime-theme\.js"/,
+  '首页分时场景模块未在主题脚本之前加载',
+);
 expect(home, /Einstein-Newton-666 的博客/, '站点标题尚未中文化');
 expect(home, /\/images\/brand\/castorice-avatar-display\.webp/, '首页未使用轻量头像展示版');
 if (/\/images\/brand\/castorice-avatar\.webp/.test(home)) {
   failures.push('首页仍引用 900x900 原头像');
 }
-expect(home, /\/images\/brand\/miku-field\.webp/, '首页未使用已选头图');
+expect(home, /\/images\/brand\/hero-day\.webp/, '首页无脚本回退未使用白日场景');
 expect(
   home,
-  /<img src="\/images\/brand\/miku-field\.webp"[^>]+class="[^"]*hidden dark:block"/,
+  /<img src="\/images\/brand\/hero-day\.webp"[^>]+class="[^"]*hidden dark:block"/,
   '首页暗色初始背景仍会抢先下载非当前场景',
 );
 expect(home, /href="\/about\/?"/, '导航栏缺少关于页');
