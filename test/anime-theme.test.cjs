@@ -16,10 +16,10 @@ test('首页从分时模块读取四个场景并按本地时间初始化', () =>
   assert.doesNotMatch(script, /miku-field|morning-mountains|river-sunrise/);
 });
 
-test('场景按钮继续使用缩略图并保留响应式正式图', () => {
+test('场景按钮使用缩略图且首页按设备选择正式图', () => {
   assert.match(script, /<img src="\$\{slide\.thumb\}" alt="" loading="lazy" decoding="async">/);
-  assert.match(script, /image\.srcset = `\$\{slide\.src\} 1920w, \$\{slide\.src4k\} 3840w`/);
-  assert.match(script, /image\.sizes = '100vw'/);
+  assert.match(script, /selectHomeSceneImage\(activeSlide, window\.innerWidth, window\.devicePixelRatio\)/);
+  assert.match(script, /setTimeout\(updateHomeImage, 150\)/);
 });
 
 test('内页按像素密度切档并防抖 resize', () => {
@@ -69,4 +69,33 @@ test('Swup 重载脚本时只保留一个内页 resize 监听器', () => {
   vm.runInContext(script, context);
 
   assert.equal(resizeListeners.size, 1);
+});
+
+test('离开首页时清理首页 resize 监听器', () => {
+  const staleHomeHandler = () => {};
+  const resizeListeners = new Set([staleHomeHandler]);
+  const runtime = { homeSceneResizeHandler: staleHomeHandler };
+  const context = vm.createContext({
+    __einsteinAnimeThemeRuntime: runtime,
+    clearTimeout,
+    document: {
+      documentElement: {
+        dataset: {},
+        style: { removeProperty() {} },
+      },
+      querySelector: () => null,
+      readyState: 'complete',
+    },
+    location: { pathname: '/archives/' },
+    window: {
+      removeEventListener(type, handler) {
+        if (type === 'resize') resizeListeners.delete(handler);
+      },
+    },
+  });
+
+  vm.runInContext(script, context);
+
+  assert.equal(resizeListeners.size, 0);
+  assert.equal(runtime.homeSceneResizeHandler, undefined);
 });

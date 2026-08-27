@@ -6,6 +6,7 @@
   const slides = [
     {
       period: 'morning',
+      srcMobile: '/images/brand/hero-morning-mobile.webp',
       src: '/images/brand/hero-morning.webp',
       src4k: '/images/brand/hero-morning-4k.webp',
       thumb: '/images/brand/hero-morning-thumb.webp',
@@ -18,6 +19,7 @@
     },
     {
       period: 'day',
+      srcMobile: '/images/brand/hero-day-mobile.webp',
       src: '/images/brand/hero-day.webp',
       src4k: '/images/brand/hero-day-4k.webp',
       thumb: '/images/brand/hero-day-thumb.webp',
@@ -30,6 +32,7 @@
     },
     {
       period: 'sunset',
+      srcMobile: '/images/brand/hero-sunset-mobile.webp',
       src: '/images/brand/hero-sunset.webp',
       src4k: '/images/brand/hero-sunset-4k.webp',
       thumb: '/images/brand/hero-sunset-thumb.webp',
@@ -42,6 +45,7 @@
     },
     {
       period: 'night',
+      srcMobile: '/images/brand/hero-night-mobile.webp',
       src: '/images/brand/hero-night.webp',
       src4k: '/images/brand/hero-night-4k.webp',
       thumb: '/images/brand/hero-night-thumb.webp',
@@ -70,5 +74,13 @@
     return index === -1 ? 1 : index;
   }
 
-  return { slides, resolveTimePeriod, resolveHomeSceneIndex };
+  function selectHomeSceneImage(scene, viewportWidth, devicePixelRatio) {
+    const width = Math.max(0, Number(viewportWidth) || 0);
+    const pixelRatio = Math.max(1, Number(devicePixelRatio) || 1);
+    if (width >= 2560 || (width >= 1200 && width * pixelRatio >= 2560)) return scene.src4k;
+    if (width < 768) return scene.srcMobile;
+    return scene.src;
+  }
+
+  return { slides, resolveTimePeriod, resolveHomeSceneIndex, selectHomeSceneImage };
 }));

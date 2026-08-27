@@ -7,6 +7,7 @@ const failures = [];
 const homePeriods = ['morning', 'day', 'sunset', 'night'];
 const expectedImages = [
   ...homePeriods.flatMap((period) => [
+    `hero-${period}-mobile.webp`,
     `hero-${period}.webp`,
     `hero-${period}-4k.webp`,
     `hero-${period}-thumb.webp`,
@@ -18,8 +19,8 @@ const expectedImages = [
   'category-library-glow-4k.webp',
   'tag-cloud-city.webp',
   'tag-cloud-city-4k.webp',
-  'archive-warm-library.webp',
-  'archive-warm-library-4k.webp',
+  'archive-magic-spiral-library.webp',
+  'archive-magic-spiral-library-4k.webp',
   'article-digital-library.webp',
   'article-digital-library-4k.webp',
   'about-sky-terminal.webp',
@@ -59,7 +60,7 @@ const backgroundSources = new Map([
   ['hero-night', ['hero-night.webp', 'hero-night-4k.webp', 3840, 2160]],
   ['inner-categories', ['category-library-glow.webp', 'category-library-glow-4k.webp', 8736, 4896]],
   ['inner-tags', ['tag-cloud-city.webp', 'tag-cloud-city-4k.webp', 4000, 1857]],
-  ['inner-archives', ['archive-warm-library.webp', 'archive-warm-library-4k.webp', 5156, 3402]],
+  ['inner-archives', ['archive-magic-spiral-library.webp', 'archive-magic-spiral-library-4k.webp', 6251, 3072]],
   ['inner-post', ['article-digital-library.webp', 'article-digital-library-4k.webp', 7200, 4050]],
   ['inner-about', ['about-sky-terminal.webp', 'about-sky-terminal-4k.webp', 5910, 2944]],
 ]);
@@ -82,6 +83,13 @@ for (const slot of ['hero-morning', 'hero-day', 'hero-sunset', 'hero-night', 'in
   const source = brandSources.find((candidate) => candidate.slot === slot);
   if ((source?.originalDimensions?.width || 0) < 3840) {
     failures.push(`${slot} 不是原生 4K 来源`);
+  }
+}
+
+for (const period of homePeriods) {
+  const source = brandSources.find((candidate) => candidate.slot === `hero-${period}`);
+  if (source?.fileMobile !== `hero-${period}-mobile.webp`) {
+    failures.push(`hero-${period} 缺少 1280 档来源记录`);
   }
 }
 
@@ -169,7 +177,7 @@ expect(animeCss, /html\[data-anime-page\]/, '自定义样式缺少内页场景�
 expect(animeCss, /--anime-page-image/, '自定义样式未使用内页背景变量');
 expect(animeCss, /html\.dark\[data-anime-page\]/, '内页场景缺少暗色模式');
 expect(animeCss, /--anime-page-position-mobile/, '内页场景缺少移动端裁切变量');
-expect(animeScript, /\.srcset\s*=.*1920w.*3840w/s, '首页脚本未设置标准与 4K 候选');
+expect(animeScript, /selectHomeSceneImage\(activeSlide, window\.innerWidth, window\.devicePixelRatio\)/, '首页脚本未按设备选择三级清晰度');
 expect(animeScript, /window\.innerWidth, window\.devicePixelRatio/, '内页脚本未按视口和像素密度选图');
 expect(animeCss, /rgba\(247, 250, 249, \.74\).*rgba\(247, 250, 249, \.91\)/s, '浅色内页遮罩透明度发生变化');
 expect(animeCss, /background: rgba\(250, 252, 251, \.9\)/, '浅色内容卡片透明度发生变化');

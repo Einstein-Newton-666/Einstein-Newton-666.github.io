@@ -14,7 +14,7 @@ test('为五类内页分配互不重复的固定双分辨率场景', () => {
     ['/categories/笔记/', 'categories', 'category-library-glow'],
     ['/tags/', 'tags', 'tag-cloud-city'],
     ['/tags/Hexo/', 'tags', 'tag-cloud-city'],
-    ['/archives/', 'archives', 'archive-warm-library'],
+    ['/archives/', 'archives', 'archive-magic-spiral-library'],
     ['/about/', 'about', 'about-sky-terminal'],
     ['/2026/08/15/welcome/', 'post', 'article-digital-library'],
   ];
@@ -41,6 +41,10 @@ test('为五类内页分配互不重复的固定双分辨率场景', () => {
   const categoryScene = resolvePageScene('/categories/', '', origin);
   assert.equal(categoryScene.desktopPosition, '54% center');
   assert.equal(categoryScene.mobilePosition, '57% center');
+
+  const archiveScene = resolvePageScene('/archives/', '', origin);
+  assert.equal(archiveScene.desktopPosition, '50% center');
+  assert.equal(archiveScene.mobilePosition, '60% center');
 });
 
 test('文章页忽略 Open Graph 封面并固定使用数字文库背景', () => {

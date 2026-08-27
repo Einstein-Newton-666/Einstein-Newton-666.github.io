@@ -1,42 +1,46 @@
 [
   {
     "slot": "hero-morning",
+    "fileMobile": "hero-morning-mobile.webp",
     "file": "hero-morning.webp",
     "file4k": "hero-morning-4k.webp",
     "thumb": "hero-morning-thumb.webp",
     "sourcePage": "https://wall.alphacoders.com/big.php?i=1401622",
     "author": "QuantumCurator",
     "originalDimensions": { "width": 4128, "height": 2304 },
-    "processing": "标准版与 4K 版均从原始高分辨率文件直接缩放并编码为 WebP"
+    "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
   },
   {
     "slot": "hero-day",
+    "fileMobile": "hero-day-mobile.webp",
     "file": "hero-day.webp",
     "file4k": "hero-day-4k.webp",
     "thumb": "hero-day-thumb.webp",
     "sourcePage": "https://wall.alphacoders.com/big.php?i=1371387",
     "author": "Maker_Production",
     "originalDimensions": { "width": 8736, "height": 4896 },
-    "processing": "标准版与 4K 版均从原始高分辨率文件直接缩放并编码为 WebP"
+    "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
   },
   {
     "slot": "hero-sunset",
+    "fileMobile": "hero-sunset-mobile.webp",
     "file": "hero-sunset.webp",
     "file4k": "hero-sunset-4k.webp",
     "thumb": "hero-sunset-thumb.webp",
     "sourcePage": "https://wall.alphacoders.com/big.php?i=1090380",
     "author": "とちちま",
     "originalDimensions": { "width": 3840, "height": 2400 },
-    "processing": "标准版与 4K 版均从原始高分辨率文件直接缩放并编码为 WebP"
+    "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
   },
   {
     "slot": "hero-night",
+    "fileMobile": "hero-night-mobile.webp",
     "file": "hero-night.webp",
     "file4k": "hero-night-4k.webp",
     "thumb": "hero-night-thumb.webp",
     "sourcePage": "https://wall.alphacoders.com/big.php?i=1378781",
     "originalDimensions": { "width": 3840, "height": 2160 },
-    "processing": "标准版与 4K 版均从原始高分辨率文件直接缩放并编码为 WebP"
+    "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
   },
   {
     "slot": "cover-welcome",
@@ -78,13 +82,14 @@
   },
   {
     "slot": "inner-archives",
-    "file": "archive-warm-library.webp",
-    "file4k": "archive-warm-library-4k.webp",
-    "author": "ibsukionsen",
-    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7051655",
-    "originalDimensions": { "width": 5156, "height": 3402 },
-    "processing": "标准版与 4K 版均从原始高分辨率文件直接缩放并编码为 WebP",
-    "sizeException": "archive-warm-library.webp 为 708030 bytes，archive-warm-library-4k.webp 为 1810024 bytes；质量 74 已是允许下限，继续压缩会损伤密集书脊线条与人物轮廓"
+    "file": "archive-magic-spiral-library.webp",
+    "file4k": "archive-magic-spiral-library-4k.webp",
+    "author": "qblade",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=5427243",
+    "originalSource": "https://www.pixiv.net/artworks/125270953",
+    "originalDimensions": { "width": 6251, "height": 3072 },
+    "aiAssisted": true,
+    "processing": "标准版与 4K 版均从 6251×3072 原图直接缩放、轻微锐化并编码为 WebP"
   },
   {
     "slot": "inner-post",

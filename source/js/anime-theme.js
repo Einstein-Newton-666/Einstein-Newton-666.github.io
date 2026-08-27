@@ -5,6 +5,15 @@
   const homeScenes = globalThis.AnimeHomeScenes;
   const slides = homeScenes?.slides || [];
   const resolveHomeSceneIndex = homeScenes?.resolveHomeSceneIndex;
+  const selectHomeSceneImage = homeScenes?.selectHomeSceneImage;
+
+  function cleanupHomeSceneResize() {
+    if (runtime.homeSceneResizeHandler) {
+      window.removeEventListener('resize', runtime.homeSceneResizeHandler);
+      runtime.homeSceneResizeHandler = undefined;
+    }
+    clearTimeout(runtime.homeSceneResizeTimer);
+  }
 
   function applyInnerPageScene() {
     const root = document.documentElement;
@@ -55,8 +64,13 @@
     const description = hero && hero.querySelector('.description');
     const images = background ? Array.from(background.querySelectorAll('img')) : [];
 
-    if (!slides.length || !resolveHomeSceneIndex) return;
-    if (!hero || !background || !description || !images.length || hero.dataset.animeThemeReady === 'true') return;
+    if (!hero || !background || !description || !images.length) {
+      cleanupHomeSceneResize();
+      return;
+    }
+    if (hero.dataset.animeThemeReady === 'true') return;
+    cleanupHomeSceneResize();
+    if (!slides.length || !resolveHomeSceneIndex || !selectHomeSceneImage) return;
     hero.dataset.animeThemeReady = 'true';
 
     description.innerHTML = `
@@ -89,15 +103,23 @@
     const scene = description.querySelector('.anime-hero-scene');
     const note = description.querySelector('.anime-hero-note');
     const buttons = Array.from(switcher.querySelectorAll('button'));
+    let activeSlide;
+
+    const updateHomeImage = () => {
+      if (!activeSlide) return;
+      const nextImage = selectHomeSceneImage(activeSlide, window.innerWidth, window.devicePixelRatio);
+      images.forEach((image) => {
+        if (image.getAttribute('src') !== nextImage) image.src = nextImage;
+      });
+    };
 
     function setSlide(index) {
       const slide = slides[index];
+      activeSlide = slide;
       images.forEach((image) => {
-        image.srcset = `${slide.src} 1920w, ${slide.src4k} 3840w`;
-        image.sizes = '100vw';
-        image.src = slide.src;
         image.alt = slide.alt;
       });
+      updateHomeImage();
       background.style.setProperty('--anime-hero-position-desktop', slide.desktopPosition);
       background.style.setProperty('--anime-hero-position-mobile', slide.mobilePosition);
       kicker.textContent = slide.kicker;
@@ -111,6 +133,11 @@
     }
 
     buttons.forEach((button, index) => button.addEventListener('click', () => setSlide(index)));
+    runtime.homeSceneResizeHandler = () => {
+      clearTimeout(runtime.homeSceneResizeTimer);
+      runtime.homeSceneResizeTimer = setTimeout(updateHomeImage, 150);
+    };
+    window.addEventListener('resize', runtime.homeSceneResizeHandler, { passive: true });
     scrollCue.addEventListener('click', () => {
       document.querySelector('.main-content-body')?.scrollIntoView({
         behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
