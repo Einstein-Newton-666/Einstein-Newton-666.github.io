@@ -12,6 +12,7 @@ test('为五类内页分配互不重复的固定双分辨率场景', () => {
   const cases = [
     ['/categories/', 'categories', 'category-library-glow'],
     ['/categories/笔记/', 'categories', 'category-library-glow'],
+    ['/logs/', 'categories', 'category-library-glow'],
     ['/tags/', 'tags', 'tag-cloud-city'],
     ['/tags/Hexo/', 'tags', 'tag-cloud-city'],
     ['/archives/', 'archives', 'archive-magic-spiral-library'],

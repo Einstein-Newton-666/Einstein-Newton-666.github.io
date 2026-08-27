@@ -115,6 +115,7 @@ if (imageHashes.length === expectedImages.length && new Set(imageHashes).size !=
 const home = await read('public/index.html');
 const post = await read('public/2026/08/15/welcome/index.html');
 const about = await read('public/about/index.html');
+const logs = await read('public/logs/index.html');
 const categories = await read('public/categories/index.html');
 const tags = await read('public/tags/index.html');
 const archives = await read('public/archives/index.html');
@@ -138,6 +139,7 @@ for (const [name, content] of [
   ['标签页', tags],
   ['归档页', archives],
   ['关于页', about],
+  ['日志页', logs],
   ['文章页', post],
 ]) {
   expect(content, /src="\/js\/anime-home-scenes\.js"/, `${name}未加载首页分时场景模块`);
@@ -161,6 +163,7 @@ expect(
   '首页暗色初始背景仍会抢先下载非当前场景',
 );
 expect(home, /href="\/about\/?"/, '导航栏缺少关于页');
+expect(home, /href="\/logs\/?"/, '导航栏缺少独立日志页');
 expect(home, /href="\/atom\.xml"/, '页面缺少 RSS 入口');
 expect(home, />归档</, '侧栏缺少中文“归档”链接');
 expect(home, />分类</, '侧栏缺少中文“分类”链接');
@@ -172,6 +175,8 @@ expect(post, /class="article-wordcount/, '文章页未显示字数');
 expect(post, /class="article-min2read/, '文章页未显示阅读时间');
 expect(post, /mjx-container[^>]+jax="SVG"/, '文章公式未生成 MathJax SVG');
 expect(about, /关于本站/, '关于页内容未生成');
+expect(logs, /你好，世界 —— 第一篇日志/, '日志页未展示“日志”分类文章');
+expect(logs, /<title>[^<]*日志[^<]*<\/title>/, '日志页标题未生成');
 expect(feed, /<feed[\s>]/, 'atom.xml 不是有效的 Atom 订阅文件');
 expect(animeCss, /html\[data-anime-page\]/, '自定义样式缺少内页场景选择器');
 expect(animeCss, /--anime-page-image/, '自定义样式未使用内页背景变量');

@@ -55,6 +55,9 @@ navbar:
     标签:
       path: /tags
       icon: fa-regular fa-tags
+    日志:
+      path: /logs
+      icon: fa-regular fa-book-open
     归档:
       path: /archives
       icon: fa-regular fa-archive
@@ -86,6 +89,9 @@ home:
       标签:
         path: /tags
         icon: fa-regular fa-tags
+      日志:
+        path: /logs
+        icon: fa-regular fa-book-open
   excerpt_length: 120
 
 articles:

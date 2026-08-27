@@ -13,6 +13,14 @@
       mobilePosition: '57% center'
     },
     {
+      pattern: /^\/logs(?:\/|$)/,
+      type: 'categories',
+      image: '/images/brand/category-library-glow.webp',
+      image4k: '/images/brand/category-library-glow-4k.webp',
+      desktopPosition: '54% center',
+      mobilePosition: '57% center'
+    },
+    {
       pattern: /^\/tags(?:\/|$)/,
       type: 'tags',
       image: '/images/brand/tag-cloud-city.webp',
