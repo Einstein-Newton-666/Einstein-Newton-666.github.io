@@ -15,7 +15,7 @@
       scene: '在晨光里，写下今天的第一行',
       note: '让新的问题与灵感，从清晰而安静的早晨开始。',
       desktopPosition: '50% center',
-      mobilePosition: '48% center',
+      mobilePosition: '72% center',
     },
     {
       period: 'day',

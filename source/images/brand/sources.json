@@ -5,9 +5,10 @@
     "file": "hero-morning.webp",
     "file4k": "hero-morning-4k.webp",
     "thumb": "hero-morning-thumb.webp",
-    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=5148523",
-    "originalSource": "https://i.pximg.net/img-original/img/2024/08/19/23/18/56/121651886_p0.jpg",
-    "originalDimensions": { "width": 3840, "height": 2160 },
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7094123",
+    "originalSource": "https://x.com/RyanRodero/status/2093024273753637029",
+    "author": "Ryan Christian",
+    "originalDimensions": { "width": 4096, "height": 2304 },
     "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
   },
   {

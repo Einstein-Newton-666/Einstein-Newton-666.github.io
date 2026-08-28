@@ -79,7 +79,7 @@ for (const dependency of ['hexo-generator-feed', 'hexo-wordcount']) {
 
 const brandSources = JSON.parse(await read('source/images/brand/sources.json'));
 const backgroundSources = new Map([
-  ['hero-morning', ['hero-morning.webp', 'hero-morning-4k.webp', 3840, 2160]],
+  ['hero-morning', ['hero-morning.webp', 'hero-morning-4k.webp', 4096, 2304]],
   ['hero-day', ['hero-day.webp', 'hero-day-4k.webp', 5000, 3000]],
   ['hero-sunset', ['hero-sunset.webp', 'hero-sunset-4k.webp', 3840, 2400]],
   ['hero-night', ['hero-night.webp', 'hero-night-4k.webp', 5000, 2720]],
