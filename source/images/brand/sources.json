@@ -9,7 +9,7 @@
     "originalSource": "https://x.com/RyanRodero/status/2093024273753637029",
     "author": "Ryan Christian",
     "originalDimensions": { "width": 4096, "height": 2304 },
-    "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、Lanczos 重采样并以 WebP q=95 高质量编码"
+    "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
   },
   {
     "slot": "hero-day",
@@ -20,7 +20,7 @@
     "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7010930",
     "originalSource": "https://i.pximg.net/img-original/img/2025/10/21/01/09/35/136518892_p0.png",
     "originalDimensions": { "width": 5000, "height": 3000 },
-    "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、Lanczos 重采样并以 WebP q=95 高质量编码"
+    "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
   },
   {
     "slot": "hero-sunset",
@@ -31,7 +31,7 @@
     "sourcePage": "https://wall.alphacoders.com/big.php?i=1090380",
     "author": "とちちま",
     "originalDimensions": { "width": 3840, "height": 2400 },
-    "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、Lanczos 重采样并以 WebP q=95 高质量编码"
+    "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
   },
   {
     "slot": "hero-night",
@@ -42,7 +42,7 @@
     "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7010667",
     "originalSource": "https://i.pximg.net/img-original/img/2026/08/01/00/00/01/147860666_p0.jpg",
     "originalDimensions": { "width": 5000, "height": 2720 },
-    "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、Lanczos 重采样并以 WebP q=95 高质量编码"
+    "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
   },
   {
     "slot": "cover-welcome",
@@ -71,7 +71,7 @@
     "author": "Tadokiari",
     "sourcePage": "https://wall.alphacoders.com/big.php?i=1317278",
     "originalDimensions": { "width": 8736, "height": 4896 },
-    "processing": "标准版与 4K 版均从原始 PNG 直接缩放、Lanczos 重采样并以 WebP q=95 高质量编码"
+    "processing": "标准版与 4K 版均从原始 PNG 直接缩放并编码为 WebP"
   },
   {
     "slot": "inner-logs",
@@ -80,7 +80,7 @@
     "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=4068034",
     "originalSource": "https://safebooru.org/images/3892/a649b622a6d9860f29525da95edf1247d3480ac9.jpg",
     "originalDimensions": { "width": 9045, "height": 5109 },
-    "processing": "标准版与 4K 版均从原始 JPEG 直接缩放、居中裁切为 16:9、Lanczos 重采样并以 WebP q=95 高质量编码"
+    "processing": "标准版与 4K 版均从原始 9045×5109 JPEG 直接缩放、居中裁切为 16:9、轻微锐化并编码为 WebP"
   },
   {
     "slot": "inner-tags",
@@ -88,8 +88,8 @@
     "file4k": "tag-cloud-city-4k.webp",
     "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7085343",
     "originalDimensions": { "width": 4000, "height": 1857 },
-    "processing": "标准版与 4K 版均从 4000 像素原图直接缩放、Lanczos 重采样并以 WebP q=95 高质量编码",
-    "sizeException": "tag-cloud-city-4k.webp 为 3858588 bytes；采用 q=95 保留建筑细节和原有绘画纹理"
+    "processing": "标准版与 4K 版均从 4000 像素原图直接编码为 WebP；为保留建筑和瀑布纹理采用质量 74",
+    "sizeException": "tag-cloud-city-4k.webp 为 1848076 bytes；继续压缩会损伤建筑细节和原有绘画纹理"
   },
   {
     "slot": "inner-archives",
@@ -100,7 +100,7 @@
     "originalSource": "https://www.pixiv.net/artworks/125270953",
     "originalDimensions": { "width": 6251, "height": 3072 },
     "aiAssisted": true,
-    "processing": "标准版与 4K 版均从 6251×3072 原图直接缩放、Lanczos 重采样并以 WebP q=95 高质量编码"
+    "processing": "标准版与 4K 版均从 6251×3072 原图直接缩放、轻微锐化并编码为 WebP"
   },
   {
     "slot": "inner-post",
@@ -108,7 +108,7 @@
     "file4k": "article-digital-library-4k.webp",
     "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=6716883",
     "originalDimensions": { "width": 7200, "height": 4050 },
-    "processing": "标准版与 4K 版均从 7200 像素原图直接缩放、Lanczos 重采样并以 WebP q=95 高质量编码"
+    "processing": "标准版与 4K 版均从 7200 像素原图直接缩放并编码为 WebP"
   },
   {
     "slot": "inner-about",
@@ -116,6 +116,6 @@
     "file4k": "about-sky-terminal-4k.webp",
     "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=6507788",
     "originalDimensions": { "width": 5910, "height": 2944 },
-    "processing": "标准版与 4K 版均从原始 PNG 直接缩放、Lanczos 重采样并以 WebP q=95 高质量编码"
+    "processing": "标准版与 4K 版均从原始 PNG 直接缩放并编码为 WebP"
   }
 ]
