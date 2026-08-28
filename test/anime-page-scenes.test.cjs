@@ -15,7 +15,7 @@ test('为五类内页分配互不重复的固定双分辨率场景', () => {
     ['/logs/', 'categories', 'log-gothic-library'],
     ['/tags/', 'tags', 'tag-cloud-city'],
     ['/tags/Hexo/', 'tags', 'tag-cloud-city'],
-    ['/archives/', 'archives', 'archive-magic-spiral-library'],
+    ['/archives/', 'archives', 'hero-night'],
     ['/about/', 'about', 'about-sky-terminal'],
     ['/2026/08/15/welcome/', 'post', 'article-digital-library'],
   ];
@@ -34,7 +34,6 @@ test('为五类内页分配互不重复的固定双分辨率场景', () => {
     '/images/brand/hero-morning.webp',
     '/images/brand/hero-day.webp',
     '/images/brand/hero-sunset.webp',
-    '/images/brand/hero-night.webp',
   ]) {
     assert.equal(new Set(topLevelScenes.values()).has(heroImage), false);
   }
