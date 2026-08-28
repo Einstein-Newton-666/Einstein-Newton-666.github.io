@@ -15,9 +15,9 @@
     {
       pattern: /^\/logs(?:\/|$)/,
       type: 'categories',
-      image: '/images/brand/category-library-glow.webp',
-      image4k: '/images/brand/category-library-glow-4k.webp',
-      desktopPosition: '54% center',
+      image: '/images/brand/log-glass-greenhouse.webp',
+      image4k: '/images/brand/log-glass-greenhouse-4k.webp',
+      desktopPosition: '50% center',
       mobilePosition: '57% center'
     },
     {

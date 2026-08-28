@@ -15,7 +15,7 @@
       scene: '在晨光里，写下今天的第一行',
       note: '让新的问题与灵感，从清晰而安静的早晨开始。',
       desktopPosition: '50% center',
-      mobilePosition: '50% center',
+      mobilePosition: '48% center',
     },
     {
       period: 'day',
@@ -28,7 +28,7 @@
       scene: '把思路铺开，让答案逐渐清晰',
       note: '在明亮的天空下，整理技术笔记与生活片段。',
       desktopPosition: '50% center',
-      mobilePosition: '54% center',
+      mobilePosition: '74% center',
     },
     {
       period: 'sunset',
@@ -54,7 +54,7 @@
       scene: '让安静的夜晚，收纳仍在延伸的思绪',
       note: '在星光与屏幕之间，为今天的记录留下结尾。',
       desktopPosition: '50% center',
-      mobilePosition: '55% center',
+      mobilePosition: '46% center',
     },
   ];
 

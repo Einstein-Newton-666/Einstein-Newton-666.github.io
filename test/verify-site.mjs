@@ -17,6 +17,8 @@ const expectedImages = [
   'book-spring.webp',
   'category-library-glow.webp',
   'category-library-glow-4k.webp',
+  'log-glass-greenhouse.webp',
+  'log-glass-greenhouse-4k.webp',
   'tag-cloud-city.webp',
   'tag-cloud-city-4k.webp',
   'archive-magic-spiral-library.webp',
@@ -54,11 +56,12 @@ for (const dependency of ['hexo-generator-feed', 'hexo-wordcount']) {
 
 const brandSources = JSON.parse(await read('source/images/brand/sources.json'));
 const backgroundSources = new Map([
-  ['hero-morning', ['hero-morning.webp', 'hero-morning-4k.webp', 4128, 2304]],
-  ['hero-day', ['hero-day.webp', 'hero-day-4k.webp', 8736, 4896]],
+  ['hero-morning', ['hero-morning.webp', 'hero-morning-4k.webp', 3840, 2160]],
+  ['hero-day', ['hero-day.webp', 'hero-day-4k.webp', 5000, 3000]],
   ['hero-sunset', ['hero-sunset.webp', 'hero-sunset-4k.webp', 3840, 2400]],
-  ['hero-night', ['hero-night.webp', 'hero-night-4k.webp', 3840, 2160]],
+  ['hero-night', ['hero-night.webp', 'hero-night-4k.webp', 5000, 2720]],
   ['inner-categories', ['category-library-glow.webp', 'category-library-glow-4k.webp', 8736, 4896]],
+  ['inner-logs', ['log-glass-greenhouse.webp', 'log-glass-greenhouse-4k.webp', 8564, 4960]],
   ['inner-tags', ['tag-cloud-city.webp', 'tag-cloud-city-4k.webp', 4000, 1857]],
   ['inner-archives', ['archive-magic-spiral-library.webp', 'archive-magic-spiral-library-4k.webp', 6251, 3072]],
   ['inner-post', ['article-digital-library.webp', 'article-digital-library-4k.webp', 7200, 4050]],

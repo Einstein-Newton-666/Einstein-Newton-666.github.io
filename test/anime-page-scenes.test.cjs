@@ -12,7 +12,7 @@ test('为五类内页分配互不重复的固定双分辨率场景', () => {
   const cases = [
     ['/categories/', 'categories', 'category-library-glow'],
     ['/categories/笔记/', 'categories', 'category-library-glow'],
-    ['/logs/', 'categories', 'category-library-glow'],
+    ['/logs/', 'categories', 'log-glass-greenhouse'],
     ['/tags/', 'tags', 'tag-cloud-city'],
     ['/tags/Hexo/', 'tags', 'tag-cloud-city'],
     ['/archives/', 'archives', 'archive-magic-spiral-library'],
@@ -64,6 +64,15 @@ test('文章页忽略 Open Graph 封面并固定使用数字文库背景', () =>
     assert.equal(scene.image, '/images/brand/article-digital-library.webp');
     assert.equal(scene.image4k, '/images/brand/article-digital-library-4k.webp');
   }
+});
+
+test('日志页使用独立的双分辨率玻璃温室背景', () => {
+  const logsScene = resolvePageScene('/logs/', '', origin);
+  const categoryScene = resolvePageScene('/categories/', '', origin);
+
+  assert.equal(logsScene.image, '/images/brand/log-glass-greenhouse.webp');
+  assert.equal(logsScene.image4k, '/images/brand/log-glass-greenhouse-4k.webp');
+  assert.notEqual(logsScene.image, categoryScene.image);
 });
 
 test('只为宽桌面或有效像素足够的桌面启用 4K', () => {

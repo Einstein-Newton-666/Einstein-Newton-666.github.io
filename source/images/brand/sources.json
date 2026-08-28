@@ -5,9 +5,9 @@
     "file": "hero-morning.webp",
     "file4k": "hero-morning-4k.webp",
     "thumb": "hero-morning-thumb.webp",
-    "sourcePage": "https://wall.alphacoders.com/big.php?i=1401622",
-    "author": "QuantumCurator",
-    "originalDimensions": { "width": 4128, "height": 2304 },
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=5148523",
+    "originalSource": "https://i.pximg.net/img-original/img/2024/08/19/23/18/56/121651886_p0.jpg",
+    "originalDimensions": { "width": 3840, "height": 2160 },
     "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
   },
   {
@@ -16,9 +16,9 @@
     "file": "hero-day.webp",
     "file4k": "hero-day-4k.webp",
     "thumb": "hero-day-thumb.webp",
-    "sourcePage": "https://wall.alphacoders.com/big.php?i=1371387",
-    "author": "Maker_Production",
-    "originalDimensions": { "width": 8736, "height": 4896 },
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7010930",
+    "originalSource": "https://i.pximg.net/img-original/img/2025/10/21/01/09/35/136518892_p0.png",
+    "originalDimensions": { "width": 5000, "height": 3000 },
     "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
   },
   {
@@ -38,8 +38,9 @@
     "file": "hero-night.webp",
     "file4k": "hero-night-4k.webp",
     "thumb": "hero-night-thumb.webp",
-    "sourcePage": "https://wall.alphacoders.com/big.php?i=1378781",
-    "originalDimensions": { "width": 3840, "height": 2160 },
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7010667",
+    "originalSource": "https://i.pximg.net/img-original/img/2026/08/01/00/00/01/147860666_p0.jpg",
+    "originalDimensions": { "width": 5000, "height": 2720 },
     "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
   },
   {
@@ -70,6 +71,15 @@
     "sourcePage": "https://wall.alphacoders.com/big.php?i=1317278",
     "originalDimensions": { "width": 8736, "height": 4896 },
     "processing": "标准版与 4K 版均从原始 PNG 直接缩放并编码为 WebP"
+  },
+  {
+    "slot": "inner-logs",
+    "file": "log-glass-greenhouse.webp",
+    "file4k": "log-glass-greenhouse-4k.webp",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=6863857",
+    "originalSource": "https://i.pximg.net/img-original/img/2025/06/02/19/09/23/131101430_p0.jpg",
+    "originalDimensions": { "width": 8564, "height": 4960 },
+    "processing": "标准版与 4K 版均从原始 8564×4960 JPEG 直接缩放、轻微锐化并编码为 WebP"
   },
   {
     "slot": "inner-tags",

@@ -1,5 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const brandSources = require('../source/images/brand/sources.json');
 const {
   slides,
   resolveTimePeriod,
@@ -65,4 +66,22 @@ test('首页按视口和像素密度选择清晰度档位', () => {
   assert.equal(selectHomeSceneImage(scene, 1920, 1), '/desktop.webp');
   assert.equal(selectHomeSceneImage(scene, 1440, 2), '/4k.webp');
   assert.equal(selectHomeSceneImage(scene, 2560, 1), '/4k.webp');
+});
+
+test('首页使用已确认的晨间 E、白天 I 与夜间 C 原生高分辨率来源', () => {
+  const expected = new Map([
+    ['hero-morning', [5148523, 3840, 2160]],
+    ['hero-day', [7010930, 5000, 3000]],
+    ['hero-night', [7010667, 5000, 2720]],
+  ]);
+
+  for (const [slot, [postId, width, height]] of expected) {
+    const source = brandSources.find((candidate) => candidate.slot === slot);
+    assert.equal(source.sourcePage, `https://safebooru.org/index.php?page=post&s=view&id=${postId}`);
+    assert.deepEqual(source.originalDimensions, { width, height });
+  }
+
+  assert.equal(slides.find(({ period }) => period === 'morning').mobilePosition, '48% center');
+  assert.equal(slides.find(({ period }) => period === 'day').mobilePosition, '74% center');
+  assert.equal(slides.find(({ period }) => period === 'night').mobilePosition, '46% center');
 });
