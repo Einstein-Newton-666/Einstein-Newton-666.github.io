@@ -187,10 +187,10 @@ expect(animeCss, /html\.dark\[data-anime-page\]/, '内页场景缺少暗色模�
 expect(animeCss, /--anime-page-position-mobile/, '内页场景缺少移动端裁切变量');
 expect(animeScript, /selectHomeSceneImage\(activeSlide, window\.innerWidth, window\.devicePixelRatio\)/, '首页脚本未按设备选择三级清晰度');
 expect(animeScript, /window\.innerWidth, window\.devicePixelRatio/, '内页脚本未按视口和像素密度选图');
-expect(animeCss, /rgba\(247, 250, 249, \.74\).*rgba\(247, 250, 249, \.91\)/s, '浅色内页遮罩透明度发生变化');
-expect(animeCss, /background: rgba\(250, 252, 251, \.9\)/, '浅色内容卡片透明度发生变化');
-expect(animeCss, /rgba\(13, 22, 28, \.72\).*rgba\(13, 22, 28, \.91\)/s, '暗色内页遮罩透明度发生变化');
-expect(animeCss, /background: rgba\(21, 31, 39, \.9\)/, '暗色内容卡片透明度发生变化');
+expect(animeCss, /rgba\(247, 250, 249, \.68\).*rgba\(247, 250, 249, \.86\)/s, '浅色内页遮罩未使用更透明的设置');
+expect(animeCss, /background: rgba\(250, 252, 251, \.86\)/, '浅色内容卡片未使用更透明的设置');
+expect(animeCss, /rgba\(13, 22, 28, \.66\).*rgba\(13, 22, 28, \.86\)/s, '暗色内页遮罩未使用更透明的设置');
+expect(animeCss, /background: rgba\(21, 31, 39, \.86\)/, '暗色内容卡片未使用更透明的设置');
 
 const neutralNavbarRule = animeCss.match(/html \.navbar-container\s*\{([^}]*)\}/)?.[1] || '';
 expect(neutralNavbarRule, /background:\s*rgba\(255, 255, 255, \.24\)/, '浅色导航栏未使用无色玻璃背景');
@@ -203,14 +203,10 @@ const darkNeutralNavbarRule = animeCss.match(/html\.dark \.navbar-container\s*\{
 expect(darkNeutralNavbarRule, /background:\s*rgba\(12, 18, 24, \.42\)/, '暗色导航栏未使用中性玻璃背景');
 
 const innerNavbarRule = animeCss.match(/html\[data-anime-page\] \.navbar-container\s*\{([^}]*)\}/)?.[1] || '';
-if (/\b(?:background|backdrop-filter|box-shadow|border(?:-bottom)?)\s*:/.test(innerNavbarRule)) {
-  failures.push('内页导航栏仍覆盖 Redefine 官方透明样式');
-}
+expect(innerNavbarRule, /background:\s*rgba\(255, 255, 255, \.18\)/, '浅色内页导航栏未使用更透明的玻璃背景');
 
 const darkInnerNavbarRule = animeCss.match(/html\.dark\[data-anime-page\] \.navbar-container\s*\{([^}]*)\}/)?.[1] || '';
-if (/\b(?:background|backdrop-filter|box-shadow|border(?:-bottom)?)\s*:/.test(darkInnerNavbarRule)) {
-  failures.push('暗色内页导航栏仍覆盖 Redefine 官方透明样式');
-}
+expect(darkInnerNavbarRule, /background:\s*rgba\(12, 18, 24, \.34\)/, '暗色内页导航栏未使用更透明的玻璃背景');
 
 for (const [name, content] of [
   ['首页', home],
