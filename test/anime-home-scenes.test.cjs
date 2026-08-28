@@ -53,18 +53,17 @@ test('四个场景使用互不重复的四档本地资源', () => {
   );
 });
 
-test('首页按视口和像素密度选择清晰度档位', () => {
+test('首页统一使用 4K 清晰度档位', () => {
   const scene = {
     srcMobile: '/mobile.webp',
     src: '/desktop.webp',
     src4k: '/4k.webp',
   };
 
-  assert.equal(selectHomeSceneImage(scene, 390, 3), '/mobile.webp');
-  assert.equal(selectHomeSceneImage(scene, 768, 1), '/desktop.webp');
-  assert.equal(selectHomeSceneImage(scene, 1440, 1), '/desktop.webp');
-  assert.equal(selectHomeSceneImage(scene, 1920, 1), '/desktop.webp');
-  assert.equal(selectHomeSceneImage(scene, 1440, 2), '/4k.webp');
+  assert.equal(selectHomeSceneImage(scene, 390, 3), '/4k.webp');
+  assert.equal(selectHomeSceneImage(scene, 768, 1), '/4k.webp');
+  assert.equal(selectHomeSceneImage(scene, 1440, 1), '/4k.webp');
+  assert.equal(selectHomeSceneImage(scene, 1920, 1), '/4k.webp');
   assert.equal(selectHomeSceneImage(scene, 2560, 1), '/4k.webp');
 });
 

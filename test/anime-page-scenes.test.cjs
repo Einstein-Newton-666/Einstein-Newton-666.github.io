@@ -75,19 +75,17 @@ test('日志页使用独立的双分辨率哥特图书馆背景', () => {
   assert.notEqual(logsScene.image, categoryScene.image);
 });
 
-test('只为宽桌面或有效像素足够的桌面启用 4K', () => {
+test('所有视口都启用 4K 内页背景', () => {
   assert.equal(shouldUseHighResolution(2560, 1), true);
-  assert.equal(shouldUseHighResolution(2559, 1), false);
-  assert.equal(shouldUseHighResolution(1280, 2), true);
-  assert.equal(shouldUseHighResolution(1200, 2), false);
-  assert.equal(shouldUseHighResolution(390, 3), false);
-  assert.equal(shouldUseHighResolution(undefined, undefined), false);
+  assert.equal(shouldUseHighResolution(1440, 1), true);
+  assert.equal(shouldUseHighResolution(390, 3), true);
+  assert.equal(shouldUseHighResolution(undefined, undefined), true);
 });
 
-test('按档位返回内页图片且在缺少 4K 时回退标准图', () => {
+test('内页统一使用 4K 图片并在缺少 4K 时回退标准图', () => {
   const scene = { image: '/standard.webp', image4k: '/high.webp' };
-  assert.equal(selectSceneImage(scene, 1440, 1), '/standard.webp');
-  assert.equal(selectSceneImage(scene, 1440, 2), '/high.webp');
+  assert.equal(selectSceneImage(scene, 390, 3), '/high.webp');
+  assert.equal(selectSceneImage(scene, 1440, 1), '/high.webp');
   assert.equal(selectSceneImage({ image: '/standard.webp' }, 3840, 1), '/standard.webp');
 });
 

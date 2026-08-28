@@ -16,7 +16,7 @@ test('首页从分时模块读取四个场景并按本地时间初始化', () =>
   assert.doesNotMatch(script, /miku-field|morning-mountains|river-sunrise/);
 });
 
-test('场景按钮使用缩略图且首页按设备选择正式图', () => {
+test('场景按钮使用缩略图且首页选择 4K 正式图', () => {
   assert.match(script, /<img src="\$\{slide\.thumb\}" alt="" loading="lazy" decoding="async">/);
   assert.match(script, /selectHomeSceneImage\(activeSlide, window\.innerWidth, window\.devicePixelRatio\)/);
   assert.match(script, /setTimeout\(updateHomeImage, 150\)/);

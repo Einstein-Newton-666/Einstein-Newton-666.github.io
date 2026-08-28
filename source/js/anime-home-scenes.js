@@ -75,11 +75,7 @@
   }
 
   function selectHomeSceneImage(scene, viewportWidth, devicePixelRatio) {
-    const width = Math.max(0, Number(viewportWidth) || 0);
-    const pixelRatio = Math.max(1, Number(devicePixelRatio) || 1);
-    if (width >= 2560 || (width >= 1200 && width * pixelRatio >= 2560)) return scene.src4k;
-    if (width < 768) return scene.srcMobile;
-    return scene.src;
+    return scene.src4k || scene.src || scene.srcMobile;
   }
 
   return { slides, resolveTimePeriod, resolveHomeSceneIndex, selectHomeSceneImage };
