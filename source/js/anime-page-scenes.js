@@ -68,8 +68,10 @@
     return null;
   }
 
-  function shouldUseHighResolution() {
-    return true;
+  function shouldUseHighResolution(viewportWidth, devicePixelRatio) {
+    const width = Math.max(0, Number(viewportWidth) || 0);
+    const pixelRatio = Math.max(1, Number(devicePixelRatio) || 1);
+    return width >= 2560 || (width >= 1200 && width * pixelRatio >= 2560);
   }
 
   function selectSceneImage(scene, viewportWidth, devicePixelRatio) {

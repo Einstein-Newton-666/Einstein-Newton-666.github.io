@@ -36,11 +36,11 @@
     if (!scene) return;
 
     root.dataset.animePage = scene.type;
-    root.style.setProperty('--anime-page-image', `url("${scene.image4k || scene.image}")`);
+    root.style.setProperty('--anime-page-image', `url("${scene.image}")`);
     root.style.setProperty('--anime-page-position-desktop', scene.desktopPosition);
     root.style.setProperty('--anime-page-position-mobile', scene.mobilePosition);
 
-    let currentImage = scene.image4k || scene.image;
+    let currentImage = scene.image;
     const updateImage = () => {
       const nextImage = selectImage(scene, window.innerWidth, window.devicePixelRatio);
       if (nextImage === currentImage) return;

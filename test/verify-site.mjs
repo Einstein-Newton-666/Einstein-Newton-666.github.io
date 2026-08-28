@@ -217,7 +217,7 @@ expect(animeCss, /html\[data-anime-page\]/, '自定义样式缺少内页场景�
 expect(animeCss, /--anime-page-image/, '自定义样式未使用内页背景变量');
 expect(animeCss, /html\.dark\[data-anime-page\]/, '内页场景缺少暗色模式');
 expect(animeCss, /--anime-page-position-mobile/, '内页场景缺少移动端裁切变量');
-expect(animeScript, /selectHomeSceneImage\(activeSlide, window\.innerWidth, window\.devicePixelRatio\)/, '首页脚本未选择 4K 正式图');
+expect(animeScript, /selectHomeSceneImage\(activeSlide, window\.innerWidth, window\.devicePixelRatio\)/, '首页脚本未按设备选择三级清晰度');
 expect(animeScript, /window\.innerWidth, window\.devicePixelRatio/, '内页脚本未按视口和像素密度选图');
 expect(animeCss, /rgba\(247, 250, 249, \.68\).*rgba\(247, 250, 249, \.86\)/s, '浅色内页遮罩未使用更透明的设置');
 expect(animeCss, /background: rgba\(250, 252, 251, \.86\)/, '浅色内容卡片未使用更透明的设置');
