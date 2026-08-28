@@ -12,6 +12,7 @@ info:
 # >>>>>>>>>> 图片与主色
 defaults:
   avatar: /images/brand/castorice-avatar-display.webp
+  favicon: /images/brand/favicon-avatar.png
 
 colors:
   primary: "#3b8588"

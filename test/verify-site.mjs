@@ -29,11 +29,13 @@ const expectedImages = [
   'about-sky-terminal-4k.webp',
   'castorice-avatar.webp',
   'castorice-avatar-display.webp',
+  'favicon-avatar.png',
 ];
 
 const imageSizeLimits = new Map([
   ...homePeriods.map((period) => [`hero-${period}-thumb.webp`, 30 * 1024]),
   ['castorice-avatar-display.webp', 50 * 1024],
+  ['favicon-avatar.png', 100 * 1024],
 ]);
 
 async function read(relativePath) {
@@ -155,6 +157,10 @@ expect(
   '首页分时场景模块未在主题脚本之前加载',
 );
 expect(home, /Einstein-Newton-666 的博客/, '站点标题尚未中文化');
+expect(home, /href="\/images\/brand\/favicon-avatar\.png"/, '首页未使用角色头像 favicon');
+if (/redefine-favicon\.svg/.test(home)) {
+  failures.push('首页仍引用 Redefine 默认 R 图标');
+}
 expect(home, /\/images\/brand\/castorice-avatar-display\.webp/, '首页未使用轻量头像展示版');
 if (/\/images\/brand\/castorice-avatar\.webp/.test(home)) {
   failures.push('首页仍引用 900x900 原头像');
