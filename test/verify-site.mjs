@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { inflateSync } from 'node:zlib';
 
 const root = process.cwd();
 const failures = [];
@@ -49,6 +50,26 @@ async function read(relativePath) {
 
 function expect(content, pattern, message) {
   if (!pattern.test(content)) failures.push(message);
+}
+
+function pngTopLeftAlpha(buffer) {
+  if (buffer.subarray(1, 4).toString('ascii') !== 'PNG') return null;
+
+  let offset = 8;
+  let rgba = false;
+  const imageData = [];
+  while (offset + 12 <= buffer.length) {
+    const length = buffer.readUInt32BE(offset);
+    const type = buffer.subarray(offset + 4, offset + 8).toString('ascii');
+    const data = buffer.subarray(offset + 8, offset + 8 + length);
+    if (type === 'IHDR') rgba = data[8] === 8 && data[9] === 6 && data[12] === 0;
+    if (type === 'IDAT') imageData.push(data);
+    offset += length + 12;
+  }
+
+  if (!rgba || !imageData.length) return null;
+  const firstScanline = inflateSync(Buffer.concat(imageData));
+  return firstScanline[4];
 }
 
 const packageJson = JSON.parse(await read('package.json'));
@@ -115,6 +136,11 @@ for (const image of expectedImages) {
 }
 if (imageHashes.length === expectedImages.length && new Set(imageHashes).size !== expectedImages.length) {
   failures.push('品牌图片存在重复内容');
+}
+
+const favicon = await readFile(path.join(root, 'source/images/brand/favicon-avatar.png'));
+if (pngTopLeftAlpha(favicon) !== 0) {
+  failures.push('站点头像 favicon 不是带透明四角的圆形 PNG');
 }
 
 const home = await read('public/index.html');
