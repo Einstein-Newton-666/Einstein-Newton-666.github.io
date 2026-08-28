@@ -74,12 +74,12 @@
   },
   {
     "slot": "inner-logs",
-    "file": "log-glass-greenhouse.webp",
-    "file4k": "log-glass-greenhouse-4k.webp",
-    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=6863857",
-    "originalSource": "https://i.pximg.net/img-original/img/2025/06/02/19/09/23/131101430_p0.jpg",
-    "originalDimensions": { "width": 8564, "height": 4960 },
-    "processing": "标准版与 4K 版均从原始 8564×4960 JPEG 直接缩放、轻微锐化并编码为 WebP"
+    "file": "log-gothic-library.webp",
+    "file4k": "log-gothic-library-4k.webp",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=4068034",
+    "originalSource": "https://safebooru.org/images/3892/a649b622a6d9860f29525da95edf1247d3480ac9.jpg",
+    "originalDimensions": { "width": 9045, "height": 5109 },
+    "processing": "标准版与 4K 版均从原始 9045×5109 JPEG 直接缩放、居中裁切为 16:9、轻微锐化并编码为 WebP"
   },
   {
     "slot": "inner-tags",

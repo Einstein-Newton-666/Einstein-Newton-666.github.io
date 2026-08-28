@@ -15,10 +15,10 @@
     {
       pattern: /^\/logs(?:\/|$)/,
       type: 'categories',
-      image: '/images/brand/log-glass-greenhouse.webp',
-      image4k: '/images/brand/log-glass-greenhouse-4k.webp',
+      image: '/images/brand/log-gothic-library.webp',
+      image4k: '/images/brand/log-gothic-library-4k.webp',
       desktopPosition: '50% center',
-      mobilePosition: '57% center'
+      mobilePosition: '52% center'
     },
     {
       pattern: /^\/tags(?:\/|$)/,
