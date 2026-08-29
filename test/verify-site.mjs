@@ -153,6 +153,7 @@ const archives = await read('public/archives/index.html');
 const feed = await read('public/atom.xml');
 const animeCss = await read('public/css/anime-theme.css');
 const animeScript = await read('public/js/anime-theme.js');
+const animeViewerScript = await read('public/js/anime-image-viewer.js');
 
 expect(home, /href="\/css\/anime-theme\.css"/, '首页未加载 anime-theme.css');
 expect(
@@ -176,6 +177,7 @@ for (const [name, content] of [
   expect(content, /src="\/js\/anime-home-scenes\.js"/, `${name}未加载首页分时场景模块`);
   expect(content, /src="\/js\/anime-page-scenes\.js"/, `${name}未加载页面场景映射脚本`);
   expect(content, /src="\/js\/anime-theme\.js"/, `${name}未加载 anime-theme.js`);
+  expect(content, /src="\/js\/anime-image-viewer\.js"/, `${name}未加载图片清晰度增强脚本`);
 }
 expect(
   home,
@@ -192,6 +194,8 @@ if (/\/images\/brand\/castorice-avatar\.webp/.test(home)) {
   failures.push('首页仍引用 900x900 原头像');
 }
 expect(home, /\/images\/brand\/hero-day\.webp/, '首页无脚本回退未使用白日场景');
+expect(animeViewerScript, /resolveViewerImageSource/, '图片清晰度增强脚本缺少原图解析逻辑');
+expect(animeViewerScript, /addEventListener\('click', promoteImageSource, true\)/, '图片清晰度增强脚本未在灯箱前捕获点击');
 expect(
   home,
   /<img src="\/images\/brand\/hero-day\.webp"[^>]+class="[^"]*hidden dark:block"/,

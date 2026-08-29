@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const { readFileSync } = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const { resolveViewerImageSource } = require('../source/js/anime-image-viewer.js');
 
 const script = readFileSync(
   path.join(__dirname, '../source/js/anime-theme.js'),
@@ -98,4 +99,40 @@ test('离开首页时清理首页 resize 监听器', () => {
 
   assert.equal(resizeListeners.size, 0);
   assert.equal(runtime.homeSceneResizeHandler, undefined);
+});
+
+test('灯箱优先使用文章图片的高分辨率源', () => {
+  const image = {
+    currentSrc: '/images/notes/diagram@2x.webp',
+    src: '/images/notes/diagram.webp',
+    getAttribute(name) {
+      return name === 'src' ? this.src : null;
+    },
+  };
+  assert.equal(resolveViewerImageSource(image), '/images/notes/diagram@2x.webp');
+});
+
+test('懒加载占位图打开灯箱时切换到 data-src 原图', () => {
+  const image = {
+    currentSrc: '/images/loading.svg',
+    src: '/images/loading.svg',
+    getAttribute(name) {
+      return {
+        src: '/images/loading.svg',
+        'data-src': '/images/notes/diagram.webp',
+      }[name] ?? null;
+    },
+  };
+  assert.equal(resolveViewerImageSource(image), '/images/notes/diagram.webp');
+});
+
+test('灯箱允许文章显式指定不参与正文排版的原图', () => {
+  const image = {
+    currentSrc: '/images/notes/diagram.webp',
+    src: '/images/notes/diagram.webp',
+    getAttribute(name) {
+      return name === 'data-viewer-src' ? '/images/notes/diagram-original.webp' : null;
+    },
+  };
+  assert.equal(resolveViewerImageSource(image), '/images/notes/diagram-original.webp');
 });

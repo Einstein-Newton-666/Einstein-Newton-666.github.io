@@ -124,6 +124,7 @@ inject:
     - '<script src="/js/anime-home-scenes.js"></script>'
     - '<script src="/js/anime-page-scenes.js"></script>'
     - '<script src="/js/anime-theme.js"></script>'
+    - '<script src="/js/anime-image-viewer.js"></script>'
 
 plugins:
   feed:
