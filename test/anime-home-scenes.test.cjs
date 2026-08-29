@@ -49,7 +49,7 @@ test('四个场景使用互不重复的四档本地资源', () => {
   }
   assert.equal(
     new Set(slides.flatMap(({ srcMobile, src, src4k, thumb }) => [srcMobile, src, src4k, thumb])).size,
-    14,
+    16,
   );
 });
 
@@ -68,11 +68,11 @@ test('首页按视口和像素密度选择清晰度档位', () => {
   assert.equal(selectHomeSceneImage(scene, 2560, 1), '/4k.webp');
 });
 
-test('首页使用已确认的晨间 P、白天 I 与夜间 C 原生高分辨率来源', () => {
+test('首页使用已确认的晨间 P、白天 I 与夜间 A 原生高分辨率来源', () => {
   const expected = new Map([
     ['hero-morning', [7094123, 4096, 2304]],
     ['hero-day', [7010930, 5000, 3000]],
-    ['hero-night', [7010667, 5000, 2720]],
+    ['hero-night', [7054689, 5333, 3000]],
   ]);
 
   for (const [slot, [postId, width, height]] of expected) {

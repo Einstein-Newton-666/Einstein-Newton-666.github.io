@@ -31,8 +31,8 @@
     {
       pattern: /^\/archives(?:\/|$)/,
       type: 'archives',
-      image: '/images/brand/hero-night.webp',
-      image4k: '/images/brand/hero-night-4k.webp',
+      image: '/images/brand/article-digital-library.webp',
+      image4k: '/images/brand/article-digital-library-4k.webp',
       desktopPosition: '50% center',
       mobilePosition: '60% center'
     },

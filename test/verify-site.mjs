@@ -82,11 +82,11 @@ const backgroundSources = new Map([
   ['hero-morning', ['hero-morning.webp', 'hero-morning-4k.webp', 4096, 2304]],
   ['hero-day', ['hero-day.webp', 'hero-day-4k.webp', 5000, 3000]],
   ['hero-sunset', ['hero-sunset.webp', 'hero-sunset-4k.webp', 3840, 2400]],
-  ['hero-night', ['hero-night.webp', 'hero-night-4k.webp', 5000, 2720]],
+  ['hero-night', ['hero-night.webp', 'hero-night-4k.webp', 5333, 3000]],
   ['inner-categories', ['category-library-glow.webp', 'category-library-glow-4k.webp', 8736, 4896]],
   ['inner-logs', ['log-gothic-library.webp', 'log-gothic-library-4k.webp', 9045, 5109]],
   ['inner-tags', ['tag-cloud-city.webp', 'tag-cloud-city-4k.webp', 4000, 1857]],
-  ['inner-archives', ['archive-magic-spiral-library.webp', 'archive-magic-spiral-library-4k.webp', 6251, 3072]],
+  ['inner-archives', ['article-digital-library.webp', 'article-digital-library-4k.webp', 7200, 4050]],
   ['inner-post', ['article-digital-library.webp', 'article-digital-library-4k.webp', 7200, 4050]],
   ['inner-about', ['about-sky-terminal.webp', 'about-sky-terminal-4k.webp', 5910, 2944]],
 ]);

@@ -39,9 +39,9 @@
     "file": "hero-night.webp",
     "file4k": "hero-night-4k.webp",
     "thumb": "hero-night-thumb.webp",
-    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7010667",
-    "originalSource": "https://i.pximg.net/img-original/img/2026/08/01/00/00/01/147860666_p0.jpg",
-    "originalDimensions": { "width": 5000, "height": 2720 },
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7054689",
+    "originalSource": "https://i.pximg.net/img-original/img/2023/05/03/01/56/28/107754378_p0.png",
+    "originalDimensions": { "width": 5333, "height": 3000 },
     "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
   },
   {
@@ -93,14 +93,11 @@
   },
   {
     "slot": "inner-archives",
-    "file": "archive-magic-spiral-library.webp",
-    "file4k": "archive-magic-spiral-library-4k.webp",
-    "author": "qblade",
-    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=5427243",
-    "originalSource": "https://www.pixiv.net/artworks/125270953",
-    "originalDimensions": { "width": 6251, "height": 3072 },
-    "aiAssisted": true,
-    "processing": "标准版与 4K 版均从 6251×3072 原图直接缩放、轻微锐化并编码为 WebP"
+    "file": "article-digital-library.webp",
+    "file4k": "article-digital-library-4k.webp",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=6716883",
+    "originalDimensions": { "width": 7200, "height": 4050 },
+    "processing": "标准版与 4K 版均从 7200 像素原图直接缩放并编码为 WebP"
   },
   {
     "slot": "inner-post",

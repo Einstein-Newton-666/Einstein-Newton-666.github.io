@@ -8,14 +8,14 @@ const {
 
 const origin = 'https://einstein-newton-666.github.io';
 
-test('为五类内页分配互不重复的固定双分辨率场景', () => {
+test('为内页分配固定双分辨率场景', () => {
   const cases = [
     ['/categories/', 'categories', 'category-library-glow'],
     ['/categories/笔记/', 'categories', 'category-library-glow'],
     ['/logs/', 'categories', 'log-gothic-library'],
     ['/tags/', 'tags', 'tag-cloud-city'],
     ['/tags/Hexo/', 'tags', 'tag-cloud-city'],
-    ['/archives/', 'archives', 'hero-night'],
+    ['/archives/', 'archives', 'article-digital-library'],
     ['/about/', 'about', 'about-sky-terminal'],
     ['/2026/08/15/welcome/', 'post', 'article-digital-library'],
   ];
@@ -29,7 +29,8 @@ test('为五类内页分配互不重复的固定双分辨率场景', () => {
     if (!topLevelScenes.has(type)) topLevelScenes.set(type, scene.image);
   }
 
-  assert.equal(new Set(topLevelScenes.values()).size, 5);
+  // 归档页与文章页共用数字文库背景，其余顶层页面各自独立。
+  assert.equal(new Set(topLevelScenes.values()).size, 4);
   for (const heroImage of [
     '/images/brand/hero-morning.webp',
     '/images/brand/hero-day.webp',
