@@ -218,6 +218,7 @@ expect(logs, /你好，世界 —— 第一篇日志/, '日志页未展示“日
 expect(logs, /<title>[^<]*日志[^<]*<\/title>/, '日志页标题未生成');
 expect(feed, /<feed[\s>]/, 'atom.xml 不是有效的 Atom 订阅文件');
 expect(animeCss, /html\[data-anime-page\]/, '自定义样式缺少内页场景选择器');
+expect(animeCss, /html\[data-anime-page\] \.page-container\s*\{[^}]*background: transparent/s, '内页容器仍遮挡背景场景');
 expect(animeCss, /--anime-page-image/, '自定义样式未使用内页背景变量');
 expect(animeCss, /html\.dark\[data-anime-page\]/, '内页场景缺少暗色模式');
 expect(animeCss, /--anime-page-position-mobile/, '内页场景缺少移动端裁切变量');
