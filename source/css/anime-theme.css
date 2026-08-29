@@ -35,7 +35,7 @@ html[data-anime-page] .page-container::before {
 
 html[data-anime-page] .page-container::after {
   z-index: -1;
-  background: linear-gradient(180deg, rgba(247, 250, 249, .56), rgba(247, 250, 249, .76) 72%);
+  background: linear-gradient(180deg, rgba(247, 250, 249, .42), rgba(247, 250, 249, .64) 72%);
 }
 
 html[data-anime-page] .main-content-container {
@@ -70,7 +70,7 @@ html[data-anime-page] .navbar-container .navbar-item a.active {
 html[data-anime-page] :is(.page-template-container, .archive-container, .article-content-container, .toc-content-container) {
   border: 1px solid rgba(255, 255, 255, .72);
   border-radius: 8px;
-  background: rgba(250, 252, 251, .68);
+  background: rgba(250, 252, 251, .48);
   box-shadow: 0 14px 36px rgba(22, 43, 51, .12);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -91,12 +91,12 @@ html.dark[data-anime-page] .page-container::before {
 }
 
 html.dark[data-anime-page] .page-container::after {
-  background: linear-gradient(180deg, rgba(13, 22, 28, .54), rgba(13, 22, 28, .74) 72%);
+  background: linear-gradient(180deg, rgba(13, 22, 28, .40), rgba(13, 22, 28, .62) 72%);
 }
 
 html.dark[data-anime-page] :is(.page-template-container, .archive-container, .article-content-container, .toc-content-container) {
   border-color: rgba(255, 255, 255, .1);
-  background: rgba(21, 31, 39, .68);
+  background: rgba(21, 31, 39, .48);
   box-shadow: 0 16px 40px rgba(0, 0, 0, .24);
 }
 

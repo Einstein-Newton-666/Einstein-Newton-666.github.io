@@ -223,11 +223,11 @@ expect(animeCss, /html\.dark\[data-anime-page\]/, '内页场景缺少暗色模�
 expect(animeCss, /--anime-page-position-mobile/, '内页场景缺少移动端裁切变量');
 expect(animeScript, /selectHomeSceneImage\(activeSlide, window\.innerWidth, window\.devicePixelRatio\)/, '首页脚本未按设备选择三级清晰度');
 expect(animeScript, /window\.innerWidth, window\.devicePixelRatio/, '内页脚本未按视口和像素密度选图');
-expect(animeCss, /rgba\(247, 250, 249, \.56\).*rgba\(247, 250, 249, \.76\)/s, '浅色内页遮罩未使用更透明的设置');
-expect(animeCss, /html\[data-anime-page\] :is\(\.page-template-container, \.archive-container, \.article-content-container, \.toc-content-container\)\s*\{[^}]*background: rgba\(250, 252, 251, \.68\)/s, '浅色内页内容卡片未使用更透明的设置');
+expect(animeCss, /rgba\(247, 250, 249, \.42\).*rgba\(247, 250, 249, \.64\)/s, '浅色内页遮罩未使用更透明的设置');
+expect(animeCss, /html\[data-anime-page\] :is\(\.page-template-container, \.archive-container, \.article-content-container, \.toc-content-container\)\s*\{[^}]*background: rgba\(250, 252, 251, \.48\)/s, '浅色内页内容卡片未使用更透明的设置');
 expect(animeCss, /\.home-content-container \.home-article-list \.home-article-item\s*\{[^}]*background: rgba\(250, 252, 251, \.80\)/s, '首页浅色文章卡片未使用更透明的设置');
-expect(animeCss, /rgba\(13, 22, 28, \.54\).*rgba\(13, 22, 28, \.74\)/s, '暗色内页遮罩未使用更透明的设置');
-expect(animeCss, /html\.dark\[data-anime-page\] :is\(\.page-template-container, \.archive-container, \.article-content-container, \.toc-content-container\)\s*\{[^}]*background: rgba\(21, 31, 39, \.68\)/s, '暗色内页内容卡片未使用更透明的设置');
+expect(animeCss, /rgba\(13, 22, 28, \.40\).*rgba\(13, 22, 28, \.62\)/s, '暗色内页遮罩未使用更透明的设置');
+expect(animeCss, /html\.dark\[data-anime-page\] :is\(\.page-template-container, \.archive-container, \.article-content-container, \.toc-content-container\)\s*\{[^}]*background: rgba\(21, 31, 39, \.48\)/s, '暗色内页内容卡片未使用更透明的设置');
 expect(animeCss, /html\.dark \.home-content-container \.home-article-list \.home-article-item\s*\{[^}]*background: rgba\(21, 31, 39, \.80\)/s, '首页暗色文章卡片未使用更透明的设置');
 
 const neutralNavbarRule = animeCss.match(/html \.navbar-container\s*\{([^}]*)\}/)?.[1] || '';
