@@ -70,7 +70,7 @@ html[data-anime-page] .navbar-container .navbar-item a.active {
 html[data-anime-page] :is(.page-template-container, .archive-container, .article-content-container, .toc-content-container) {
   border: 1px solid rgba(255, 255, 255, .72);
   border-radius: 8px;
-  background: rgba(250, 252, 251, .86);
+  background: rgba(250, 252, 251, .80);
   box-shadow: 0 14px 36px rgba(22, 43, 51, .12);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -96,8 +96,16 @@ html.dark[data-anime-page] .page-container::after {
 
 html.dark[data-anime-page] :is(.page-template-container, .archive-container, .article-content-container, .toc-content-container) {
   border-color: rgba(255, 255, 255, .1);
-  background: rgba(21, 31, 39, .86);
+  background: rgba(21, 31, 39, .80);
   box-shadow: 0 16px 40px rgba(0, 0, 0, .24);
+}
+
+.home-content-container .home-article-list .home-article-item {
+  background: rgba(250, 252, 251, .80);
+}
+
+html.dark .home-content-container .home-article-list .home-article-item {
+  background: rgba(21, 31, 39, .80);
 }
 
 .home-banner-background {

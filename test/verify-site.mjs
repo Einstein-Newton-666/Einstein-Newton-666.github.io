@@ -224,9 +224,11 @@ expect(animeCss, /--anime-page-position-mobile/, '内页场景缺少移动端裁
 expect(animeScript, /selectHomeSceneImage\(activeSlide, window\.innerWidth, window\.devicePixelRatio\)/, '首页脚本未按设备选择三级清晰度');
 expect(animeScript, /window\.innerWidth, window\.devicePixelRatio/, '内页脚本未按视口和像素密度选图');
 expect(animeCss, /rgba\(247, 250, 249, \.68\).*rgba\(247, 250, 249, \.86\)/s, '浅色内页遮罩未使用更透明的设置');
-expect(animeCss, /background: rgba\(250, 252, 251, \.86\)/, '浅色内容卡片未使用更透明的设置');
+expect(animeCss, /background: rgba\(250, 252, 251, \.80\)/, '浅色内容卡片未使用更透明的设置');
+expect(animeCss, /\.home-content-container \.home-article-list \.home-article-item\s*\{[^}]*background: rgba\(250, 252, 251, \.80\)/s, '首页浅色文章卡片未使用更透明的设置');
 expect(animeCss, /rgba\(13, 22, 28, \.66\).*rgba\(13, 22, 28, \.86\)/s, '暗色内页遮罩未使用更透明的设置');
-expect(animeCss, /background: rgba\(21, 31, 39, \.86\)/, '暗色内容卡片未使用更透明的设置');
+expect(animeCss, /background: rgba\(21, 31, 39, \.80\)/, '暗色内容卡片未使用更透明的设置');
+expect(animeCss, /html\.dark \.home-content-container \.home-article-list \.home-article-item\s*\{[^}]*background: rgba\(21, 31, 39, \.80\)/s, '首页暗色文章卡片未使用更透明的设置');
 
 const neutralNavbarRule = animeCss.match(/html \.navbar-container\s*\{([^}]*)\}/)?.[1] || '';
 expect(neutralNavbarRule, /background:\s*rgba\(255, 255, 255, \.24\)/, '浅色导航栏未使用无色玻璃背景');
