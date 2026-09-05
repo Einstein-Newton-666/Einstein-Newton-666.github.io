@@ -16,7 +16,6 @@ defaults:
 
 colors:
   primary: "#3b8588"
-  secondary: "#d27586"
   default_mode: light
 
 global:
