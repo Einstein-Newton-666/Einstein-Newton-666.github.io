@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { access, readFile } from 'node:fs/promises';
+import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { inflateSync } from 'node:zlib';
 
@@ -22,8 +22,6 @@ const expectedImages = [
   'log-gothic-library-4k.webp',
   'tag-cloud-city.webp',
   'tag-cloud-city-4k.webp',
-  'archive-magic-spiral-library.webp',
-  'archive-magic-spiral-library-4k.webp',
   'article-digital-library.webp',
   'article-digital-library-4k.webp',
   'about-sky-terminal.webp',
@@ -38,6 +36,24 @@ const imageSizeLimits = new Map([
   ['castorice-avatar-display.webp', 50 * 1024],
   ['favicon-avatar.png', 100 * 1024],
 ]);
+
+const brandImageDirectory = path.join(root, 'source/images/brand');
+const brandAssetEntries = await readdir(brandImageDirectory, { recursive: true, withFileTypes: true });
+const relativeBrandPath = (entry) => path
+  .relative(brandImageDirectory, path.join(entry.parentPath, entry.name))
+  .split(path.sep)
+  .join('/');
+for (const entry of brandAssetEntries) {
+  if (entry.isSymbolicLink()) failures.push(`品牌资源不得使用符号链接：source/images/brand/${relativeBrandPath(entry)}`);
+}
+const brandAssetNames = brandAssetEntries
+  .filter((entry) => entry.isFile())
+  .map(relativeBrandPath)
+  .filter((name) => name !== 'sources.json')
+  .sort();
+for (const asset of brandAssetNames) {
+  if (!expectedImages.includes(asset)) failures.push(`未登记品牌资源：source/images/brand/${asset}`);
+}
 
 async function read(relativePath) {
   try {
