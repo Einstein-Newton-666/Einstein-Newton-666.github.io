@@ -120,5 +120,13 @@
     "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=6507788",
     "originalDimensions": { "width": 5910, "height": 2944 },
     "processing": "标准版与 4K 版均从原始 PNG 直接缩放并编码为 WebP"
+  },
+  {
+    "slot": "inner-notfound",
+    "file": "notfound-quiet-window.webp",
+    "file4k": "notfound-quiet-window-4k.webp",
+    "derivedFrom": "本地图库 local-originals/134501086_p0.jpg（无网络来源页）",
+    "originalDimensions": { "width": 6104, "height": 3508 },
+    "processing": "居中裁为 16:9 后分别缩放为 1920×1080 与 3840×2160，轻微锐化并编码为 WebP（质量 78 / 76）"
   }
 ]

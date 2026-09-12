@@ -43,6 +43,15 @@
       image4k: '/images/brand/about-sky-terminal-4k.webp',
       desktopPosition: '50% center',
       mobilePosition: '44% center'
+    },
+    {
+      // 404 页先前没有场景，是唯一一张纯白页面，和其余内页完全不像同一个站。
+      pattern: /^\/404\.html$/,
+      type: 'notfound',
+      image: '/images/brand/notfound-quiet-window.webp',
+      image4k: '/images/brand/notfound-quiet-window-4k.webp',
+      desktopPosition: '50% center',
+      mobilePosition: '50% center'
     }
   ];
 

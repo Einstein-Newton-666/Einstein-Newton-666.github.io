@@ -26,6 +26,8 @@ const expectedImages = [
   'article-digital-library-4k.webp',
   'about-sky-terminal.webp',
   'about-sky-terminal-4k.webp',
+  'notfound-quiet-window.webp',
+  'notfound-quiet-window-4k.webp',
   'castorice-avatar.webp',
   'castorice-avatar-display.webp',
   'favicon-avatar.png',
@@ -123,6 +125,7 @@ const backgroundSources = new Map([
   ['inner-archives', ['article-digital-library.webp', 'article-digital-library-4k.webp', 7200, 4050]],
   ['inner-post', ['article-digital-library.webp', 'article-digital-library-4k.webp', 7200, 4050]],
   ['inner-about', ['about-sky-terminal.webp', 'about-sky-terminal-4k.webp', 5910, 2944]],
+  ['inner-notfound', ['notfound-quiet-window.webp', 'notfound-quiet-window-4k.webp', 6104, 3508]],
 ]);
 
 for (const [slot, [file, file4k, width, height]] of backgroundSources) {
@@ -132,14 +135,14 @@ for (const [slot, [file, file4k, width, height]] of backgroundSources) {
     || source?.file4k !== file4k
     || source?.originalDimensions?.width !== width
     || source?.originalDimensions?.height !== height
-    || !source?.sourcePage
+    || !(source?.sourcePage || source?.derivedFrom) // 来自本地图库的图没有网络来源页，用 derivedFrom 记录
     || !source?.processing
   ) {
     failures.push(`${slot} 缺少完整双分辨率来源记录`);
   }
 }
 
-for (const slot of ['hero-morning', 'hero-day', 'hero-sunset', 'hero-night', 'inner-archives']) {
+for (const slot of ['hero-morning', 'hero-day', 'hero-sunset', 'hero-night', 'inner-archives', 'inner-notfound']) {
   const source = brandSources.find((candidate) => candidate.slot === slot);
   if ((source?.originalDimensions?.width || 0) < 3840) {
     failures.push(`${slot} 不是原生 4K 来源`);

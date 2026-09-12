@@ -66,6 +66,69 @@ html[data-anime-page] .navbar-container .navbar-item a.active {
   color: var(--anime-teal);
 }
 
+/* 主题的页面版导航最大宽度是 1000px，而宋体品牌（约 317px）加菜单（约 682px）正好占满，
+   两者贴死成“…的博客首页”（实测间距 1px）。压小页面版品牌字号，让中间留出余量。 */
+.navbar-container .navbar-content:not(.has-home-banner) .logo-title,
+.navbar-container .navbar-content:not(.has-home-banner) .logo-title h1 {
+  font-size: 1.4rem;
+}
+
+/* 769-1100px 区间导航栏会被压垮：主题用 float 排的菜单被挤成逐字换行（“分/类”），品牌也断成
+   两行，总高超过固定的 70px，文字就露到导航栏外面（实测 780-820px 溢出 7px）。
+   三层处理：① 品牌与菜单都不许被压缩、不许换行；② 空间不足先整体缩小；
+   ③ 再不够就提前切汉堡菜单（主题自带的切换点是 768px，太晚）。 */
+.navbar-container .navbar-content .left,
+.navbar-container .navbar-content .right {
+  flex: 0 0 auto;
+}
+
+.navbar-container .navbar-content .logo-title {
+  white-space: nowrap;
+}
+
+/* 放在内页品牌规则之后：特异性相同（各 4 个类），靠源码顺序生效，两条都覆盖到。 */
+@media (max-width: 1100px) {
+  .navbar-container .navbar-content .left .logo-title,
+  .navbar-container .navbar-content .left .logo-title h1 {
+    font-size: 1.15rem;
+  }
+
+  .navbar-container .navbar-content .right .desktop .navbar-list .navbar-item {
+    font-size: .875rem;
+  }
+
+  .navbar-container .navbar-content .right .desktop .navbar-list .navbar-item.search {
+    margin-left: 14px;
+  }
+}
+
+/* 选择器带 html 前缀：本文件先于 style.css 加载，同特异性会被主题的基础规则覆盖。 */
+@media (max-width: 900px) {
+  html .navbar-container .right .desktop .navbar-list {
+    display: none;
+  }
+
+  html .navbar-container .right .mobile .icon-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+/* 首页横幅上的导航文字保持主题默认的深色（品牌 --first-text-color、菜单 --default-text-color），
+   与内页一致，也和改动前一样。实测这层 24% 白玻璃压在插画上时深色字约 1.6-2.6:1、白字约 4.2-6.9:1：
+   白字更清楚，但会改变原有的样子，所以按作者决定保留深色。
+   若之后仍想提升首页可读性，正确方向是"滚过 hero 后用内页那套浅底深字"（那时白字会掉到 1.4:1），
+   而不是只调整一种文字颜色。 */
+
+/* 首页没有 data-anime-page，主题也不给当前项上色，所以这里补一条与内页
+   （html[data-anime-page] .navbar-container .navbar-item a.active）相同的青色，
+   让"当前所在页"在首页同样是绿色。其余文字仍走上面的主题默认深色。 */
+html .navbar-container .navbar-content.has-home-banner .navbar-item a.active,
+html .navbar-container .navbar-content.has-home-banner .navbar-item a.active i {
+  color: var(--anime-teal);
+}
+
 html[data-anime-page] :is(.page-template-container, .archive-container, .article-content-container, .toc-content-container) {
   border: 1px solid rgba(255, 255, 255, .72);
   border-radius: 8px;
@@ -469,6 +532,23 @@ html.dark .home-content-container .home-article-list .home-article-item .home-ar
 @media (max-width: 420px) {
   .anime-hero-copy h1 {
     font-size: 1.95rem;
+  }
+}
+
+/* 主题在 ≤640px 时用 display:none 硬隐藏了首页侧栏，_config.redefine.yml 里的
+   show_on_mobile 实际不起作用，手机上首页只剩横幅加一张卡片、没有头像/公告/统计/快捷入口。
+   这里恢复侧栏，并把内容区改成纵向排列，避免 240px 侧栏和正文挤在同一行。
+   注意本文件在主题 style.css 之前加载，同特异性的规则会被主题覆盖，所以这里用 html 前缀提高权重。 */
+@media (max-width: 640px) {
+  html .home-sidebar-container {
+    display: block;
+    width: 100%;
+    margin: 0 0 22px;
+  }
+
+  html .main-content-body {
+    flex-direction: column;
+    align-items: center;
   }
 }
 
