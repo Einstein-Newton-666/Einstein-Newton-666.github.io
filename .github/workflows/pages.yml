@@ -30,10 +30,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           # Node 20 已于 2026-04 结束维护；本地开发用的是 24，这里是当前 Active LTS。
           node-version: 24
