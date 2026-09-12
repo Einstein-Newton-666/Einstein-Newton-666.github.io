@@ -5,6 +5,14 @@ name: Deploy Hexo site to GitHub Pages
 on:
   push:
     branches: [main]
+    # 只改仓库文档/依赖机器人配置时不必重新发布站点。
+    # 注意不要写成 '**.md'：source/_posts 与 source/**/*.md 都是站点内容，
+    # 只改文章时必须照常触发发布。
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+      - '.github/dependabot.yml'
+      - '.gitignore'
   workflow_dispatch:
 
 permissions:

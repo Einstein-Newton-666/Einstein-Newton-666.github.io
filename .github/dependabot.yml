@@ -18,5 +18,8 @@ updates:
   open-pull-requests-limit: 5
   groups:
     # 之前只配了 npm，Actions 永远不会被自动升级，这里补上。
-    github-actions:
+    # 只合并 minor/patch：Actions 的大版本通常伴随 runner/Node 运行时变更，
+    # 需要逐个合并、逐个确认真实部署，不放进同一个 PR。
+    github-actions-minor-patch:
       patterns: ["*"]
+      update-types: ["minor", "patch"]
