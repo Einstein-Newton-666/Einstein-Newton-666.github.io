@@ -118,6 +118,11 @@ footer:
 inject:
   enable: true
   head:
+    # 首页横幅的分时预加载不在这里：inject.head 是全局注入，而内页没有横幅，
+    # 那样每个内页都会白下载一张 213–925KB 的横幅图，还会和页面真正要用的背景图抢带宽。
+    # 改由 scripts/hero-preload.js 用 after_render:html 过滤器只注入到含首页横幅的页面。
+    # 192×192 图标（已量化到 256 色，16KB）由 defaults.favicon 提供给 rel=icon /
+    # apple-touch-icon / shortcut icon 三个标签，主题只支持单一图标文件，无需额外补 32×32。
     - '<link rel="stylesheet" href="/css/anime-theme.css">'
   footer:
     - '<script src="/js/anime-home-scenes.js"></script>'

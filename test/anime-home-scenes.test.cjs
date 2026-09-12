@@ -64,8 +64,15 @@ test('首页按视口和像素密度选择清晰度档位', () => {
   assert.equal(selectHomeSceneImage(scene, 768, 1), '/desktop.webp');
   assert.equal(selectHomeSceneImage(scene, 1440, 1), '/desktop.webp');
   assert.equal(selectHomeSceneImage(scene, 1920, 1), '/desktop.webp');
+  // 设备像素正好 2560 时 2560 档已经够用，不应跳到 4K（1440p@100%、1280@2x、2048@125%）。
+  assert.equal(selectHomeSceneImage(scene, 2560, 1), '/desktop.webp');
+  assert.equal(selectHomeSceneImage(scene, 1280, 2), '/desktop.webp');
+  assert.equal(selectHomeSceneImage(scene, 2048, 1.25), '/desktop.webp');
+  // 超过 2560 才需要 4K 档。
+  assert.equal(selectHomeSceneImage(scene, 1366, 2), '/4k.webp');
   assert.equal(selectHomeSceneImage(scene, 1440, 2), '/4k.webp');
-  assert.equal(selectHomeSceneImage(scene, 2560, 1), '/4k.webp');
+  assert.equal(selectHomeSceneImage(scene, 1920, 2), '/4k.webp');
+  assert.equal(selectHomeSceneImage(scene, 2560, 1.25), '/4k.webp');
 });
 
 test('首页使用已确认的晨间 P、白天 I 与夜间 A 原生高分辨率来源', () => {

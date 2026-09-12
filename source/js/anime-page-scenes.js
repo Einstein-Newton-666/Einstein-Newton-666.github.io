@@ -68,6 +68,11 @@
     return null;
   }
 
+  // 内页只有“标准档(1920 或 2560) / 4K(3840)”两档，跨度很大：标准档放到 2560 物理像素时
+  // 最多放大 1.33 倍，仍在可接受范围，所以沿用 >= 2560 才换 4K，避免为了 1920→3840 的 2 倍
+  // 过采样多下几百 KB（例如 tag-cloud-city 444KB → 1805KB）。
+  // 首页档位是 1280/2560/3840、标准档正好 2560，那边用的是另一套边界（见 anime-home-scenes.js），
+  // 两者的档位结构不同，不要合并成同一个判断。
   function shouldUseHighResolution(viewportWidth, devicePixelRatio) {
     const width = Math.max(0, Number(viewportWidth) || 0);
     const pixelRatio = Math.max(1, Number(devicePixelRatio) || 1);

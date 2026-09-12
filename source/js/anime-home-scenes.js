@@ -74,12 +74,15 @@
     return index === -1 ? 1 : index;
   }
 
+  // 与首页 <head> 里预加载脚本的 imagesrcset（2560w / 3840w，sizes=100vw）保持同一套规则：
+  // 窄屏用移动档，其余取“刚好覆盖设备像素”的那一档，避免预加载与正式请求选到不同文件而重复下载。
+  // 首页标准档正好是 2560 宽，所以边界取 > 2560；内页标准档是 1920（见 anime-page-scenes.js），
+  // 档位结构不同、边界也不同，不要合并。
   function selectHomeSceneImage(scene, viewportWidth, devicePixelRatio) {
     const width = Math.max(0, Number(viewportWidth) || 0);
     const pixelRatio = Math.max(1, Number(devicePixelRatio) || 1);
-    if (width >= 2560 || (width >= 1200 && width * pixelRatio >= 2560)) return scene.src4k;
     if (width < 768) return scene.srcMobile;
-    return scene.src;
+    return width * pixelRatio <= 2560 ? scene.src : scene.src4k;
   }
 
   return { slides, resolveTimePeriod, resolveHomeSceneIndex, selectHomeSceneImage };

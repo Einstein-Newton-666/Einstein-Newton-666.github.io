@@ -65,6 +65,12 @@
     "sourcePage": "https://wall.alphacoders.com/big.php?i=1395160"
   },
   {
+    "slot": "favicon",
+    "file": "favicon-avatar.png",
+    "derivedFrom": "castorice-avatar.webp",
+    "processing": "由角色头像居中裁成圆形并缩放为 192×192；再量化到 256 色调色板 PNG（95KB → 16KB）。主题的 rel=icon、apple-touch-icon、shortcut icon 三个标签共用这一个文件，所以体积直接计入每次页面访问。"
+  },
+  {
     "slot": "inner-categories",
     "file": "category-library-glow.webp",
     "file4k": "category-library-glow-4k.webp",
