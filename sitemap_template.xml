@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 自定义模板（_config.yml 的 sitemap.template）：首页/标签/分类条目不写 <lastmod>，
+     避免用构建时刻冒充修改时间；文章与页面条目保留各自 front-matter 的 updated/date。
+     详见 _config.yml 的 sitemap 段说明。 -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  {% for post in posts %}
+  <url>
+    <loc>{{ post.permalink | uriencode }}</loc>
+    {% if post.updated %}
+    <lastmod>{{ post.updated | formatDate }}</lastmod>
+    {% elif post.date %}
+    <lastmod>{{ post.date | formatDate }}</lastmod>
+    {% endif %}
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  {% endfor %}
+
+  <url>
+    <loc>{{ config.url | uriencode }}</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  {% for tag in tags %}
+  <url>
+    <loc>{{ tag.permalink | uriencode }}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  {% endfor %}
+
+  {% for cat in categories %}
+  <url>
+    <loc>{{ cat.permalink | uriencode }}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  {% endfor %}
+</urlset>

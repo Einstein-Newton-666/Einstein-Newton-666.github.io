@@ -34,8 +34,13 @@ const expectedImages = [
 const imageSizeLimits = new Map([
   ...homePeriods.map((period) => [`hero-${period}-thumb.webp`, 30 * 1024]),
   ['castorice-avatar-display.webp', 50 * 1024],
-  ['favicon-avatar.png', 100 * 1024],
+  // 站点图标是 192×192 圆形 PNG：量化到 256 色后约 16KB，这里卡在 24KB 防止退回未优化的写法。
+  ['favicon-avatar.png', 24 * 1024],
 ]);
+
+// 4K 档单独设 1MB 上限。sources.json 里用 sizeException 显式记录“体积超标但为保住画质有意保留”
+// 的资源（当前是 tag-cloud-city-4k.webp，继续压缩会损伤建筑与瀑布纹理），其余 4K 不应超标。
+const largeImageLimit = 1024 * 1024;
 
 const brandImageDirectory = path.join(root, 'source/images/brand');
 const brandAssetEntries = await readdir(brandImageDirectory, { recursive: true, withFileTypes: true });
@@ -68,24 +73,37 @@ function expect(content, pattern, message) {
   if (!pattern.test(content)) failures.push(message);
 }
 
+// 读取 PNG 左上角像素的 alpha，用于确认站点图标是带透明四角的圆形。
+// 支持 8 位 RGBA（色彩类型 6）与带 tRNS 的调色板 PNG（色彩类型 3，量化后的图标用它）。
 function pngTopLeftAlpha(buffer) {
   if (buffer.subarray(1, 4).toString('ascii') !== 'PNG') return null;
 
   let offset = 8;
-  let rgba = false;
+  let bitDepth = 0;
+  let colorType = 0;
+  let interlaced = false;
+  let transparency = null;
   const imageData = [];
   while (offset + 12 <= buffer.length) {
     const length = buffer.readUInt32BE(offset);
     const type = buffer.subarray(offset + 4, offset + 8).toString('ascii');
     const data = buffer.subarray(offset + 8, offset + 8 + length);
-    if (type === 'IHDR') rgba = data[8] === 8 && data[9] === 6 && data[12] === 0;
+    if (type === 'IHDR') {
+      bitDepth = data[8];
+      colorType = data[9];
+      interlaced = data[12] !== 0;
+    }
+    if (type === 'tRNS') transparency = data;
     if (type === 'IDAT') imageData.push(data);
     offset += length + 12;
   }
 
-  if (!rgba || !imageData.length) return null;
+  if (bitDepth !== 8 || interlaced || !imageData.length) return null;
   const firstScanline = inflateSync(Buffer.concat(imageData));
-  return firstScanline[4];
+  if (firstScanline[0] !== 0) return null; // 首行必须无过滤，才能直接读左上角像素
+  if (colorType === 6) return firstScanline[4];
+  if (colorType === 3) return transparency?.[firstScanline[1]] ?? 255;
+  return null;
 }
 
 const packageJson = JSON.parse(await read('package.json'));
@@ -135,6 +153,13 @@ for (const period of homePeriods) {
   }
 }
 
+const sizeExceptionFiles = new Set(
+  brandSources
+    .filter((source) => source.sizeException)
+    .flatMap((source) => [source.file, source.file4k, source.fileMobile, source.thumb])
+    .filter(Boolean),
+);
+
 const imageHashes = [];
 for (const image of expectedImages) {
   const relativePath = `source/images/brand/${image}`;
@@ -145,6 +170,9 @@ for (const image of expectedImages) {
     const sizeLimit = imageSizeLimits.get(image);
     if (sizeLimit && buffer.byteLength > sizeLimit) {
       failures.push(`品牌图片超过体积上限：${relativePath}`);
+    }
+    if (image.endsWith('-4k.webp') && buffer.byteLength > largeImageLimit && !sizeExceptionFiles.has(image)) {
+      failures.push(`4K 品牌图片超过 1MB，若确为画质所需请在 sources.json 记录 sizeException：${relativePath}`);
     }
   } catch {
     failures.push(`缺少品牌图片：${relativePath}`);
@@ -167,15 +195,23 @@ const categories = await read('public/categories/index.html');
 const tags = await read('public/tags/index.html');
 const archives = await read('public/archives/index.html');
 const feed = await read('public/atom.xml');
+const sitemap = await read('public/sitemap.xml');
+const robots = await read('public/robots.txt');
+const notFound = await read('public/404.html');
 const animeCss = await read('public/css/anime-theme.css');
 const animeScript = await read('public/js/anime-theme.js');
 const animeViewerScript = await read('public/js/anime-image-viewer.js');
 
+// 主题版本从实际安装的包里读，升级 Redefine 后不必再手改这里的版本号。
+const themeVersion = JSON.parse(await read('node_modules/hexo-theme-redefine/package.json')).version;
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const themeAssetPrefix = `https://registry.npmmirror.com/hexo-theme-redefine/${themeVersion}/files/source/`;
+
 expect(home, /href="\/css\/anime-theme\.css"/, '首页未加载 anime-theme.css');
 expect(
   home,
-  /https:\/\/registry\.npmmirror\.com\/hexo-theme-redefine\/2\.9\.0\/files\/source\/fontawesome\/fontawesome\.min\.css/,
-  '主题静态资源未使用 Redefine 官方 npmmirror CDN',
+  new RegExp(`${escapeRegExp(themeAssetPrefix)}fontawesome/fontawesome\\.min\\.css`),
+  `主题静态资源未使用 Redefine 官方 npmmirror CDN（当前主题版本 ${themeVersion}）`,
 );
 expect(home, /"search":\{"enable":true,"preload":false\}/, '搜索索引仍在首屏预加载');
 if (/href="\/fontawesome\/fontawesome\.min\.css"/.test(home)) {
@@ -202,6 +238,21 @@ expect(
 );
 expect(home, /Einstein-Newton-666 的博客/, '站点标题尚未中文化');
 expect(home, /href="\/images\/brand\/favicon-avatar\.png"/, '首页未使用角色头像 favicon');
+expect(home, /link\.rel = "preload"[\s\S]{0,120}link\.as = "image"/, '首页 <head> 未预加载当前时段的横幅图');
+expect(home, /hero-" \+ period/, '横幅预加载脚本没有按当前时段拼接图片地址');
+for (const [name, content] of [
+  ['分类页', categories],
+  ['标签页', tags],
+  ['归档页', archives],
+  ['关于页', about],
+  ['日志页', logs],
+  ['文章页', post],
+  ['404 页', notFound],
+]) {
+  if (content.includes('data-anime-hero-preload')) {
+    failures.push(`${name}没有首页横幅，不应预加载横幅图（会白下 213–925KB）`);
+  }
+}
 if (/redefine-favicon\.svg/.test(home)) {
   failures.push('首页仍引用 Redefine 默认 R 图标');
 }
@@ -233,6 +284,25 @@ expect(about, /关于本站/, '关于页内容未生成');
 expect(logs, /你好，世界 —— 第一篇日志/, '日志页未展示“日志”分类文章');
 expect(logs, /<title>[^<]*日志[^<]*<\/title>/, '日志页标题未生成');
 expect(feed, /<feed[\s>]/, 'atom.xml 不是有效的 Atom 订阅文件');
+
+expect(sitemap, /<urlset[\s>]/, 'sitemap.xml 不是有效的站点地图');
+expect(sitemap, /<loc>https:\/\/einstein-newton-666\.github\.io\/2026\/08\/15\/welcome\/<\/loc>/, 'sitemap 缺少文章条目');
+expect(sitemap, /<loc>https:\/\/einstein-newton-666\.github\.io\/about\/<\/loc>/, 'sitemap 中的页面地址不是去掉 index.html 的干净 URL');
+expect(sitemap, /<lastmod>2026-08-15<\/lastmod>/, 'sitemap 的 lastmod 不是文章自身日期（检查 updated_option 是否被改回 mtime）');
+// 首页/标签/分类条目不应带 lastmod：自定义模板省略了它，避免每次部署都告诉爬虫“全变了”。
+const sitemapHomeEntry = sitemap.match(/<url>\s*<loc>https:\/\/einstein-newton-666\.github\.io\/<\/loc>([\s\S]*?)<\/url>/)?.[1] ?? '';
+expect(sitemapHomeEntry, /<changefreq>/, 'sitemap 缺少首页条目');
+if (/<lastmod>/.test(sitemapHomeEntry)) failures.push('sitemap 首页条目的 lastmod 会随构建时间变化');
+for (const banned of ['404.html', 'sources.json', 'index.html']) {
+  if (sitemap.includes(banned)) failures.push(`sitemap 不应包含 ${banned}`);
+}
+
+expect(robots, /^User-agent: \*$/m, 'robots.txt 缺少 User-agent 规则');
+expect(robots, /Sitemap: https:\/\/einstein-newton-666\.github\.io\/sitemap\.xml/, 'robots.txt 未声明 sitemap 地址');
+
+expect(notFound, /页面未找到/, '404 页面内容未生成');
+expect(notFound, /<link rel="canonical" href="https:\/\/einstein-newton-666\.github\.io\/404\.html"\/>/, '404 页面未声明自身的 canonical');
+if (!/navbar-container/.test(notFound)) failures.push('404 页面没有套用站点布局（导航栏缺失）');
 expect(animeCss, /html\[data-anime-page\]/, '自定义样式缺少内页场景选择器');
 expect(animeCss, /html\[data-anime-page\] \.page-container\s*\{[^}]*background: transparent/s, '内页容器仍遮挡背景场景');
 expect(animeCss, /--anime-page-image/, '自定义样式未使用内页背景变量');

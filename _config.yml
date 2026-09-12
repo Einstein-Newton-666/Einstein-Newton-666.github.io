@@ -18,7 +18,7 @@ root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 pretty_urls:
-  trailing_index: true # Set to false to remove trailing 'index.html' from permalinks
+  trailing_index: false # Set to false to remove trailing 'index.html' from permalinks
   trailing_html: true # Set to false to remove trailing '.html' from permalinks
 
 # Directory
@@ -29,7 +29,10 @@ archive_dir: archives
 category_dir: categories
 code_dir: downloads/code
 i18n_dir: :lang
+# sources.json 是资源来源记录（数据文件，不是页面），这里跳过渲染让它按原样拷贝，
+# 同时避免被 hexo-generator-sitemap 当成页面收录进 sitemap.xml。
 skip_render:
+  - images/brand/sources.json
 
 # Writing
 new_post_name: :title.md # File name of new posts
@@ -77,7 +80,10 @@ meta_generator: true
 date_format: YYYY-MM-DD
 time_format: HH:mm:ss
 ## updated_option supports 'mtime', 'date', 'empty'
-updated_option: 'mtime'
+## 注意：Actions 里 checkout 出来的文件 mtime 等于签出时刻，用 'mtime' 会让每篇文章的
+## “更新于”变成当次部署时间，订阅源的 <updated> 也会跟着跳。'date' 只认 front-matter
+## 里的 updated，需要展示更新时间时在文章头部写 updated: YYYY-MM-DD HH:mm:ss。
+updated_option: 'date'
 
 # Pagination
 ## Set per_page to 0 to disable pagination
@@ -112,3 +118,14 @@ feed:
   limit: 20
   content: true
   autodiscovery: true
+
+# 站点地图（hexo-generator-sitemap）
+# 生成 public/sitemap.xml，供搜索引擎抓取；文章条目的 lastmod 取自文章的 updated/date。
+# 单篇页面如需排除，在该页 front-matter 写 sitemap: false（404 页就是这么处理的）。
+# template 指向自定义模板：首页/标签/分类条目不写 lastmod，避免每次部署都刷新这个时间。
+sitemap:
+  path: sitemap.xml
+  template: ./sitemap_template.xml
+  rel: false
+  tags: true
+  categories: true
