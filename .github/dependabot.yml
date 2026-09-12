@@ -3,5 +3,20 @@ updates:
 - package-ecosystem: npm
   directory: "/"
   schedule:
-    interval: daily
-  open-pull-requests-limit: 20
+    interval: weekly
+  open-pull-requests-limit: 5
+  groups:
+    # minor / patch 合成一个 PR，major 仍然单独开，便于逐个验证。
+    npm-minor-patch:
+      patterns: ["*"]
+      update-types: ["minor", "patch"]
+
+- package-ecosystem: github-actions
+  directory: "/"
+  schedule:
+    interval: monthly
+  open-pull-requests-limit: 5
+  groups:
+    # 之前只配了 npm，Actions 永远不会被自动升级，这里补上。
+    github-actions:
+      patterns: ["*"]

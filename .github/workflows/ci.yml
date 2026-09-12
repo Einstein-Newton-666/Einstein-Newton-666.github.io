@@ -1,0 +1,36 @@
+name: Verify site
+
+# PR 校验单独放在这里，不并进 pages.yml：部署流程需要 pages: write 与 id-token: write，
+# 而工作流级权限会同样授予 PR 运行（同仓库分支的 PR 会在该分支的代码上执行并持有可写令牌）。
+# 拆开后，PR 只能拿到只读权限。
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          # 与 pages.yml 保持一致；Node 20 已于 2026-04 结束维护。
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # 与部署流程跑同一套：单元测试 + hexo generate + test/verify-site.mjs 产物校验。
+      - name: Test and build site
+        run: npm test
