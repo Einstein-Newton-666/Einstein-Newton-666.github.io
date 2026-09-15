@@ -4,5 +4,5 @@ date: 2026-09-16 09:00:00
 categories: [日志]
 tags: [随笔, 飞行器]
 mathjax: false
-cover: /images/brand/log-gothic-library.webp
+cover: /images/brand/tech-lab.webp
 ---
