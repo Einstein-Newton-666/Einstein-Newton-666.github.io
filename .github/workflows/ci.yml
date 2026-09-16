@@ -32,5 +32,8 @@ jobs:
         run: npm ci
 
       # 与部署流程跑同一套：单元测试 + hexo generate + test/verify-site.mjs 产物校验。
+      # TZ 与部署流程保持一致，否则同一篇文章在 PR 校验与线上会落到不同日期路径。
       - name: Test and build site
         run: npm test
+        env:
+          TZ: Asia/Shanghai

@@ -43,8 +43,34 @@ jobs:
         run: npm ci
 
       # npm test = 单元测试 + hexo generate + test/verify-site.mjs 产物校验
+      # TZ 必须跟本地一致：Hexo 按“构建进程所在时区”渲染永久链接，跑在 UTC 的
+      # runner 上会把凌晨 0–8 点写的文章排到前一天。
       - name: Test and build site
         run: npm test
+        env:
+          TZ: Asia/Shanghai
+
+      # 缺 Secret 就直接失败：宁可这次不发，也不能把不设防的站点传上 Pages。
+      - name: Check gate password
+        run: |
+          if [ -z "$BLOG_GATE_PASSWORD" ]; then
+            echo "::error::缺少 BLOG_GATE_PASSWORD secret，拒绝发布未加密站点"
+            exit 1
+          fi
+        env:
+          BLOG_GATE_PASSWORD: ${{ secrets.BLOG_GATE_PASSWORD }}
+
+      # 重新生成并整体加密，随后校验密文产物（解不回原文/漏明文都会失败）
+      - name: Build gated site
+        run: npm run gate:build
+        env:
+          TZ: Asia/Shanghai
+          BLOG_GATE_PASSWORD: ${{ secrets.BLOG_GATE_PASSWORD }}
+
+      - name: Verify gated artifact
+        run: npm run gate:verify
+        env:
+          BLOG_GATE_PASSWORD: ${{ secrets.BLOG_GATE_PASSWORD }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v6
