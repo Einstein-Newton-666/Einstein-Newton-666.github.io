@@ -48,62 +48,62 @@ git log --oneline --all -- source/_posts/xiaogao-hikouki-install-diary.md
 
 ---
 
-## 方案 B：源码放私有仓库，构建产物推到公开的 Pages 仓库（免费）—— **已选定，进行中**
+## 方案 B：源码放私有仓库，构建产物推到公开的 Pages 仓库（免费）—— **已完成（2026-09-16）**
 
 思路：`<owner>.github.io` 这个仓库只放**构建产物**，源码搬到私有仓库里构建后推过去。
 公开仓库里就只有 HTML/CSS/图片（私密文章是密文），没有任何 `.md`。
 
-### 代码侧已就位（commit 见本文件所在提交）
+### 迁移结果（均已验证）
 
-| 文件 | 作用 |
+| 项 | 结果 |
 |---|---|
-| `.github/workflows/publish.yml` | 在**私有源码仓库**里生效：构建 → 加密 → 校验 → `git push -f` 到公开仓库的 `pages` 分支（每次全新单提交历史） |
-| `.github/workflows/pages.yml` | 加了一行 `if: github.repository == '<owner>.github.io'`，只在**公开部署仓库**里生效；迁移完成后删除 |
+| 私有源码仓库 `einblog-source` | 已建（私有），含全部历史、`main`/`sample/visual-polish`/标签 `archive/fix-2024` |
+| Secret（建在私有仓库） | `BLOG_GATE_PASSWORD`、`PAGES_DEPLOY_TOKEN` 已配 |
+| `publish.yml` 首次运行 | 成功，公开仓库出现 `pages` 分支（298 个文件） |
+| `pages` 分支内容 | `.md` 文件 0 个、无 `source/`、带 `.nojekyll`、首页公开、私密文章为密文 + noindex |
+| 公开仓库 Pages 发布源 | 已切到 `Deploy from a branch → pages / (root)`，线上 `/.nojekyll` 返回 200 可佐证 |
+| 线上回归 | HTTP 全绿 + 真实浏览器 8/8（首页公开、占位摘要、公开文章正常、私密文章锁屏 → 错密码被拒 → 正确密码解锁） |
+| 本地 git 远端 | `origin` = `einblog-source`（`main` 已跟踪），公开仓库留作 `Einstein-Newton-666.github.io` remote 供 CI 推送 |
 
-两个流程靠 `github.repository` 互相排除：迁移期间往哪个仓库推都不会互相打架，
-公开仓库在切换 Pages 之前仍由原来的 `actions/deploy-pages` 正常发布。
+### 还剩两步收尾（可选，按需做）
 
-### 迁移步骤
+1. 公开仓库 **Settings → General → Default branch** 改成 `pages`，然后删掉 `main`
+   （GitHub 不允许删默认分支，所以顺序不能反）。删掉后旧源码提交不可达；
+   要彻底干净就删库重建（同名 URL 不变，会有几分钟下线）。
+2. 观察几天确认稳定后，从源码仓库删掉 `.github/workflows/pages.yml`
+   （它在私有仓库里本来就是空转的，靠 `if: github.repository == '<owner>.github.io'` 跳过）。
+
+### 迁移步骤（留存备查）
 
 **你操作（GitHub 网页）**
 
 1. 新建**私有**仓库 `einblog-source`（不要勾选初始化 README / .gitignore / license）。
 2. 让本地能推它：Settings → Developer settings → **Fine-grained tokens** → 编辑现有 token，
    Repository access 里把 `einblog-source` 勾上（权限 **Contents: Read and write**）；
-   或者新建一个同样权限的 token。推完之后把新地址填进 git 凭据即可。
+   或者新建一个同样权限的 token。
 3. 在**私有源码仓库** `einblog-source` 里加两个 Secret（Settings → Secrets and variables → Actions）：
    - `BLOG_GATE_PASSWORD`：与现在同一个访问密码；
    - `PAGES_DEPLOY_TOKEN`：细粒度 PAT，只勾公开的 `Einstein-Newton-666.github.io`，
      权限 **Contents: Read and write**。
-4. 在**公开仓库**里跑一次 `publish.yml`（Actions → *Build and publish to the public Pages repo* →
-   Run workflow，需要先有第 5 步的推送）。等它绿了，再进 **Settings → Pages**，
-   把 Source 改成 **Deploy from a branch → pages / (root)** → Save。
-5. 验收通过后，把公开仓库的默认分支改成 `pages`，并删掉 `main` 分支
-   （那上面是旧源码；删掉后旧提交不可达。要彻底干净就删掉仓库重建，同名 URL 不变，会有几分钟下线）。
+4. 公开仓库 **Settings → Pages** 改成 **Deploy from a branch → pages / (root)**。
 
-**我做（本地命令）**
+**本地命令（已执行）**
 
 ```bash
-# 1) 把当前仓库（含全部历史）推一份到私有源码仓库
 git remote add source https://github.com/Einstein-Newton-666/einblog-source.git
-git push source main
-
-# 2) 以后 origin 指向源码仓库，日常开发照旧（npm test / npm run server 都不变）
-git remote set-url origin https://github.com/Einstein-Newton-666/einblog-source.git
-git remote -v
-
-# 3) 触发第一次发布（也可以在网页上点 Run workflow）
-git push origin main
+git push source main && git push source sample/visual-polish && git push source archive/fix-2024
+git remote rename source origin
+git branch --set-upstream-to=origin/main main
 ```
 
 ### 验收清单
 
-- [ ] 公开仓库 `Einstein-Newton-666.github.io` 里只有 `index.html`、`css/`、`js/`、`images/`、
-      `atom.xml`、`sitemap.xml`、`robots.txt` 与密文页面，**没有 `source/`、没有 `.md`**
-- [ ] 公开仓库只有一个 `pages` 分支、一条 deploy 提交
-- [ ] 线上站点正常：首页公开、私密文章锁屏、输密码可解锁
-- [ ] `publish.yml` 的日志里 `gate:verify` 输出 PASS
-- [ ] 私有仓库里 Actions 分钟数正常计费（一次约 3–4 分钟）
+- [x] 公开仓库 `Einstein-Newton-666.github.io` 里只有 `index.html`、`css/`、`js/`、`images/`、
+      `atom.xml`、`sitemap.xml`、`robots.txt`、`admin/` 与密文页面，**没有 `source/`、没有 `.md`**
+- [x] 公开仓库的 `pages` 分支只有一条 deploy 提交
+- [x] 线上站点正常：首页公开、私密文章锁屏、输密码可解锁（浏览器 8/8）
+- [x] `publish.yml` 跑通（产物成功推到公开仓库）
+- [x] 本地 `git push` 已指向私有源码仓库
 
 ### 已知取舍
 
