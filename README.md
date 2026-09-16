@@ -90,6 +90,55 @@ npm run e2e:admin     # 编辑台端到端测试（会启动无头 Edge，需先
 - 不被收录：页面 `<meta name="robots" content="noindex">`、`robots.txt` 的 `Disallow: /admin/`、
   以及 `sitemap: false` 三重处理。
 
+## 访问密码（整站加密）
+
+带密码构建时，`public/` 里每个页面的 `<body>` 都会被 AES-256-GCM 加密成一段密文负载，
+访客输入密码后在浏览器里解密渲染；没解锁的人拿到的 HTML 只有一张锁屏，里面没有正文。
+`/atom.xml` 与 `/search.xml` 这两份公开全文副本也会一并清空。
+
+### 密码放哪
+
+密码只存在仓库的 Actions Secret 里，名字必须是 `BLOG_GATE_PASSWORD`：
+Settings → Secrets and variables → Actions → New repository secret。
+仓库里只有 `scripts/gate-salt.txt`（固定 salt，公开，不需要保密；它固定下来是为了让访客
+"记住 30 天"的解锁状态在每次重新部署后继续有效）。
+
+**先建 Secret 再推代码**：`pages.yml` 里有守卫，缺 Secret 直接失败——宁可这次不发，
+也不会把不设防的站点传上 Pages（线上保持上一次的产物）。
+
+### 构建与预览
+
+```bash
+npm run gate:build    # hexo clean + generate + 整体加密（读 BLOG_GATE_PASSWORD）
+npm run gate:verify   # 校验密文产物：解不回原文、漏明文、漏页面都算失败
+npm run e2e:gate      # 端到端：锁屏 → 错密码 → 解锁 → 站内跳转 → 锁定（需先 gate:build）
+```
+
+不带 `BLOG_GATE_PASSWORD` 时，`npm test` 与 `npm run server` 照旧是明文站点，
+本地开发和 PR 校验不受影响。
+
+### 实现要点
+
+- `scripts/gate-build.js` 在 `hexo generate` **之后**直接改写 `public/`。写成 Hexo 过滤器会
+  命中 db.json 的渲染缓存，把明文重新吐回产物里——那种"看着加了锁、其实漏内容"的静默失败
+  比不加锁更危险。
+- 加解密约定集中在 `scripts/lib/gate-crypto.js`；浏览器端 `source/js/site-gate.js` 用同一套参数
+  （PBKDF2-SHA256 60 万次 + AES-256-GCM，认证标签附在密文尾部）。`test/site-gate-crypto.test.cjs`
+  跑「Node 加密 → 浏览器模块解密」的往返，两边参数一旦漂移立刻红灯。
+- 解锁后缓存的是**派生钥匙**而不是密码：勾选"记住 30 天"写 localStorage，否则写 sessionStorage。
+- `admin/` 不在门内：编辑台自己用 GitHub PAT 登录，加密了反而没法用。
+- 带密码构建会摘掉 Swup：未解锁的下一页只有锁屏外壳，SPA 切换拿不到 `#swup` 容器。
+- 站内搜索与 RSS 退化成只显示标题（正文留在公开 XML 里等于没加密）。
+- 锁屏页带 `noindex`，不会被搜索引擎收录；`robots.txt` 保持原样不动——
+  `tools/editor/verify-deploy.mjs` 要拿线上它与本地构建逐字节比对。
+- 图片、CSS、JS、`sitemap.xml`、文章标题与 URL 仍是公开的：静态资源没法加密，
+  别把带隐私的照片放进站点。
+
+### 换密码 / 忘记密码
+
+改掉 Secret 里的 `BLOG_GATE_PASSWORD` 重新部署即可，代码不用动；访客浏览器里缓存的旧钥匙
+会自然失效。要一次性作废所有已解锁的浏览器，连同 `scripts/gate-salt.txt` 一起换。
+
 ## 主题定制
 
 - 主题覆盖配置：`_config.redefine.yml`
