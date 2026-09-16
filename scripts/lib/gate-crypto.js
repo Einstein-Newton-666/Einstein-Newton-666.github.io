@@ -8,14 +8,14 @@
  * test/site-gate-crypto.test.cjs 跑一遍“Node 加密 → 浏览器模块用 WebCrypto
  * 解密”的往返来兜底，改这里就会立刻红灯。
  *
- * salt 固定存放在 scripts/gate-salt.txt 并随仓库提交：salt 不需要保密，
+ * salt 固定存放在 scripts/lib/gate-salt.js 并随仓库提交：salt 不需要保密，
  * 固定下来才能让访客“记住 30 天”的解锁状态在每次重新部署后继续有效。
  * 要作废所有浏览器里已保存的钥匙，换密码或换 salt 都可以。
  * ------------------------------------------------------------------------- */
 
 const crypto = require('node:crypto');
-const fs = require('node:fs');
-const path = require('node:path');
+
+const SALT_BASE64 = require('./gate-salt');
 
 const PAYLOAD_VERSION = 1;
 const KDF_ALGORITHM = 'PBKDF2-SHA256';
@@ -24,7 +24,6 @@ const KDF_ITERATIONS = 600000;
 const KEY_BYTES = 32;
 const SALT_BYTES = 16;
 const IV_BYTES = 12;
-const SALT_PATH = path.join(__dirname, '..', 'gate-salt.txt');
 
 function toBase64(buffer) {
   return Buffer.from(buffer).toString('base64');
@@ -38,14 +37,8 @@ function fromBase64(text, expectedBytes, label) {
   return buffer;
 }
 
-function readSalt(filePath = SALT_PATH) {
-  let raw;
-  try {
-    raw = fs.readFileSync(filePath, 'utf8').trim();
-  } catch (error) {
-    throw new Error(`读不到 salt 文件 ${filePath}：${error.message}`);
-  }
-  return fromBase64(raw, SALT_BYTES, 'salt');
+function readSalt() {
+  return fromBase64(SALT_BASE64, SALT_BYTES, 'salt');
 }
 
 function deriveKey(password, salt, iterations = KDF_ITERATIONS) {
@@ -124,7 +117,7 @@ module.exports = {
   KEY_BYTES,
   SALT_BYTES,
   IV_BYTES,
-  SALT_PATH,
+  SALT_BASE64,
   toBase64,
   fromBase64,
   readSalt,
