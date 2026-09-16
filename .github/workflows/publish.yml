@@ -14,6 +14,8 @@ name: Build and publish to the public Pages repo
 # 需要的 Secret（建在私有源码仓库里）：
 #   BLOG_GATE_PASSWORD  访问密码（与原来同一个值）
 #   PAGES_DEPLOY_TOKEN  细粒度 PAT：只勾公开的 <owner>.github.io，权限 Contents: Read and write
+# 注意：细粒度 PAT 最长 90 天过期。到期后本流程会在推送产物那一步以 401 失败，
+# 症状是"站点不再更新"。届时重建一个同权限令牌，在 Secret 里点 Update 即可。
 # ---------------------------------------------------------------------------
 
 on:
