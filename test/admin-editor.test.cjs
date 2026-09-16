@@ -835,6 +835,77 @@ test('HTTPS 页面不默认尝试 http://127.0.0.1 的精确预览（避免混�
   assert.equal(preview.shouldAttemptExact(undefined, httpEndpoint), true);
 });
 
+/* ------------------- 文章页「编辑」按钮的注入 ------------------- */
+
+const postEditLink = require('../scripts/post-edit-link.js');
+
+test('识别文章页并从 URL 取出文件名（支持编码与反斜杠路径）', () => {
+  assert.equal(postEditLink.slugFromPagePath('2026/08/15/welcome/index.html'), 'welcome');
+  assert.equal(postEditLink.slugFromPagePath('2026/09/16/xiaogao-hikouki-install-diary/index.html'), 'xiaogao-hikouki-install-diary');
+  assert.equal(postEditLink.slugFromPagePath('2026/09/16/小高の飞行器安装日记/index.html'), '小高の飞行器安装日记');
+  assert.equal(postEditLink.slugFromPagePath('2026\\09\\16\\中文标题\\index.html'), '中文标题');
+  // 非文章页
+  for (const path of ['index.html', 'about/index.html', 'archives/2026/index.html', 'tags/index.html', 'admin/index.html', '404.html']) {
+    assert.equal(postEditLink.slugFromPagePath(path), null, `不应识别为文章：${path}`);
+  }
+});
+
+test('编辑按钮链接指向编辑台并带上文件名', () => {
+  const button = postEditLink.buildEditButton('welcome');
+  assert.match(button, /href="\/admin\/\?p=welcome"/);
+  assert.match(button, /aria-label="编辑这篇文章"/);
+  assert.match(button, /fa-pen-to-square/);
+  assert.match(button, /data-einblog-edit/, '需要可识别的标记，便于校验与幂等注入');
+
+  // 中文与需转义字符要编码，且不能破坏属性结构
+  const tricky = postEditLink.buildEditButton('a"b<c>&d 中文');
+  assert.match(tricky, /^<li class="einblog-edit-tool"[^>]*><a [^>]*><i [^>]*><\/i><\/a><\/li>$/, '标签结构必须完整');
+  assert.match(tricky, /%22|%3C|%26|%20/, '特殊字符必须被 URL 编码');
+  const href = tricky.match(/href="([^"]+)"/)[1];
+  assert.doesNotMatch(href, /[<>"&\s]/, 'href 里不应残留需要转义的字符');
+  assert.match(href, /^\/admin\/\?p=/, `href 应指向编辑台：${href}`);
+});
+
+test('编辑按钮样式内联，避免样式规则落在加密门的明文区', () => {
+  const button = postEditLink.buildEditButton('welcome');
+  assert.match(button, /<a href="[^"]*" style="[^"]*"[^>]*>/, '样式必须内联在 a 上');
+  assert.doesNotMatch(button, /<style/, '按钮片段里不应带 <style>');
+});
+
+test('只给文章页注入按钮，且重复注入是幂等的', () => {
+  const postPage = [
+    '<html><head><title>t</title></head><body>',
+    '<div class="post-tools-container"><ul class="article-tools-list">',
+    '<li class="right-bottom-tools page-aside-toggle"><i class="fa-regular fa-outdent"></i></li>',
+    '</ul></div>',
+    '</body></html>',
+  ].join('');
+  const injected = postEditLink.injectEditLink(postPage, '2026/08/15/welcome/index.html');
+  assert.match(injected, /\/admin\/\?p=welcome/);
+  assert.match(injected, /data-einblog-edit/);
+  assert.doesNotMatch(injected, /data-einblog-edit-style|<style/, '注入不应往 head 里塞 <style>（会明文泄漏）');
+  // 注入两次结果一致
+  assert.equal(postEditLink.injectEditLink(injected, '2026/08/15/welcome/index.html'), injected);
+
+  // 非文章页原样返回
+  const about = '<html><head></head><body><p>关于</p></body></html>';
+  assert.equal(postEditLink.injectEditLink(about, 'about/index.html'), about);
+
+  // 没有工具列表时不动页面（例如自定义了模板）
+  const noList = '<html><head></head><body><p>正文</p></body></html>';
+  assert.equal(postEditLink.injectEditLink(noList, '2026/08/15/welcome/index.html'), noList);
+});
+
+test('编辑台会读取文章页带过来的 ?p= 参数并自动打开该文章', () => {
+  const appSource = readFileSync(path.join(__dirname, '../source/admin/js/editor-app.js'), 'utf8');
+  assert.match(appSource, /function readRequestedSlug\(\)/, '缺少 ?p= 解析函数');
+  assert.match(appSource, /params\.get\('p'\)/, '应从查询串读取 p');
+  assert.match(appSource, /await openPendingPost\(\)/, '登录并载入列表后应自动打开目标文章');
+  assert.match(appSource, /state\.pendingSlug = readRequestedSlug\(\)/, '启动时应记录待打开的文件名');
+  assert.match(appSource, /没有找到文章/, '目标不存在时应给出可读提示');
+  assert.match(appSource, /history\?\.replaceState/, '打开后应清掉查询串，避免刷新重复触发');
+});
+
 /* ------------------------- 模块装配守卫 ------------------------- */
 
 test('编辑器模块都能在 node 中 require 且导出预期接口', () => {

@@ -224,11 +224,47 @@
       state.posts = posts.map((post) => Object.assign(post, { assets: assetCount.get(post.slug) || 0 }));
       renderPostList();
       if (tree.truncated) toast('仓库文件过多，列表可能不完整', 'warn');
+      // 从文章页的「编辑」按钮进来时，直接打开对应文章
+      await openPendingPost();
     } catch (error) {
       toast(publish.maskToken(error.message), 'error');
     } finally {
       busy(false);
     }
+  }
+
+  /** 文章页「编辑」按钮带过来的 ?p=文件名 */
+  function readRequestedSlug() {
+    const params = new URLSearchParams(globalThis.location?.search || '');
+    const slug = (params.get('p') || '').trim();
+    return slug || '';
+  }
+
+  function clearRequestedSlug() {
+    try {
+      globalThis.history?.replaceState(null, '', globalThis.location.pathname);
+    } catch (error) {
+      /* 某些环境下不允许改写地址，忽略即可 */
+    }
+  }
+
+  async function openPendingPost() {
+    if (!state.pendingSlug) return;
+    const slug = state.pendingSlug;
+    state.pendingSlug = '';
+    clearRequestedSlug();
+
+    if (!state.posts.some((post) => post.slug === slug)) {
+      toast(`没有找到文章 ${slug}，请从左侧列表选择`, 'warn');
+      return;
+    }
+    const check = doc.validateSlug(slug);
+    if (!check.ok) {
+      toast(`文件名不合法：${check.reason}`, 'error');
+      return;
+    }
+    const post = state.posts.find((item) => item.slug === slug);
+    if (post) await openPost(post.path);
   }
 
   function renderPostList() {
@@ -952,6 +988,8 @@
     const savedToken = readStore(STORAGE_KEYS.token);
     el.repoInput.value = savedRepo;
     el.tokenLink.href = doc.tokenCreateUrl(savedRepo);
+    // 文章页的「编辑」按钮会带 ?p=文件名 过来，登录后自动打开
+    state.pendingSlug = readRequestedSlug();
     el.repoInput.addEventListener('input', () => {
       el.tokenLink.href = doc.tokenCreateUrl(el.repoInput.value);
     });
