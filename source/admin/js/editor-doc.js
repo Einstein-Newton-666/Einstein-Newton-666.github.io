@@ -422,6 +422,22 @@
     return `${base}/${match[1]}/${match[2]}/${match[3]}/${encodeURIComponent(slug)}/`;
   }
 
+  /**
+   * 生成「预填参数的令牌创建链接」：GitHub 支持用查询参数预填细粒度令牌的
+   * 名称、说明与权限，点开即可少配几步（仓库选择仍需手动勾选，GitHub 未提供该参数）。
+   * @see https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+   */
+  function tokenCreateUrl(repoFullName) {
+    const cleaned = String(repoFullName ?? '').trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '');
+    const parts = cleaned.split('/').filter(Boolean);
+    const repo = parts.length >= 2 ? `${parts[0]}/${parts[1]}` : '本博客仓库';
+    const params = new URLSearchParams();
+    params.set('name', '博客编辑台');
+    params.set('description', `供 ${repo} 的在线编辑台使用：只提交文章与配图，权限只给 Contents 读写，有效期建议 90 天。`);
+    params.set('contents', 'write');
+    return `https://github.com/settings/personal-access-tokens/new?${params.toString()}`;
+  }
+
   return {
     KNOWN_WRITABLE_KEYS,
     KEY_ORDER,
@@ -453,5 +469,6 @@
     createPostSource,
     validatePost,
     permalinkFor,
+    tokenCreateUrl,
   };
 }));

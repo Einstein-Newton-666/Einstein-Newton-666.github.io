@@ -216,6 +216,63 @@ body.admin-body *::after {
   flex-wrap: wrap;
 }
 
+/* ------------------------------ 登录分步引导 ------------------------------ */
+
+.admin-login__steps {
+  margin: 0 0 6px;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-login__steps li {
+  font-size: 13px;
+}
+
+.admin-login__label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+.admin-login__steps input {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 10px;
+  width: 100%;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  color: var(--admin-text);
+}
+
+.admin-login__steps input:focus {
+  outline: 2px solid rgba(26, 115, 232, .4);
+  outline-offset: 1px;
+  border-color: var(--admin-primary);
+}
+
+.admin-login__note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--admin-subtle);
+}
+
+.admin-login__note code,
+.admin-login__hint code,
+.admin-login__faq code {
+  font-family: var(--admin-mono);
+  background: #f1f3f4;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.admin-login__hint {
+  margin: 16px 0 0;
+}
+
 .admin-login__faq {
   margin-top: 18px;
   font-size: 13px;
@@ -234,6 +291,11 @@ body.admin-body *::after {
 
 .admin-login__faq li {
   margin: 4px 0;
+}
+
+.admin-login__faq p {
+  margin: 8px 0 0;
+  line-height: 1.7;
 }
 
 .admin-field {
@@ -720,6 +782,99 @@ body.admin-body *::after {
   transform: translateY(6px);
 }
 
+/* ------------------------- 编辑 / 预览切换（移动端） ------------------------- */
+
+.admin-tabbar {
+  display: none;
+  background: var(--admin-surface);
+  border-top: 1px solid var(--admin-border);
+}
+
+.admin-tab {
+  flex: 1;
+  font-family: inherit;
+  font-size: 14px;
+  padding: 12px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--admin-subtle);
+  cursor: pointer;
+}
+
+.admin-tab--active {
+  color: var(--admin-primary);
+  font-weight: 600;
+  box-shadow: inset 0 -3px 0 var(--admin-primary);
+}
+
+/* --------------------------------- 弹窗 --------------------------------- */
+
+.admin-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.admin-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(32, 33, 36, .45);
+}
+
+.admin-modal__box {
+  position: relative;
+  width: min(460px, 100%);
+  max-height: 86vh;
+  overflow: auto;
+  background: var(--admin-surface);
+  border-radius: 14px;
+  padding: 20px 22px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .24);
+}
+
+.admin-modal__box h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  color: var(--admin-primary);
+}
+
+.admin-modal__text {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--admin-subtle);
+  line-height: 1.7;
+}
+
+.admin-modal__text code {
+  font-family: var(--admin-mono);
+  background: #f1f3f4;
+  padding: 1px 5px;
+  border-radius: 4px;
+  word-break: break-all;
+}
+
+.admin-modal__error {
+  min-height: 18px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--admin-danger);
+}
+
+.admin-modal__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.admin-modal__actions .admin-btn {
+  flex: 1;
+  text-align: center;
+}
+
 /* --------------------------------- 响应式 -------------------------------- */
 
 @media (max-width: 1080px) {
@@ -735,18 +890,78 @@ body.admin-body *::after {
 @media (max-width: 760px) {
   .admin-workspace {
     grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
   }
 
   .admin-sidebar {
-    max-height: 34vh;
+    max-height: 30vh;
+  }
+
+  .admin-topbar {
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  .admin-topbar__spacer {
+    display: none;
+  }
+
+  .admin-brand {
+    font-size: 14px;
+  }
+
+  /* 手机上编辑与预览分屏显示，用底部标签切换，避免两栏都被压扁 */
+  .admin-tabbar {
+    display: flex;
+  }
+
+  .admin-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-editor__column--preview {
+    display: none;
+  }
+
+  body.admin-show-preview .admin-editor__column:not(.admin-editor__column--preview) {
+    display: none;
+  }
+
+  body.admin-show-preview .admin-editor__column--preview {
+    display: flex;
+  }
+
+  /* 触控友好：加大点击目标 */
+  .admin-tool,
+  .admin-btn,
+  .admin-tab {
+    min-height: 40px;
+  }
+
+  .admin-toolbar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
   }
 
   .admin-meta {
     grid-template-columns: 1fr;
   }
 
-  .admin-endpoint {
-    display: none;
+  .admin-commit__actions .admin-btn,
+  .admin-commit__actions .admin-btn--file {
+    flex: 1;
+    text-align: center;
+  }
+
+  .admin-login__card {
+    padding: 20px 18px;
+  }
+
+  .admin-toasts {
+    left: 12px;
+    right: 12px;
+    max-width: none;
   }
 }
 
@@ -754,7 +969,9 @@ body.admin-body *::after {
   .admin-topbar,
   .admin-sidebar,
   .admin-status,
-  .admin-toolbar {
+  .admin-toolbar,
+  .admin-tabbar,
+  .admin-modal {
     display: none;
   }
 }

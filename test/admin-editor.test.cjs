@@ -789,6 +789,37 @@ test('完整链路：默认 fetch + 登录 → 列文章 → 读文章 → 校�
   }
 });
 
+/* ------------------- 令牌创建链接（预填参数） ------------------- */
+
+test('令牌创建链接预填名称、说明与 Contents 写权限', () => {
+  const url = doc.tokenCreateUrl('Einstein-Newton-666/Einstein-Newton-666.github.io');
+  assert.ok(url.startsWith('https://github.com/settings/personal-access-tokens/new?'), url);
+  const query = new URLSearchParams(url.split('?')[1]);
+  assert.match(query.get('name'), /博客编辑台/);
+  assert.match(query.get('description'), /Contents/);
+  assert.equal(query.get('contents'), 'write', '必须预选 Contents 写权限，否则编辑器无法提交');
+  assert.doesNotMatch(url, /[^\x00-\x7F]/, 'URL 必须全为 ASCII（中文需编码）');
+  assert.doesNotMatch(query.get('name'), /\s/, 'name 中的空格应被编码为 +');
+});
+
+test('令牌创建链接带仓库提示与有效期说明，但不含任何令牌或密钥', () => {
+  const url = doc.tokenCreateUrl('me/blog');
+  const query = new URLSearchParams(url.split('?')[1]);
+  assert.match(query.get('description'), /me\/blog/, '说明里应写明目标仓库，便于日后辨认');
+  assert.match(query.get('description'), /90/);
+  assert.doesNotMatch(url, /gh[pousr]_|github_pat_/, '链接里绝不能出现令牌');
+  assert.ok(!/client_secret|access_token/.test(url), '链接里不能出现任何密钥字段');
+});
+
+test('仓库名异常时链接仍然合法，不抛错', () => {
+  for (const input of ['', null, undefined, 'no-slash', 'a/b/c', '  me/blog  ']) {
+    const url = doc.tokenCreateUrl(input);
+    assert.ok(url.startsWith('https://github.com/'), `${JSON.stringify(input)} → ${url}`);
+    const query = new URLSearchParams(url.split('?')[1]);
+    assert.equal(query.get('contents'), 'write');
+  }
+});
+
 /* ------------------------- 模块装配守卫 ------------------------- */
 
 test('编辑器模块都能在 node 中 require 且导出预期接口', () => {

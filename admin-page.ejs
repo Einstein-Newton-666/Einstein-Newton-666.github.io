@@ -32,31 +32,46 @@
   <div class="admin-login" id="login">
     <div class="admin-login__card">
       <h1>连接你的博客仓库</h1>
-      <p class="admin-login__hint">
-        需要一个只对本仓库有 <b>Contents 读写</b> 权限的 GitHub 细粒度令牌。
-        令牌只保存在<b>本机浏览器</b>，所有请求直接发往 <code>api.github.com</code>，不经过任何第三方服务。
-      </p>
-      <label class="admin-field">
-        <span>仓库</span>
-        <input type="text" id="repoInput" value="Einstein-Newton-666/Einstein-Newton-666.github.io" spellcheck="false">
-      </label>
-      <label class="admin-field">
-        <span>访问令牌</span>
-        <input type="password" id="tokenInput" placeholder="github_pat_… 或 ghp_…" autocomplete="off" spellcheck="false">
-      </label>
+      <ol class="admin-login__steps">
+        <li>
+          <a class="admin-btn admin-btn--primary admin-btn--block" id="tokenLink" target="_blank" rel="noopener noreferrer">
+            ① 在 GitHub 上生成令牌（权限已预填）
+          </a>
+          <p class="admin-login__note">
+            打开后只剩两步：<b>Repository access</b> 选 <code>Only select repositories</code> 并勾选本博客仓库，
+            再点最下方 <b>Generate token</b>。权限已预选 <code>Contents: Read and write</code>，名称与有效期说明也填好了。
+          </p>
+        </li>
+        <li>
+          <span class="admin-login__label">② 把生成的令牌粘贴到这里</span>
+          <input type="password" id="tokenInput" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+        </li>
+        <li>
+          <span class="admin-login__label">仓库（一般不用改）</span>
+          <input type="text" id="repoInput" value="Einstein-Newton-666/Einstein-Newton-666.github.io" spellcheck="false">
+        </li>
+      </ol>
       <p class="admin-login__error" id="loginError"></p>
       <div class="admin-login__actions">
         <button type="button" class="admin-btn admin-btn--primary" id="signInButton">登录并读取文章</button>
         <button type="button" class="admin-btn" id="forgetButton">清除本机令牌</button>
       </div>
+      <p class="admin-login__hint">
+        令牌只保存在<b>本机浏览器</b>，请求直接发往 <code>api.github.com</code>，不经过本站或任何第三方服务。
+        手机同样可用：粘贴一次后浏览器会记住，不用每次登录。
+      </p>
       <details class="admin-login__faq">
-        <summary>令牌怎么创建？权限怎么给？</summary>
-        <ol>
-          <li>打开 GitHub → Settings → Developer settings → <b>Personal access tokens → Fine-grained tokens</b> → Generate new token。</li>
-          <li>Repository access 选 <b>Only select repositories</b>，只勾选本博客仓库。</li>
-          <li>Permissions → Repository permissions → <b>Contents: Read and write</b>（这是唯一必需的权限）。</li>
-          <li>Expiration 建议 90 天或更短；泄漏时在 GitHub 上直接 Revoke 即可。</li>
-        </ol>
+        <summary>为什么不能直接用 GitHub 登录？</summary>
+        <p>
+          “用 GitHub 登录”需要一个后台保管 <code>client_secret</code> 来换取访问令牌。
+          本站是 GitHub Pages 上的纯静态站点，没有后台；把密钥放进公开页面等于公开泄漏，所以只能由你自备令牌。
+          令牌权限随时可在 GitHub 上撤销，风险可控。
+        </p>
+        <p>
+          ⚠️ 如果上面的按钮打不开，多半是 <code>github.com</code> 被网络阻断；
+          可改用手机流量、或换一个能正常访问 GitHub 的网络生成令牌。编辑台本身只要网络能访问
+          <code>api.github.com</code> 就能用。
+        </p>
       </details>
     </div>
   </div>
@@ -179,6 +194,11 @@
     </main>
   </div>
 
+  <div class="admin-tabbar" role="tablist">
+    <button type="button" class="admin-tab admin-tab--active" id="tabEdit" role="tab">✍️ 编辑</button>
+    <button type="button" class="admin-tab" id="tabPreview" role="tab">👁 预览</button>
+  </div>
+
   <footer class="admin-status">
     <span class="admin-status__text" id="statusText">准备中…</span>
     <span class="admin-status__meta" id="wordCount"></span>
@@ -194,6 +214,24 @@
 </div>
 
 <div class="admin-toasts" id="toasts"></div>
+
+<div class="admin-modal" id="modal" hidden>
+  <div class="admin-modal__backdrop" id="modalBackdrop"></div>
+  <div class="admin-modal__box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h2 id="modalTitle">标题</h2>
+    <p class="admin-modal__text" id="modalText"></p>
+    <label class="admin-field" id="modalFieldWrap" hidden>
+      <span id="modalFieldLabel">文件名</span>
+      <input type="text" id="modalInput" autocomplete="off" spellcheck="false" autocapitalize="off">
+    </label>
+    <p class="admin-modal__error" id="modalError"></p>
+    <div class="admin-modal__actions">
+      <button type="button" class="admin-btn admin-btn--primary" id="modalOk">确定</button>
+      <button type="button" class="admin-btn" id="modalExtra" hidden>次要操作</button>
+      <button type="button" class="admin-btn" id="modalCancel">取消</button>
+    </div>
+  </div>
+</div>
 
 <script src="/admin/js/editor-doc.js"></script>
 <script src="/admin/js/editor-publish.js"></script>

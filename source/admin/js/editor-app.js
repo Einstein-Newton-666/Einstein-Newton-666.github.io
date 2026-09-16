@@ -66,6 +66,77 @@
     if (text) el.busyText.textContent = text;
   }
 
+  /* ------------------------------ 站内弹窗 ------------------------------
+   * 不用 window.prompt / confirm：移动端体验差、可能被浏览器拦截，
+   * 而本站是会被反复登录的公开页面，原生弹窗更容易被屏蔽。
+   * -------------------------------------------------------------------- */
+
+  function closeModal() {
+    el.modal.hidden = true;
+    el.modalError.textContent = '';
+    el.modalFieldWrap.hidden = true;
+    el.modalInput.value = '';
+    el.modalOk.classList.remove('admin-btn--danger');
+    el.modalExtra.hidden = true;
+    if (state.modalResolve) {
+      const resolve = state.modalResolve;
+      state.modalResolve = null;
+      state.modalValidate = null;
+      resolve(null);
+    }
+  }
+
+  /**
+   * @param {{title: string, text?: string, okText?: string, danger?: boolean,
+   *          extraText?: string,
+   *          field?: {label: string, placeholder?: string, value?: string,
+   *                   validate?: (value: string) => (string|null)}}} options
+   * @returns {Promise<string|true|null>} 取消 null；主按钮 true/输入值；extraText 按钮 true
+   */
+  function openModal(options) {
+    return new Promise((resolve) => {
+      if (state.modalResolve) closeModal();
+      state.modalResolve = resolve;
+      state.modalValidate = options.field?.validate || null;
+      el.modalTitle.textContent = options.title;
+      el.modalText.innerHTML = options.text || '';
+      el.modalText.hidden = !options.text;
+      el.modalOk.textContent = options.okText || '确定';
+      el.modalOk.classList.toggle('admin-btn--danger', !!options.danger);
+      el.modalExtra.hidden = !options.extraText;
+      if (options.extraText) el.modalExtra.textContent = options.extraText;
+      if (options.field) {
+        el.modalFieldWrap.hidden = false;
+        el.modalFieldLabel.textContent = options.field.label;
+        el.modalInput.placeholder = options.field.placeholder || '';
+        el.modalInput.value = options.field.value || '';
+      } else {
+        el.modalFieldWrap.hidden = true;
+        el.modalInput.value = '';
+      }
+      el.modalError.textContent = '';
+      el.modal.hidden = false;
+      setTimeout(() => (options.field ? el.modalInput.focus() : el.modalOk.focus()), 30);
+    });
+  }
+
+  function acceptModal(primary = true) {
+    if (!state.modalResolve) return;
+    if (primary && state.modalValidate) {
+      const message = state.modalValidate(el.modalInput.value);
+      if (message) {
+        el.modalError.textContent = message;
+        return;
+      }
+    }
+    const resolve = state.modalResolve;
+    const value = primary ? (el.modalFieldWrap.hidden ? true : el.modalInput.value) : true;
+    state.modalResolve = null;
+    state.modalValidate = null;
+    el.modal.hidden = true;
+    resolve(value);
+  }
+
   /* ------------------------------ 登录 ------------------------------ */
 
   function splitRepo(value) {
@@ -192,7 +263,12 @@
   async function openPost(path) {
     if (state.current && state.current.dirty) {
       saveDraft();
-      if (!confirm('当前文章有未保存的改动，确定切换吗？（改动已存入本机草稿）')) return;
+      const proceed = await openModal({
+        title: '切换文章？',
+        text: `《${state.current.meta.title || state.current.slug}》有未发布的改动，已存入本机草稿，之后可以恢复。`,
+        okText: '切换',
+      });
+      if (proceed === null) return;
     }
     clearTimeout(draftTimer);
     busy(true, '正在读取文章…');
@@ -218,7 +294,7 @@
       fillEditor();
       renderPostList();
       await updatePreview();
-      restoreDraftIfAny();
+      await restoreDraftIfAny();
       setStatus(`已打开 ${path}`);
     } catch (error) {
       toast(publish.maskToken(error.message), 'error');
@@ -323,7 +399,7 @@
     dropStore(STORAGE_KEYS.draft(path));
   }
 
-  function restoreDraftIfAny() {
+  async function restoreDraftIfAny() {
     if (!state.current) return;
     const raw = readStore(STORAGE_KEYS.draft(state.current.path));
     if (!raw) return;
@@ -337,7 +413,12 @@
       return;
     }
     const when = payload.savedAt ? new Date(payload.savedAt).toLocaleString('zh-CN') : '此前';
-    if (!confirm(`发现 ${when} 的本地草稿，是否恢复？\n（选“取消”将保留远端版本，草稿不会被删除）`)) return;
+    const restore = await openModal({
+      title: '发现本机草稿',
+      text: `${when} 在这台设备的浏览器里存过一份改动。要恢复吗？<br>选“取消”会保留远端版本，草稿不会被删除。`,
+      okText: '恢复草稿',
+    });
+    if (restore === null) return;
     state.current.meta = payload.meta || state.current.meta;
     state.current.body = payload.body;
     if (payload.baseHead) state.current.baseHead = payload.baseHead;
@@ -521,11 +602,17 @@
   }
 
   async function createPost() {
-    const title = prompt('新文章标题：');
-    if (!title) return;
+    const title = await openModal({
+      title: '新建文章',
+      text: '文件名会由标题自动生成，也可以自己改。创建后填写正文，点「保存并发布」即会上线。',
+      okText: '创建',
+      field: { label: '文章标题', placeholder: '例如：蜂鸟悬停稳定性笔记' },
+    });
+    if (title === null || !String(title).trim()) return;
     if (state.current && state.current.dirty) saveDraft();
     clearTimeout(draftTimer);
-    const slug = doc.slugify(title);
+    const cleanTitle = String(title).trim();
+    const slug = doc.slugify(cleanTitle);
     const check = doc.validateSlug(slug);
     if (!check.ok) {
       toast(`文件名不可用：${check.reason}`, 'error');
@@ -540,7 +627,7 @@
       slug,
       sha: '',
       baseHead: state.head ? state.head.sha : '',
-      meta: { title, date: doc.formatBeijingDate(), categories: [], tags: [], mathjax: false, cover: '' },
+      meta: { title: cleanTitle, date: doc.formatBeijingDate(), categories: [], tags: [], mathjax: false, cover: '' },
       body: '',
       dirty: true,
       newPost: true,
@@ -552,21 +639,38 @@
     renderPostList();
     el.markdown.focus();
     await updatePreview();
-    toast('已创建草稿：填好正文后点“保存并发布”', 'ok');
+    toast('已创建草稿：填好正文后点「保存并发布」', 'ok');
   }
 
   async function removePost() {
     if (!state.current || state.current.newPost) return;
     const current = state.current;
-    const answer = prompt(`删除《${current.meta.title || current.slug}》会把文章文件一起删掉。\n请输入文件名确认：${current.slug}`);
+    const label = current.meta.title || current.slug;
+    const answer = await openModal({
+      title: '删除文章',
+      text: `将删除 <code>${current.path}</code>，此操作会立即提交到 main 分支。<br>请输入文件名 <code>${current.slug}</code> 以确认。`,
+      okText: '删除',
+      danger: true,
+      field: {
+        label: '文件名',
+        placeholder: current.slug,
+        validate: (value) => (String(value).trim() === current.slug ? null : '文件名不一致，已取消删除'),
+      },
+    });
     if (answer === null) return;
-    if (answer.trim() !== current.slug) {
-      toast('文件名不一致，已取消删除', 'warn');
-      return;
-    }
-    const removeAssets = confirm('是否同时删除该文章的资源文件夹（配图）？');
+    const assetChoice = await openModal({
+      title: '文章里的配图怎么办？',
+      text: `这篇文章的资源文件夹是 <code>${doc.assetDir(current.slug)}/</code>。<br>` +
+        '只删文章：文件夹会保留（内容不会被引用，但不占仓库多少空间）。<br>' +
+        '一起删除：文件夹与里面的图片一并删掉，历史记录里仍可找回。',
+      okText: '文章和配图都删',
+      extraText: '只删文章',
+    });
+    if (assetChoice === null) return;
+    const removeAssets = assetChoice === true;
     const deletions = [current.path];
-    if (removeAssets) {
+    // 只删文章：保留资源目录，deletions 里只有文章文件
+    if (removeAssets === true) {
       try {
         const tree = await state.client.getTree();
         for (const entry of tree.entries) {
@@ -580,7 +684,7 @@
     busy(true, '正在删除…');
     try {
       const result = await state.client.putFiles([], {
-        message: `维护：删除《${current.meta.title || current.slug}》`,
+        message: `维护：删除《${label}》`,
         deletions,
         expectedHead: current.baseHead || undefined,
       });
@@ -665,6 +769,15 @@
     previewTimer = setTimeout(() => updatePreview(), 500);
   }
 
+  /** 窄屏下编辑区与预览二选一显示，避免两栏都被压扁 */
+  function setMobileTab(tab) {
+    const showPreview = tab === 'preview';
+    document.body.classList.toggle('admin-show-preview', showPreview);
+    el.tabEdit.classList.toggle('admin-tab--active', !showPreview);
+    el.tabPreview.classList.toggle('admin-tab--active', showPreview);
+    if (showPreview) updatePreview();
+  }
+
   /* ------------------------------ 事件绑定 ------------------------------ */
 
   function bind() {
@@ -705,12 +818,16 @@
     el.mathjaxInput.addEventListener('change', () => { markDirty(); schedulePreview(); });
 
     for (const button of el.toolbarButtons) {
-      button.addEventListener('click', () => {
+      button.addEventListener('click', async () => {
         const action = button.dataset.action;
         if (action === 'link') {
-          const url = prompt('链接地址：', 'https://');
+          const url = await openModal({
+            title: '插入链接',
+            okText: '插入',
+            field: { label: '链接地址', value: 'https://', placeholder: 'https://example.com' },
+          });
           if (url === null) return;
-          applyToolbar('link', { url });
+          applyToolbar('link', { url: String(url).trim() || 'https://' });
           return;
         }
         if (action === 'table') {
@@ -732,13 +849,20 @@
         }
         if (action === 'imageWidth') {
           const line = el.markdown.value.slice(0, el.markdown.selectionStart).split('\n').pop() || '';
-          if (!toolbar.parseAssetTag(line)) {
+          const tag = toolbar.parseAssetTag(line);
+          if (!tag) {
             toast('把光标放到配图那一行再设置宽度', 'warn');
             return;
           }
-          const width = prompt('图片宽度（留空恢复自适应，例如 600 或 100%）：', '600');
-          if (width === null) return;
-          applyToolbar('imageWidth', { width });
+          const currentWidth = tag.width || '自适应';
+          const choice = await openModal({
+            title: '图片宽度',
+            text: `当前：<code>${currentWidth}</code><br>Hexo 的 <code>asset_img</code> 第二段引号参数就是宽度，可写像素（如 600）或百分比。`,
+            okText: '半栏（约 400）',
+            extraText: '恢复自适应',
+          });
+          if (choice === null) return;
+          applyToolbar('imageWidth', { width: choice === true ? '400' : '' });
           return;
         }
         applyToolbar(action);
@@ -775,6 +899,25 @@
     el.conflictKeep.addEventListener('click', resolveConflictKeepMine);
     el.conflictTake.addEventListener('click', resolveConflictTakeRemote);
 
+    /* 弹窗 */
+    el.modalOk.addEventListener('click', () => acceptModal(true));
+    el.modalExtra.addEventListener('click', () => acceptModal(false));
+    el.modalCancel.addEventListener('click', closeModal);
+    el.modalBackdrop.addEventListener('click', closeModal);
+    el.modalInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        acceptModal(true);
+      }
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !el.modal.hidden) closeModal();
+    });
+
+    /* 移动端：编辑 / 预览 切换 */
+    el.tabEdit.addEventListener('click', () => setMobileTab('edit'));
+    el.tabPreview.addEventListener('click', () => setMobileTab('preview'));
+
     root.addEventListener('beforeunload', (event) => {
       if (!state.current || !state.current.dirty) return;
       saveDraft();
@@ -793,6 +936,9 @@
       'previewFrame', 'previewMode', 'warnings', 'endpointInput', 'wordCount', 'permalink',
       'statusText', 'busy', 'busyText', 'toasts', 'fileInput', 'uploadPanel', 'uploadList',
       'conflictBox', 'conflictText', 'conflictKeep', 'conflictTake',
+      'tokenLink', 'modal', 'modalBackdrop', 'modalTitle', 'modalText', 'modalFieldWrap',
+      'modalFieldLabel', 'modalInput', 'modalError', 'modalOk', 'modalExtra', 'modalCancel',
+      'tabEdit', 'tabPreview',
     ];
     for (const id of ids) el[id] = $(id);
     el.toolbarButtons = Array.from(document.querySelectorAll('[data-action]'));
@@ -805,6 +951,10 @@
     const savedRepo = readStore(STORAGE_KEYS.repo) || DEFAULT_REPO;
     const savedToken = readStore(STORAGE_KEYS.token);
     el.repoInput.value = savedRepo;
+    el.tokenLink.href = doc.tokenCreateUrl(savedRepo);
+    el.repoInput.addEventListener('input', () => {
+      el.tokenLink.href = doc.tokenCreateUrl(el.repoInput.value);
+    });
     el.endpointInput.value = preview.getEndpoint();
     el.commitMessage.placeholder = '提交信息（留空自动生成，例如：日志：新增《飞行器安装日记》上篇）';
     state.uploadQueue = upload.createQueue({ doc });

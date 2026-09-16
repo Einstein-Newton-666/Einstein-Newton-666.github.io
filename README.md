@@ -43,14 +43,24 @@ npm run server
 
 站点内置一个浏览器编辑台，部署后访问 <https://einstein-newton-666.github.io/admin/> 即可写作，
 不需要本地环境，也不依赖任何第三方服务：编辑器直接调用 GitHub API 把改动提交到 `main`，
-再由 Actions 自动构建发布。
+再由 Actions 自动构建发布。**`/admin/` 不在整站密码门内**（见 `scripts/gate-build.js` 的
+`DEFAULT_SKIP_PREFIXES`）：它自己用 GitHub 令牌鉴权，被加密反而无法使用。
 
-### 首次使用：创建访问令牌
+### 首次使用：两步拿到令牌
 
-1. GitHub → Settings → Developer settings → **Personal access tokens → Fine-grained tokens** → Generate new token。
-2. Repository access 选 **Only select repositories**，只勾选本博客仓库。
-3. Repository permissions → **Contents: Read and write**（唯一必需的权限）。
-4. Expiration 建议 ≤ 90 天。退出登录会在本机清除令牌；怀疑泄漏时到 GitHub 直接 Revoke。
+1. 打开 `/admin/`，点 **「① 在 GitHub 上生成令牌（权限已预填）」**。
+   这个链接用 GitHub 的模板 URL 参数预填了令牌名称、说明与 `Contents: Read and write` 权限；
+   你只需再选 **Only select repositories** 并勾选本博客仓库，然后点 **Generate token**。
+2. 把生成的令牌粘贴到 **「② 把生成的令牌粘贴到这里」**，点登录。
+
+手机浏览器同样适用：粘贴一次后浏览器会记住，不必每次登录。
+
+> 为什么不能直接用"用 GitHub 登录"？那需要后台保管 `client_secret` 来换取访问令牌，
+> 而本站是 GitHub Pages 上的纯静态站点，没有后台；把密钥放进公开页面等于公开泄漏。
+> 令牌权限随时可在 GitHub 上撤销，风险可控。
+>
+> 若 `github.com` 被你的网络阻断导致上面的按钮打不开，可换手机流量或换网络生成令牌；
+> 编辑台本身只要能访问 `api.github.com` 就能用（两者解析的路由不一定相同）。
 
 令牌只保存在浏览器 localStorage，所有请求直接发往 `api.github.com`，不经过本站或任何中间服务。
 
@@ -65,6 +75,8 @@ npm run server
   未启动时自动降级为前端近似渲染，并在预览区标出当前模式。
 - 改动自动存本机草稿，刷新或关掉浏览器都不丢。
 - 提交前比对远端 HEAD：发现别人已推送时**中止提交**，让你选择保留自己的内容或改用远端版本，不会静默覆盖。
+- 移动端适配：窄屏下编辑区与预览用底部标签切换，工具条横向滚动，所有确认走站内弹窗
+  （不用 `prompt`/`confirm`，因为浏览器可能屏蔽这类出现在公开页面上的原生弹窗）。
 
 ### 本地开发与测试
 
