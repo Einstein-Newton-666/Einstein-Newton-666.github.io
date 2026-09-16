@@ -867,9 +867,44 @@ test('编辑按钮链接指向编辑台并带上文件名', () => {
 });
 
 test('编辑按钮样式内联，避免样式规则落在加密门的明文区', () => {
-  const button = postEditLink.buildEditButton('welcome');
-  assert.match(button, /<a href="[^"]*" style="[^"]*"[^>]*>/, '样式必须内联在 a 上');
-  assert.doesNotMatch(button, /<style/, '按钮片段里不应带 <style>');
+  const tool = postEditLink.buildEditButton('welcome');
+  const inline = postEditLink.buildInlineEditButton('welcome');
+  for (const [name, button] of [['悬浮按钮', tool], ['移动端入口', inline]]) {
+    assert.match(button, /style="[^"]*"/, `${name} 的样式必须内联`);
+    assert.doesNotMatch(button, /<style/, `${name} 不得引入 <style>（会明文泄漏）`);
+  }
+});
+
+test('两处入口：桌面悬浮铅笔 + 移动端元信息行链接', () => {
+  const postPage = [
+    '<html><head><title>t</title></head><body>',
+    '<div class="article-meta-info">',
+    '<span class="article-date article-meta-item">2026-08-15</span>',
+    '</div>',
+    '<div class="post-tools-container"><ul class="article-tools-list">',
+    '<li class="right-bottom-tools page-aside-toggle"><i class="fa-regular fa-outdent"></i></li>',
+    '</ul></div>',
+    '</body></html>',
+  ].join('');
+
+  const injected = postEditLink.injectEditLink(postPage, '2026/08/15/welcome/index.html');
+  assert.match(injected, /data-einblog-edit-tool/, '缺少桌面悬浮按钮');
+  assert.match(injected, /data-einblog-edit-inline/, '缺少移动端入口（主题在 ≤640px 会隐藏整个 post-tools）');
+
+  const links = [...injected.matchAll(/href="(\/admin\/\?p=[^"]*)"/g)].map((m) => m[1]);
+  assert.equal(links.length, 2, `应有两处入口，实际 ${links.length}`);
+  assert.ok(links.every((href) => href === '/admin/?p=welcome'), `两处链接应一致：${links.join(' , ')}`);
+
+  // 移动端入口必须在元信息容器内部（该容器移动端才可见）
+  const metaStart = injected.indexOf('article-meta-info');
+  const metaDivEnd = injected.indexOf('</div>', metaStart);
+  assert.ok(injected.indexOf('data-einblog-edit-inline') < metaDivEnd, '移动端入口必须在元信息容器内');
+
+  // 移动端入口复用主题的 .mobile 显隐类，不自己写媒体查询
+  assert.match(injected, /class="[^"]*\bmobile\b[^"]*"[^>]*data-einblog-edit-inline/, '必须带主题的 mobile 类');
+
+  // 幂等
+  assert.equal(postEditLink.injectEditLink(injected, '2026/08/15/welcome/index.html'), injected);
 });
 
 test('只给文章页注入按钮，且重复注入是幂等的', () => {
@@ -882,8 +917,8 @@ test('只给文章页注入按钮，且重复注入是幂等的', () => {
   ].join('');
   const injected = postEditLink.injectEditLink(postPage, '2026/08/15/welcome/index.html');
   assert.match(injected, /\/admin\/\?p=welcome/);
-  assert.match(injected, /data-einblog-edit/);
-  assert.doesNotMatch(injected, /data-einblog-edit-style|<style/, '注入不应往 head 里塞 <style>（会明文泄漏）');
+  assert.match(injected, /data-einblog-edit-tool/);
+  assert.doesNotMatch(injected, /<style/, '注入不应往 head 里塞 <style>（会明文泄漏）');
   // 注入两次结果一致
   assert.equal(postEditLink.injectEditLink(injected, '2026/08/15/welcome/index.html'), injected);
 

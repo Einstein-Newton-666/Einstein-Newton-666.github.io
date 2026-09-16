@@ -22,6 +22,9 @@ const POST_PATH_RE = /^(\d{4})\/(\d{2})\/(\d{2})\/([^/]+)\/index\.html$/;
 const LINK_STYLE = 'display:flex;align-items:center;justify-content:center;'
   + 'width:100%;height:100%;color:inherit;text-decoration:none';
 
+// 移动端入口的样式（同样内联）；显隐由主题的 .mobile 类负责，这里只管排版
+const INLINE_STYLE = 'display:inline-flex;align-items:center;gap:.25em;color:inherit;text-decoration:none';
+
 function normalizePath(value) {
   return String(value || '').replace(/\\/g, '/').replace(/^\/+/, '');
 }
@@ -35,23 +38,58 @@ function slugFromPagePath(pagePath) {
   return slug;
 }
 
-/** 生成工具条里的「编辑」按钮（与主题的 article-tools-list 同排） */
+/** 桌面用：右侧悬浮工具条里的铅笔按钮 */
 function buildEditButton(slug) {
   const href = `/admin/?p=${encodeURIComponent(String(slug ?? ''))}`;
-  return `<li class="einblog-edit-tool" data-einblog-edit>`
+  return `<li class="einblog-edit-tool" data-einblog-edit-tool>`
     + `<a href="${href}" style="${LINK_STYLE}" title="编辑这篇文章" aria-label="编辑这篇文章">`
     + '<i class="fa-regular fa-pen-to-square"></i>'
     + '</a></li>';
+}
+
+/**
+ * 移动端用：文章元信息行里的「编辑」入口。
+ * 主题在 ≤640px 会把整个 .post-tools 隐藏（style.css：
+ * `@media (max-width:640px){ .page-container .post-tools{display:none} }`），
+ * 而 .article-meta-info 在移动端仍显示，所以窄屏的入口放这里。
+ * 显隐交给主题自带的 .mobile 类（它本来就靠 .desktop/.mobile 切换日期格式），
+ * 于是不必自己写媒体查询，也就不用往 head 里塞 <style>（那会落在加密门的明文区）。
+ */
+function buildInlineEditButton(slug) {
+  const href = `/admin/?p=${encodeURIComponent(String(slug ?? ''))}`;
+  return `<span class="article-meta-item mobile einblog-edit-inline" data-einblog-edit-inline>`
+    + `<a href="${href}" style="${INLINE_STYLE}" title="编辑这篇文章" aria-label="编辑这篇文章">`
+    + '<i class="fa-regular fa-pen-to-square"></i>&nbsp;编辑'
+    + '</a></span>';
 }
 
 function injectEditLink(html, pagePath) {
   const slug = slugFromPagePath(pagePath);
   if (!slug) return html;
   const markup = String(html || '');
-  if (markup.includes('data-einblog-edit')) return html; // 幂等：已注入过
-  const listEnd = markup.indexOf('</ul>', markup.indexOf('article-tools-list'));
-  if (listEnd === -1) return html; // 主题模板改了或该页没有工具条，保持原样
-  return `${markup.slice(0, listEnd)}${buildEditButton(slug)}${markup.slice(listEnd)}`;
+  if (markup.includes('data-einblog-edit-tool')) return html; // 幂等：已注入过
+
+  let output = markup;
+
+  // 移动端入口：插在 .article-meta-info 容器内部
+  const metaStart = output.indexOf('article-meta-info');
+  if (metaStart !== -1) {
+    const containerEnd = output.indexOf('>', metaStart);
+    if (containerEnd !== -1) {
+      output = `${output.slice(0, containerEnd + 1)}${buildInlineEditButton(slug)}${output.slice(containerEnd + 1)}`;
+    }
+  }
+
+  // 桌面入口：插进右侧悬浮工具条
+  const listStart = output.indexOf('article-tools-list');
+  if (listStart !== -1) {
+    const listEnd = output.indexOf('</ul>', listStart);
+    if (listEnd !== -1) {
+      output = `${output.slice(0, listEnd)}${buildEditButton(slug)}${output.slice(listEnd)}`;
+    }
+  }
+
+  return output;
 }
 
 function injectFromRenderData(html, data) {
@@ -65,4 +103,11 @@ if (typeof hexo !== 'undefined' && hexo.extend) {
   hexo.extend.filter.register('after_render:html', injectFromRenderData);
 }
 
-module.exports = { slugFromPagePath, buildEditButton, injectEditLink, POST_PATH_RE };
+module.exports = {
+  slugFromPagePath,
+  buildEditButton,
+  buildInlineEditButton,
+  injectEditLink,
+  POST_PATH_RE,
+};
+
