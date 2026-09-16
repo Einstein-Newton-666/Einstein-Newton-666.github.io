@@ -101,6 +101,10 @@ for (const file of htmlFiles) {
     failures.push(`页面没有被加密：public/${relative}`);
     continue;
   }
+  // 外壳（含 head）里不许留主题配置脚本：window.theme 带着站点标题、侧栏公告等自写文案
+  if (/hexo-configurations|window\.theme\s*=/.test(html)) {
+    failures.push(`public/${relative} 的外壳里还留着主题配置脚本（站点文案明文可见）`);
+  }
   shellText.push(toText(html.replace(PAYLOAD_RE, ' ')));
 }
 

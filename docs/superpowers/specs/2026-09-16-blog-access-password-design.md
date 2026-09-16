@@ -34,15 +34,19 @@
 
 ### 页面结构
 
-每个 HTML 保留 `<head>`（站点配置、主题早期脚本、样式、锁屏需要的 CSS/JS 引用都在这里），
-`<body>` 整体加密成负载：
+每个 HTML 保留 `<head>` 里的元数据（`<title>`、meta、样式与脚本引用），`<body>` 整体加密成负载。
+`<head>` 里的 `<script>` 也必须一起进密文——Hexo 注入的主题配置脚本（`window.config` /
+`window.theme`）里带着站点标题、侧栏公告、页脚文案这些自己写的字，留在页面上就是明文泄漏。
+唯一的例外是决定明暗模式的那支小脚本（`REDEFINE-THEME-STATUS`）：锁屏配色要用它，
+内容是纯逻辑不含站点文案，留在 head。搬进负载的 head 脚本在解锁后拼在正文脚本之前执行，
+保证 `window.theme` 先于主题 `main.js` 就位。
 
 ```
-<head>…原 head…<link site-gate.css><script site-gate.js defer></head>
+<head>…原 meta/样式… <script 明暗模式> <link site-gate.css><script site-gate.js defer></head>
 <body>锁屏 UI<script type="application/json" id="einblog-gate-payload">{v,kdf,cipher,iv,ct}</script></body>
 ```
 
-负载明文是 `{"v":1,"bodyHtml":"…原始 body…"}`。
+负载明文是 `{"v":1,"bodyHtml":"…head 脚本 + 原始 body…"}`。
 
 ### 加解密参数（`scripts/lib/gate-crypto.js`）
 

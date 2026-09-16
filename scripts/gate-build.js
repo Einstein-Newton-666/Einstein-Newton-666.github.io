@@ -38,6 +38,9 @@ const DEFAULT_SKIP_PREFIXES = ['admin/'];
 
 const SWUP_LIB_RE = /<script\b[^>]*\bsrc="[^"]*Swup[^"]*"[^>]*>\s*<\/script>/gi;
 const SWUP_INIT_RE = /<script>\s*window\.swup\s*=\s*new Swup\([\s\S]*?<\/script>/i;
+const HEAD_SCRIPT_RE = /<script\b[\s\S]*?<\/script>/gi;
+// head 里只留决定明暗模式的那支小脚本：锁屏配色要用它，内容是纯逻辑没有站点文案。
+const HEAD_SCRIPT_KEEP_RE = /REDEFINE-THEME-STATUS/;
 const SEARCH_CONTENT_RE = /<content\b[^>]*>[\s\S]*?<\/content>/gi;
 const FEED_CONTENT_RE = /(<content\b[^>]*>)[\s\S]*?(<\/content>)/gi;
 
@@ -133,13 +136,24 @@ function gateHtml(html, key, salt, iterations) {
   const parts = splitDocument(html);
   if (!parts) throw new Error('产物结构不认识（找不到 <html>/<head>/<body>）');
 
+  // head 里的 script 留在页面上就是明文泄漏：Hexo 注入的主题配置脚本（window.config /
+  // window.theme）里带着站点标题、侧栏公告、页脚文案这些自己写的字。除明暗模式那支小脚本
+  // 外全部搬进密文负载，解锁后拼在正文脚本之前，保证 window.theme 先于 main.js 就位。
+  const headScripts = [];
+  const headInner = parts.headInner.replace(HEAD_SCRIPT_RE, (block) => {
+    if (HEAD_SCRIPT_KEEP_RE.test(block)) return block;
+    headScripts.push(block);
+    return '';
+  });
+
   // Swup：未解锁的下一页只有锁屏外壳，SPA 切换必然拿不到容器，直接摘掉。
   const bodyHtml = parts.bodyHtml
     .replace(SWUP_LIB_RE, '')
     .replace(SWUP_INIT_RE, '');
+  const payloadHtml = headScripts.join('') + bodyHtml;
 
   const payload = gateCrypto.buildPayload(
-    JSON.stringify({ v: 1, bodyHtml }),
+    JSON.stringify({ v: 1, bodyHtml: payloadHtml }),
     key,
     salt,
     iterations,
@@ -150,7 +164,7 @@ function gateHtml(html, key, salt, iterations) {
       parts.prefix,
       parts.htmlTag,
       '\n<head>',
-      parts.headInner,
+      headInner,
       GATE_HEAD_TAGS,
       '</head>\n',
       parts.bodyTag,
@@ -159,7 +173,7 @@ function gateHtml(html, key, salt, iterations) {
       gateCrypto.serializePayload(payload),
       '</script>\n</body>\n</html>\n',
     ].join(''),
-    plainText: bodyHtml,
+    plainText: payloadHtml,
   };
 }
 

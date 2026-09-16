@@ -137,6 +137,9 @@ npm run e2e:gate      # 端到端：锁屏 → 错密码 → 解锁 → 站内�
 - 加解密约定集中在 `scripts/lib/gate-crypto.js`；浏览器端 `source/js/site-gate.js` 用同一套参数
   （PBKDF2-SHA256 60 万次 + AES-256-GCM，认证标签附在密文尾部）。`test/site-gate-crypto.test.cjs`
   跑「Node 加密 → 浏览器模块解密」的往返，两边参数一旦漂移立刻红灯。
+- `<head>` 里的主题配置脚本也一起进密文：`window.theme` 带着站点标题、侧栏公告、页脚文案这些
+  自己写的字，留在页面上就是明文泄漏。只留决定明暗模式的那支小脚本（锁屏配色要用，内容是
+  纯逻辑不含站点文案）；搬进负载的脚本解锁后排在正文脚本之前，`window.theme` 先于主题 JS 就位。
 - 解锁后缓存的是**派生钥匙**而不是密码：勾选"记住 30 天"写 localStorage，否则写 sessionStorage。
 - `admin/` 不在门内：编辑台自己用 GitHub PAT 登录，加密了反而没法用。
 - 带密码构建会摘掉 Swup：未解锁的下一页只有锁屏外壳，SPA 切换拿不到 `#swup` 容器。

@@ -11,12 +11,16 @@ const PASSWORD = 'test-password-1234';
 const SALT = Buffer.from('0123456789abcdef', 'utf8');
 const ITERATIONS = 120000;
 const CANARY = '实验室里的安装记录只应该出现在密文里';
+const CONFIG_CANARY = '侧栏公告里的站点文案不该明文出现';
 
 function page(title, body) {
   return [
     '<!DOCTYPE html>',
     '<html lang="zh-CN">',
-    `<head><title>${title} | 测试站点</title><script>window.config = {};</script></head>`,
+    `<head><title>${title} | 测试站点</title>`,
+    '<script>const THEME_KEY = "REDEFINE-THEME-STATUS"; document.documentElement.classList.add("dark");</script>',
+    `<script id="hexo-configurations">window.config = {}; window.theme = {"sidebar":{"announcement":"${CONFIG_CANARY}"}};</script>`,
+    '</head>',
     `<body><div id="swup"><p>${body}</p></div>`,
     '<script src="https://cdn.example.com/libs/Swup.min.js"></script>',
     '<script src="https://cdn.example.com/libs/SwupScriptsPlugin.min.js"></script>',
@@ -81,6 +85,16 @@ test('带密码构建：页面只剩锁屏与密文，正文不再出现在产�
   assert.ok(content.bodyHtml.includes(CANARY), '密文里应该能解出原文');
   assert.ok(!/Swup/.test(content.bodyHtml), 'gated 产物里应摘掉 Swup（SPA 切换拿不到锁屏容器）');
   assert.ok(content.bodyHtml.includes('/js/anime-theme.js'), '其它主题脚本要保留');
+
+  // head 里的主题配置脚本带着站点文案，必须一起进密文；明暗模式那支要留在 head
+  assert.ok(gated.includes('REDEFINE-THEME-STATUS'), '明暗模式脚本应留在 head（锁屏配色要用）');
+  assert.ok(!gated.includes(CONFIG_CANARY), 'head 里还留着站点文案（主题配置脚本没加密）');
+  assert.ok(!gated.includes('hexo-configurations'), 'head 里不该再有 hexo-configurations');
+  assert.ok(content.bodyHtml.includes(CONFIG_CANARY), '密文里应能解出主题配置');
+  assert.ok(
+    content.bodyHtml.indexOf('hexo-configurations') < content.bodyHtml.indexOf('/js/anime-theme.js'),
+    'head 脚本要排在正文脚本之前，window.theme 必须先于主题 main.js 就位',
+  );
 
   const report = JSON.parse(fs.readFileSync(site.reportPath, 'utf8'));
   assert.equal(report.pages.length, 2, '只应加密非 admin 的页面');
