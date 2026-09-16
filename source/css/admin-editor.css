@@ -1,0 +1,760 @@
+/* ==========================================================================
+   博客在线编辑台样式
+   与主题样式完全隔离：只作用于 .admin-* 命名空间，不覆盖 Redefine 的任何规则。
+   ========================================================================== */
+
+:root {
+  --admin-primary: #1a73e8;
+  --admin-primary-dark: #1668d3;
+  --admin-danger: #d93025;
+  --admin-warn: #b06000;
+  --admin-ok: #0d904f;
+  --admin-bg: #eef1f5;
+  --admin-surface: #fff;
+  --admin-text: #202124;
+  --admin-subtle: #5f6368;
+  --admin-border: #dadce0;
+  --admin-mono: Consolas, Monaco, 'Courier New', monospace;
+}
+
+html, body.admin-body {
+  height: 100%;
+}
+
+body.admin-body {
+  margin: 0;
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  font-family: -apple-system, 'Segoe UI', 'Noto Sans SC', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow: hidden;
+}
+
+body.admin-body *,
+body.admin-body *::before,
+body.admin-body *::after {
+  box-sizing: border-box;
+}
+
+.admin-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ---------------------------------- 顶栏 --------------------------------- */
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  background: var(--admin-surface);
+  border-bottom: 1px solid var(--admin-border);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+  flex-wrap: wrap;
+}
+
+.admin-brand {
+  font-weight: 700;
+  color: var(--admin-primary);
+}
+
+.admin-repo,
+.admin-head {
+  font-size: 12px;
+  color: var(--admin-subtle);
+}
+
+.admin-head code {
+  font-family: var(--admin-mono);
+  background: #f1f3f4;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.admin-topbar__spacer {
+  flex: 1;
+}
+
+.admin-endpoint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--admin-subtle);
+}
+
+.admin-endpoint input {
+  width: 210px;
+  padding: 6px 8px;
+  border: 1px solid var(--admin-border);
+  border-radius: 6px;
+  font-family: var(--admin-mono);
+  font-size: 12px;
+}
+
+/* ---------------------------------- 按钮 --------------------------------- */
+
+.admin-btn {
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--admin-border);
+  background: #fff;
+  color: var(--admin-text);
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s, border-color .15s;
+}
+
+.admin-btn:hover {
+  background: #eef3fd;
+  border-color: #c5d9f5;
+}
+
+.admin-btn:active {
+  transform: translateY(1px);
+}
+
+.admin-btn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.admin-btn--primary {
+  background: var(--admin-primary);
+  border-color: var(--admin-primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.admin-btn--primary:hover {
+  background: var(--admin-primary-dark);
+}
+
+.admin-btn--danger {
+  color: var(--admin-danger);
+  border-color: #f3c0bc;
+}
+
+.admin-btn--danger:hover {
+  background: #fdecea;
+}
+
+.admin-btn--block {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.admin-btn--tiny {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.admin-btn--file {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ---------------------------------- 登录 --------------------------------- */
+
+.admin-login {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: auto;
+}
+
+.admin-login__card {
+  width: min(560px, 100%);
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  padding: 26px 28px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, .08);
+}
+
+.admin-login__card h1 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  color: var(--admin-primary);
+}
+
+.admin-login__hint {
+  margin: 0 0 18px;
+  color: var(--admin-subtle);
+  font-size: 13px;
+}
+
+.admin-login__hint code {
+  font-family: var(--admin-mono);
+  background: #f1f3f4;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.admin-login__error {
+  min-height: 20px;
+  margin: 6px 0 10px;
+  color: var(--admin-danger);
+  font-size: 13px;
+}
+
+.admin-login__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-login__faq {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--admin-subtle);
+}
+
+.admin-login__faq summary {
+  cursor: pointer;
+  color: var(--admin-primary);
+}
+
+.admin-login__faq ol {
+  margin: 10px 0 0 18px;
+  padding: 0;
+}
+
+.admin-login__faq li {
+  margin: 4px 0;
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--admin-subtle);
+}
+
+.admin-field input {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 9px 10px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  color: var(--admin-text);
+}
+
+.admin-field input:focus,
+.admin-search:focus,
+.admin-markdown:focus {
+  outline: 2px solid rgba(26, 115, 232, .4);
+  outline-offset: 1px;
+  border-color: var(--admin-primary);
+}
+
+/* -------------------------------- 工作区 -------------------------------- */
+
+.admin-workspace {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 0;
+}
+
+.admin-sidebar {
+  background: var(--admin-surface);
+  border-right: 1px solid var(--admin-border);
+  padding: 12px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-sidebar__actions {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-search {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 8px 10px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  width: 100%;
+}
+
+.admin-post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.admin-sidebar__empty {
+  color: var(--admin-subtle);
+  font-size: 13px;
+  text-align: center;
+  padding: 14px 0;
+}
+
+.admin-post {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #f8f9fa;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+}
+
+.admin-post:hover {
+  background: #eef3fd;
+}
+
+.admin-post--active {
+  background: #e8f0fe;
+  border-color: var(--admin-primary);
+}
+
+.admin-post__title {
+  font-size: 13px;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.admin-post__meta {
+  font-size: 11px;
+  color: var(--admin-subtle);
+}
+
+.admin-main {
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+}
+
+.admin-placeholder {
+  margin: auto;
+  max-width: 560px;
+  padding: 28px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+}
+
+.admin-placeholder h2 {
+  margin: 0 0 12px;
+  font-size: 17px;
+  color: var(--admin-primary);
+}
+
+.admin-placeholder ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--admin-subtle);
+  font-size: 13px;
+}
+
+.admin-placeholder code {
+  font-family: var(--admin-mono);
+  background: #f1f3f4;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+/* -------------------------------- 编辑区 -------------------------------- */
+
+.admin-editor {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--admin-border);
+  width: 100%;
+  min-height: 0;
+}
+
+.admin-editor__column {
+  background: var(--admin-surface);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.admin-editor__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--admin-border);
+  font-size: 12px;
+  color: var(--admin-subtle);
+}
+
+.admin-path {
+  font-family: var(--admin-mono);
+  word-break: break-all;
+}
+
+.admin-link {
+  color: var(--admin-ok);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-tool {
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--admin-border);
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.admin-tool:hover {
+  background: #eef3fd;
+}
+
+.admin-toolbar__sep {
+  width: 1px;
+  background: var(--admin-border);
+  margin: 0 4px;
+}
+
+.admin-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-meta .admin-field {
+  margin-bottom: 0;
+}
+
+.admin-field--wide {
+  grid-column: 1 / -1;
+}
+
+.admin-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--admin-subtle);
+}
+
+.admin-drop {
+  flex: 1;
+  min-height: 260px;
+  display: flex;
+}
+
+.admin-markdown {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  resize: none;
+  padding: 14px;
+  font-family: var(--admin-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--admin-text);
+  background: #fcfdff;
+  tab-size: 2;
+}
+
+.admin-upload-panel {
+  border-top: 1px solid var(--admin-border);
+  padding: 10px 12px;
+}
+
+.admin-upload-panel h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--admin-subtle);
+}
+
+.admin-upload-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-upload {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+
+.admin-upload span:last-child {
+  display: flex;
+  gap: 6px;
+}
+
+.admin-commit {
+  border-top: 1px solid var(--admin-border);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-commit input[type="text"] {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 8px 10px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  width: 100%;
+}
+
+.admin-commit__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-conflict {
+  margin: 0 12px 12px;
+  border: 1px solid #f3c0bc;
+  background: #fdecea;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 13px;
+}
+
+.admin-conflict p {
+  margin: 0 0 10px;
+}
+
+.admin-conflict__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* -------------------------------- 预览区 -------------------------------- */
+
+.admin-preview__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--admin-border);
+  font-size: 12px;
+  color: var(--admin-subtle);
+}
+
+.admin-badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: #f1f3f4;
+}
+
+.admin-badge--ok {
+  background: #e6f4ea;
+  color: var(--admin-ok);
+}
+
+.admin-badge--warn {
+  background: #fef7e0;
+  color: var(--admin-warn);
+}
+
+.admin-preview {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: #fff;
+  min-height: 320px;
+}
+
+.admin-warnings {
+  margin: 0;
+  padding: 8px 12px 12px 30px;
+  font-size: 12px;
+  color: var(--admin-warn);
+  border-top: 1px solid var(--admin-border);
+}
+
+.admin-warning--error {
+  color: var(--admin-danger);
+  font-weight: 600;
+}
+
+/* --------------------------------- 状态栏 -------------------------------- */
+
+.admin-status {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 16px;
+  background: var(--admin-surface);
+  border-top: 1px solid var(--admin-border);
+  font-size: 12px;
+  color: var(--admin-subtle);
+  flex-wrap: wrap;
+}
+
+.admin-status__text--warn {
+  color: var(--admin-warn);
+}
+
+.admin-status__meta {
+  font-family: var(--admin-mono);
+}
+
+/* ------------------------------ 遮罩与提示 ------------------------------ */
+
+.admin-busy {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, .7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.admin-busy__box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  padding: 14px 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+  font-size: 13px;
+}
+
+.admin-busy__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #c5d9f5;
+  border-top-color: var(--admin-primary);
+  border-radius: 50%;
+  animation: admin-spin .8s linear infinite;
+}
+
+@keyframes admin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.admin-toasts {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 60;
+  max-width: min(420px, 90vw);
+}
+
+.admin-toast {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #323232;
+  color: #fff;
+  font-size: 13px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+  opacity: 1;
+  transition: opacity .4s, transform .4s;
+}
+
+.admin-toast--ok {
+  background: #0d652d;
+}
+
+.admin-toast--warn {
+  background: #8a5300;
+}
+
+.admin-toast--error {
+  background: #a50e0e;
+}
+
+.admin-toast--out {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+/* --------------------------------- 响应式 -------------------------------- */
+
+@media (max-width: 1080px) {
+  .admin-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-preview {
+    min-height: 420px;
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar {
+    max-height: 34vh;
+  }
+
+  .admin-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-endpoint {
+    display: none;
+  }
+}
+
+@media print {
+  .admin-topbar,
+  .admin-sidebar,
+  .admin-status,
+  .admin-toolbar {
+    display: none;
+  }
+}

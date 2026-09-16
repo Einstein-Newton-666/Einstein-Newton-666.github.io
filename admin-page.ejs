@@ -1,0 +1,205 @@
+<%#
+  博客在线编辑台布局
+  独立于主题页面模板：不带主题导航/背景/Swup，样式与主题 CSS 完全隔离，
+  避免编辑器被站点排版影响。页面本身由 source/admin/index.md 指定 layout: admin。
+%>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="no-referrer">
+  <title><%= page.title || '博客在线编辑台' %></title>
+  <link rel="icon" href="/images/brand/favicon-avatar.png">
+  <link rel="stylesheet" href="/css/admin-editor.css">
+</head>
+<body class="admin-body">
+
+<div class="admin-shell">
+  <header class="admin-topbar">
+    <span class="admin-brand">✏️ 博客编辑台</span>
+    <span class="admin-repo" id="repoLabel">—</span>
+    <span class="admin-head">HEAD <code id="headLabel">—</code></span>
+    <span class="admin-topbar__spacer"></span>
+    <label class="admin-endpoint">
+      预览服务
+      <input type="url" id="endpointInput" placeholder="http://127.0.0.1:4001" spellcheck="false">
+    </label>
+    <button type="button" class="admin-btn" id="signOutButton">忘记令牌 / 退出</button>
+  </header>
+
+  <div class="admin-login" id="login">
+    <div class="admin-login__card">
+      <h1>连接你的博客仓库</h1>
+      <p class="admin-login__hint">
+        需要一个只对本仓库有 <b>Contents 读写</b> 权限的 GitHub 细粒度令牌。
+        令牌只保存在<b>本机浏览器</b>，所有请求直接发往 <code>api.github.com</code>，不经过任何第三方服务。
+      </p>
+      <label class="admin-field">
+        <span>仓库</span>
+        <input type="text" id="repoInput" value="Einstein-Newton-666/Einstein-Newton-666.github.io" spellcheck="false">
+      </label>
+      <label class="admin-field">
+        <span>访问令牌</span>
+        <input type="password" id="tokenInput" placeholder="github_pat_… 或 ghp_…" autocomplete="off" spellcheck="false">
+      </label>
+      <p class="admin-login__error" id="loginError"></p>
+      <div class="admin-login__actions">
+        <button type="button" class="admin-btn admin-btn--primary" id="signInButton">登录并读取文章</button>
+        <button type="button" class="admin-btn" id="forgetButton">清除本机令牌</button>
+      </div>
+      <details class="admin-login__faq">
+        <summary>令牌怎么创建？权限怎么给？</summary>
+        <ol>
+          <li>打开 GitHub → Settings → Developer settings → <b>Personal access tokens → Fine-grained tokens</b> → Generate new token。</li>
+          <li>Repository access 选 <b>Only select repositories</b>，只勾选本博客仓库。</li>
+          <li>Permissions → Repository permissions → <b>Contents: Read and write</b>（这是唯一必需的权限）。</li>
+          <li>Expiration 建议 90 天或更短；泄漏时在 GitHub 上直接 Revoke 即可。</li>
+        </ol>
+      </details>
+    </div>
+  </div>
+
+  <div class="admin-workspace" id="workspace" hidden>
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar__actions">
+        <button type="button" class="admin-btn admin-btn--primary admin-btn--block" id="newPostButton">＋ 新建文章</button>
+        <button type="button" class="admin-btn admin-btn--block" id="reloadButton">↻ 重新读取列表</button>
+      </div>
+      <input type="search" class="admin-search" id="filterInput" placeholder="筛选文件名…" spellcheck="false">
+      <div class="admin-post-list" id="postList"></div>
+    </aside>
+
+    <main class="admin-main">
+      <div class="admin-placeholder" id="placeholder">
+        <h2>选择左侧的文章开始编辑</h2>
+        <ul>
+          <li>左侧列出仓库 <code>source/_posts/</code> 下的全部文章</li>
+          <li>双击 / 点选后可直接改标题、日期、分类、标签与正文</li>
+          <li>配图拖进编辑区即会上传到文章同名文件夹</li>
+          <li>保存会直接提交到 <code>main</code> 分支，GitHub Actions 自动发布</li>
+        </ul>
+      </div>
+
+      <div class="admin-editor" id="editor" hidden>
+        <div class="admin-editor__column">
+          <div class="admin-editor__head">
+            <span class="admin-path" id="currentPath"></span>
+            <a class="admin-link" id="publishLink" hidden target="_blank" rel="noopener"></a>
+          </div>
+
+          <div class="admin-toolbar">
+            <button type="button" class="admin-tool" data-action="heading" title="切换二级标题">H2</button>
+            <button type="button" class="admin-tool" data-action="bold" title="加粗 Ctrl+B"><b>B</b></button>
+            <button type="button" class="admin-tool" data-action="italic" title="斜体"><i>I</i></button>
+            <button type="button" class="admin-tool" data-action="strike" title="删除线"><s>S</s></button>
+            <button type="button" class="admin-tool" data-action="code" title="行内代码">&lt;/&gt;</button>
+            <span class="admin-toolbar__sep"></span>
+            <button type="button" class="admin-tool" data-action="bullet" title="无序列表">• 列表</button>
+            <button type="button" class="admin-tool" data-action="ordered" title="有序列表">1. 列表</button>
+            <button type="button" class="admin-tool" data-action="quote" title="引用">❝</button>
+            <button type="button" class="admin-tool" data-action="table" title="插入表格">▦ 表格</button>
+            <button type="button" class="admin-tool" data-action="fence" title="代码块">▤ 代码块</button>
+            <span class="admin-toolbar__sep"></span>
+            <button type="button" class="admin-tool" data-action="link" title="插入链接 Ctrl+K">🔗 链接</button>
+            <button type="button" class="admin-tool" data-action="formula" title="插入整行公式（自动开启 mathjax）">∑ 公式</button>
+          </div>
+
+          <div class="admin-meta" id="metaForm">
+            <label class="admin-field admin-field--wide">
+              <span>标题</span>
+              <input type="text" id="titleInput" spellcheck="false">
+            </label>
+            <label class="admin-field">
+              <span>日期（北京时间）</span>
+              <input type="text" id="dateInput" placeholder="YYYY-MM-DD HH:mm:ss" spellcheck="false">
+            </label>
+            <label class="admin-field">
+              <span>分类（逗号分隔）</span>
+              <input type="text" id="categoriesInput" placeholder="日志" spellcheck="false">
+            </label>
+            <label class="admin-field">
+              <span>标签（逗号分隔）</span>
+              <input type="text" id="tagsInput" placeholder="随笔, 飞行器" spellcheck="false">
+            </label>
+            <label class="admin-field">
+              <span>封面（/ 开头的站内路径）</span>
+              <input type="text" id="coverInput" placeholder="/images/brand/xxx.webp" spellcheck="false">
+            </label>
+            <label class="admin-field">
+              <span>摘要 excerpt（可选）</span>
+              <input type="text" id="excerptInput" spellcheck="false">
+            </label>
+            <label class="admin-check">
+              <input type="checkbox" id="mathjaxInput">
+              <span>公式 mathjax</span>
+            </label>
+          </div>
+
+          <div class="admin-drop" id="editorPane">
+            <textarea id="markdown" class="admin-markdown" spellcheck="false" placeholder="在这里写 Markdown 正文…&#10;把图片直接拖进来或 Ctrl+V 粘贴，会自动放进文章同名文件夹。"></textarea>
+          </div>
+
+          <div class="admin-upload-panel" id="uploadPanel" hidden>
+            <h3>本次待上传的配图</h3>
+            <ul class="admin-upload-list" id="uploadList"></ul>
+          </div>
+
+          <div class="admin-commit">
+            <input type="text" id="commitMessage" spellcheck="false">
+            <div class="admin-commit__actions">
+              <button type="button" class="admin-btn admin-btn--primary" id="saveButton" title="提交到 main 分支，GitHub Actions 会自动构建并发布">保存并发布</button>
+              <button type="button" class="admin-btn admin-btn--danger" id="deletePostButton">删除文章</button>
+              <label class="admin-btn admin-btn--file">
+                添加配图
+                <input type="file" id="fileInput" accept="image/*" multiple hidden>
+              </label>
+            </div>
+          </div>
+
+          <div class="admin-conflict" id="conflictBox" hidden>
+            <p id="conflictText"></p>
+            <div class="admin-conflict__actions">
+              <button type="button" class="admin-btn admin-btn--primary" id="conflictKeep">保留我的内容并同步远端</button>
+              <button type="button" class="admin-btn" id="conflictTake">放弃我的改动</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-editor__column admin-editor__column--preview">
+          <div class="admin-preview__head">
+            <span>预览</span>
+            <span class="admin-badge" id="previewMode">检测中…</span>
+          </div>
+          <iframe class="admin-preview" id="previewFrame" title="文章预览" sandbox="allow-same-origin"></iframe>
+          <ul class="admin-warnings" id="warnings" hidden></ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <footer class="admin-status">
+    <span class="admin-status__text" id="statusText">准备中…</span>
+    <span class="admin-status__meta" id="wordCount"></span>
+    <span class="admin-status__meta" id="permalink"></span>
+  </footer>
+</div>
+
+<div class="admin-busy" id="busy" hidden>
+  <div class="admin-busy__box">
+    <span class="admin-busy__spinner"></span>
+    <span id="busyText">处理中…</span>
+  </div>
+</div>
+
+<div class="admin-toasts" id="toasts"></div>
+
+<script src="/admin/js/editor-doc.js"></script>
+<script src="/admin/js/editor-publish.js"></script>
+<script src="/admin/js/editor-toolbar.js"></script>
+<script src="/admin/js/editor-preview.js"></script>
+<script src="/admin/js/editor-upload.js"></script>
+<script src="/admin/js/editor-app.js"></script>
+</body>
+</html>

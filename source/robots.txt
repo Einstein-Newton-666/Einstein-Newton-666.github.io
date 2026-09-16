@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+# 在线编辑台是给站点作者用的工具页，不参与收录（页面本身也带 noindex）
+Disallow: /admin/
 
 Sitemap: https://einstein-newton-666.github.io/sitemap.xml
