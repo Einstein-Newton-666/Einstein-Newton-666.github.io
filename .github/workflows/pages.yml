@@ -27,6 +27,11 @@ concurrency:
 
 jobs:
   build:
+    # 这个流程只在**公开的部署仓库**里跑：它用 actions/deploy-pages 直接发布，需要
+    # pages: write 与 id-token: write。源码仓库（私有）那边由 publish.yml 负责，
+    # 它把构建产物推到本仓库的 pages 分支；两边靠 github.repository 互相排除。
+    # 迁移完成后（本仓库改成从 pages 分支发布）这个文件就可以删掉了。
+    if: github.repository == 'Einstein-Newton-666/Einstein-Newton-666.github.io'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

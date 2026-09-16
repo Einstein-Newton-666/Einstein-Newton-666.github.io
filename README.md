@@ -190,7 +190,29 @@ $env:BLOG_GATE_PASSWORD='临时密码'; $env:BLOG_GATE_SCOPE='posts'; npm run ga
 ### 换密码 / 忘记密码
 
 改掉 Secret 里的 `BLOG_GATE_PASSWORD` 重新部署即可，代码不用动；访客浏览器里缓存的旧钥匙
-会自然失效。要一次性作废所有已解锁的浏览器，连同 `scripts/gate-salt.txt` 一起换。
+会自然失效。要一次性作废所有已解锁的浏览器，连同 `scripts/lib/gate-salt.js` 一起换。
+
+## 仓库与部署拓扑
+
+目标是"公开仓库里没有源码"：源码放私有仓库，公开仓库只收构建产物。
+
+| 仓库 | 可见性 | 内容 | 谁发布 |
+|---|---|---|---|
+| `einblog-source` | 私有 | Hexo 源码、文章 `.md`、workflow | 日常开发在这里，push 到 `main` 触发发布 |
+| `Einstein-Newton-666.github.io` | 公开 | 只有构建产物（HTML/CSS/JS/图片，以及私密文章的**密文**），放在 `pages` 分支 | `publish.yml` 强推；Pages 从该分支发布 |
+
+- `publish.yml`（在**私有源码仓库**里生效）：构建 → 加密 → 校验 → `git push -f` 到公开仓库的
+  `pages` 分支。每次都是全新的单提交历史，公开仓库不会积累源码历史。
+- `pages.yml`（在**公开部署仓库**里生效，迁移完成后可删除）：原来那套 `actions/deploy-pages`
+  直接发布。两个流程用 `github.repository` 互相排除，同一时间只有一个真正干活——
+  迁移期间推错仓库也不会互相打架。
+- 需要的 Secret（都建在**私有源码仓库**）：`BLOG_GATE_PASSWORD`（访问密码）、
+  `PAGES_DEPLOY_TOKEN`（细粒度 PAT，只勾公开的 `Einstein-Newton-666.github.io`，
+  权限 `Contents: Read and write`，供推送产物用）。
+- 迁移步骤与备选方案：`docs/superpowers/plans/2026-09-16-repo-privacy-options.md`。
+
+CI：`.github/workflows/ci.yml` 只在 PR 上跑只读校验；发布由 `publish.yml` /
+`pages.yml` 按上面的分工负责（持有 `pages: write` 的那个不要加 `pull_request` 触发）。
 
 ## 主题定制
 
@@ -201,8 +223,5 @@ $env:BLOG_GATE_PASSWORD='临时密码'; $env:BLOG_GATE_SCOPE='posts'; npm run ga
   内页没有横幅，注入会白下 213–925KB）
 - 站点地图模板：`sitemap_template.xml`（首页/标签/分类条目不写会随部署跳动的 `lastmod`）
 - 插画来源记录：`source/images/brand/sources.json`
-
-CI 分两个流程：`.github/workflows/ci.yml` 只在 PR 上跑只读校验，
-`.github/workflows/pages.yml` 负责 main 的构建与发布（持有 `pages: write`，不要给它加 `pull_request` 触发）。
 
 不要直接修改 `node_modules/hexo-theme-redefine`，依赖更新后这些改动会丢失。

@@ -1,0 +1,115 @@
+name: Build and publish to the public Pages repo
+
+# ---------------------------------------------------------------------------
+# 这个流程在**私有源码仓库**（einblog-source）里跑：
+#   构建 → 整体加密 → 校验 → 把 public/ 强推到公开仓库 <owner>.github.io 的 pages 分支。
+# 于是公开仓库里只有构建产物（含私密文章的密文），没有任何 .md 源码。
+#
+# 为什么另一个 workflow 文件（pages.yml）还留着：公开仓库那边仍由它用
+# actions/deploy-pages 直接发布。两个流程靠 github.repository 互相排除——
+#   - 公开部署仓库里：pages.yml 生效，本文件的任务被 if 跳过；
+#   - 私有源码仓库里：pages.yml 的任务被跳过，本文件生效。
+# 迁移完成（公开仓库改成从 pages 分支发布、main 分支删除）后，pages.yml 就可以删掉了。
+#
+# 需要的 Secret（建在私有源码仓库里）：
+#   BLOG_GATE_PASSWORD  访问密码（与原来同一个值）
+#   PAGES_DEPLOY_TOKEN  细粒度 PAT：只勾公开的 <owner>.github.io，权限 Contents: Read and write
+# ---------------------------------------------------------------------------
+
+on:
+  push:
+    branches: [main]
+    # 只改仓库文档/依赖机器人配置时不必重新发布站点。
+    # 注意不要写成 '**.md'：source/_posts 与 source/**/*.md 都是站点内容，
+    # 只改文章时必须照常触发发布。
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+      - '.github/dependabot.yml'
+      - '.gitignore'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # 按 ref 分组：同一分支同一时间只跑一个发布，手动触发的其他分支也不会互相取消。
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # 公开的部署仓库与它接收产物的分支。job 级 if 里不能用 env 上下文，所以那里重复写了一遍字面量。
+  PUBLIC_REPO: Einstein-Newton-666/Einstein-Newton-666.github.io
+  PUBLIC_BRANCH: pages
+
+jobs:
+  publish:
+    # 只在私有源码仓库里跑；公开部署仓库由 pages.yml 负责（那里本任务会被跳过）
+    if: github.repository != 'Einstein-Newton-666/Einstein-Newton-666.github.io'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          # 与 pages.yml 保持一致；Node 20 已于 2026-04 结束维护。
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # npm test = 单元测试 + hexo generate + test/verify-site.mjs 产物校验
+      # TZ 必须跟本地一致：Hexo 按“构建进程所在时区”渲染永久链接，跑在 UTC 的
+      # runner 上会把凌晨 0–8 点写的文章排到前一天。
+      - name: Test and build site
+        run: npm test
+        env:
+          TZ: Asia/Shanghai
+
+      # 缺 Secret 就直接失败：宁可这次不发，也不能把不设防的站点传上 Pages。
+      - name: Check gate password
+        run: |
+          if [ -z "$BLOG_GATE_PASSWORD" ]; then
+            echo "::error::缺少 BLOG_GATE_PASSWORD secret，拒绝发布未加密站点"
+            exit 1
+          fi
+        env:
+          BLOG_GATE_PASSWORD: ${{ secrets.BLOG_GATE_PASSWORD }}
+
+      # 重新生成并加密，随后校验密文产物（解不回原文/漏明文都会失败）
+      # BLOG_GATE_SCOPE=posts：只锁 front-matter 写了 private: true 的文章
+      # （整站模式写 site；范围是显式开关，漏打标记不会静默改变范围）
+      - name: Build gated site
+        run: npm run gate:build
+        env:
+          TZ: Asia/Shanghai
+          BLOG_GATE_SCOPE: posts
+          BLOG_GATE_PASSWORD: ${{ secrets.BLOG_GATE_PASSWORD }}
+
+      - name: Verify gated artifact
+        run: npm run gate:verify
+        env:
+          BLOG_GATE_PASSWORD: ${{ secrets.BLOG_GATE_PASSWORD }}
+
+      - name: Publish built site to the public Pages repo
+        env:
+          PAGES_DEPLOY_TOKEN: ${{ secrets.PAGES_DEPLOY_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PAGES_DEPLOY_TOKEN}" ]; then
+            echo "::error::缺少 PAGES_DEPLOY_TOKEN secret，无法把产物推到公开仓库"
+            exit 1
+          fi
+          cd public
+          # 公开仓库用「Deploy from a branch」发布，默认会跑 Jekyll；.nojekyll 让它按原样发布
+          touch .nojekyll
+          git init -q -b "${PUBLIC_BRANCH}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -qm "deploy: ${GITHUB_SHA::7}"
+          # 每次都是全新单提交历史强推：公开仓库里不会积累源码历史，只会留着当前这一版产物
+          git push -f "https://x-access-token:${PAGES_DEPLOY_TOKEN}@github.com/${PUBLIC_REPO}.git" "${PUBLIC_BRANCH}"
