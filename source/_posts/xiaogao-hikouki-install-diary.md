@@ -5,4 +5,5 @@ categories: [日志]
 tags: [随笔, 飞行器]
 mathjax: false
 cover: /images/brand/tech-lab.webp
+private: true
 ---

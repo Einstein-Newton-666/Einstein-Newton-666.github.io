@@ -60,11 +60,14 @@ jobs:
         env:
           BLOG_GATE_PASSWORD: ${{ secrets.BLOG_GATE_PASSWORD }}
 
-      # 重新生成并整体加密，随后校验密文产物（解不回原文/漏明文都会失败）
+      # 重新生成并加密，随后校验密文产物（解不回原文/漏明文都会失败）
+      # BLOG_GATE_SCOPE=posts：只锁 front-matter 写了 private: true 的文章
+      # （整站模式写 site；范围是显式开关，漏打标记不会静默改变范围）
       - name: Build gated site
         run: npm run gate:build
         env:
           TZ: Asia/Shanghai
+          BLOG_GATE_SCOPE: posts
           BLOG_GATE_PASSWORD: ${{ secrets.BLOG_GATE_PASSWORD }}
 
       - name: Verify gated artifact

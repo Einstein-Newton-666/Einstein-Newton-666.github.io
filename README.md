@@ -115,17 +115,35 @@ npm run e2e:admin     # 编辑台端到端测试（会启动无头 Edge，需先
 - 不被收录：页面 `<meta name="robots" content="noindex">`、`robots.txt` 的 `Disallow: /admin/`、
   以及 `sitemap: false` 三重处理。
 
-## 访问密码（整站加密）
+## 访问密码（整站 / 逐篇加密）
 
-带密码构建时，`public/` 里每个页面的 `<body>` 都会被 AES-256-GCM 加密成一段密文负载，
+带密码构建时，被上锁页面的 `<head>` 脚本与整个 `<body>` 会被 AES-256-GCM 加密成一段密文负载，
 访客输入密码后在浏览器里解密渲染；没解锁的人拿到的 HTML 只有一张锁屏，里面没有正文。
-`/atom.xml` 与 `/search.xml` 这两份公开全文副本也会一并清空。
+`/atom.xml` 与 `/search.xml` 里的对应条目也会被清空正文。
+
+范围由 `BLOG_GATE_SCOPE` 决定（默认 `site`，fail-closed）：
+
+| 范围 | 上锁对象 | 适合 |
+|---|---|---|
+| `site` | 除 `admin/` 外每个页面；RSS/搜索清空全部正文 | 整站不想被陌生人看 |
+| `posts` | 只有 front-matter 写了 `private: true` 的文章；RSS/搜索只清这些条目 | 公开博客 + 少量私密日记 |
+
+逐篇模式给文章上锁只要在 front-matter 加一行（在线编辑台会原样保留未知字段）：
+
+```yaml
+private: true
+```
+
+这些文章的**标题**仍会出现在首页/归档/分类/标签里（有意如此，方便你知道它存在），
+但列表卡片上的摘要会被换成「🔒 本文已加密，需要访问密码」，正文预览不会被截出来
+——Redefine 的卡片逻辑是"excerpt 有值就渲染 excerpt，否则截断 content"，所以占位符
+顺手把这条泄漏路径堵死了。
 
 ### 密码放哪
 
 密码只存在仓库的 Actions Secret 里，名字必须是 `BLOG_GATE_PASSWORD`：
 Settings → Secrets and variables → Actions → New repository secret。
-仓库里只有 `scripts/gate-salt.txt`（固定 salt，公开，不需要保密；它固定下来是为了让访客
+仓库里只有 `scripts/lib/gate-salt.js`（固定 salt，公开，不需要保密；它固定下来是为了让访客
 "记住 30 天"的解锁状态在每次重新部署后继续有效）。
 
 **先建 Secret 再推代码**：`pages.yml` 里有守卫，缺 Secret 直接失败——宁可这次不发，
@@ -134,13 +152,17 @@ Settings → Secrets and variables → Actions → New repository secret。
 ### 构建与预览
 
 ```bash
-npm run gate:build    # hexo clean + generate + 整体加密（读 BLOG_GATE_PASSWORD）
-npm run gate:verify   # 校验密文产物：解不回原文、漏明文、漏页面都算失败
-npm run e2e:gate      # 端到端：锁屏 → 错密码 → 解锁 → 站内跳转 → 锁定（需先 gate:build）
+npm run gate:build    # hexo clean + generate + 按 BLOG_GATE_SCOPE 加密（读 BLOG_GATE_PASSWORD）
+npm run gate:verify   # 校验产物：解不回原文、漏明文、该锁没锁、不该锁却锁了都算失败
+npm run e2e:gate      # 端到端：按范围验证锁屏/解锁（需先 gate:build）
 ```
 
 不带 `BLOG_GATE_PASSWORD` 时，`npm test` 与 `npm run server` 照旧是明文站点，
-本地开发和 PR 校验不受影响。
+本地开发和 PR 校验不受影响。本地想试逐篇模式：
+
+```bash
+$env:BLOG_GATE_PASSWORD='临时密码'; $env:BLOG_GATE_SCOPE='posts'; npm run gate:build; npm run gate:verify
+```
 
 ### 实现要点
 
@@ -153,6 +175,9 @@ npm run e2e:gate      # 端到端：锁屏 → 错密码 → 解锁 → 站内�
 - `<head>` 里的主题配置脚本也一起进密文：`window.theme` 带着站点标题、侧栏公告、页脚文案这些
   自己写的字，留在页面上就是明文泄漏。只留决定明暗模式的那支小脚本（锁屏配色要用，内容是
   纯逻辑不含站点文案）；搬进负载的脚本解锁后排在正文脚本之前，`window.theme` 先于主题 JS 就位。
+- 私密清单由 `scripts/gate-private.js` 在生成时写出（`output/private-posts.json`），用 Hexo 自己
+  算出的 `post.path`，免得在构建脚本里复刻永久链接规则和时区差异。摘要占位符改在
+  `after_post_render`：`before_generate` 拿到的文档是即时水合的副本，改写模板看不到。
 - 解锁后缓存的是**派生钥匙**而不是密码：勾选"记住 30 天"写 localStorage，否则写 sessionStorage。
 - `admin/` 不在门内：编辑台自己用 GitHub PAT 登录，加密了反而没法用。
 - 带密码构建会摘掉 Swup：未解锁的下一页只有锁屏外壳，SPA 切换拿不到 `#swup` 容器。

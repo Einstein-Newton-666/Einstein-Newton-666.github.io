@@ -8,18 +8,21 @@ const browserGate = require('../source/js/site-gate.js');
 const gateBuild = require('../scripts/gate-build.js');
 
 /* ---------------------------------------------------------------------------
- * 带密码构建的产物校验：跑在 `npm run gate:build` 之后、上传 Pages 之前。
+ * 加密产物的校验：跑在 `npm run gate:build` 之后、上传 Pages 之前。
  *
  * 三件事必须成立，否则“加了密码”只是心理安慰：
- *   1. 每个 HTML 都是锁屏外壳（有密文负载），没有一个是漏掉的明文页；
+ *   1. 该上锁的页面都是锁屏外壳（整站模式=除 admin/ 外全部；逐篇模式=清单里的文章），
+ *      不该上锁的页面必须真的没有负载，也没被顺手加上 noindex；
  *   2. 用密码解出来的正文与构建报告里的哈希一致（证明访客真的能打开）；
- *   3. 全 public/ 里搜不到任何只属于正文的文本（证明密文确实没漏）。
+ *   3. 私密正文的片段不得出现在任何产物里。逐篇模式的正文片段只从文章正文容器里取，
+ *      这样站点导航、页脚这些公开文案不会造成误报，而正文漏进列表页一定会被抓住。
  * ------------------------------------------------------------------------- */
 
 const root = process.cwd();
 const password = process.env.BLOG_GATE_PASSWORD;
 const publicDir = path.join(root, 'public');
 const reportPath = path.join(root, 'output', 'gate-report.json');
+const manifestPath = path.join(root, 'output', 'private-posts.json');
 const failures = [];
 
 if (!password) {
@@ -29,6 +32,7 @@ if (!password) {
 
 const TEXT_EXTENSIONS = new Set(['.html', '.xml', '.txt', '.json', '.js', '.css', '.svg']);
 const PAYLOAD_RE = /<script type="application\/json" id="einblog-gate-payload">([\s\S]*?)<\/script>/;
+const NOINDEX_RE = /<meta name="robots" content="noindex, nofollow">/;
 
 function sha256(text) {
   return createHash('sha256').update(text, 'utf8').digest('hex');
@@ -44,8 +48,8 @@ async function walk(dir) {
   return found.sort();
 }
 
-function toText(markup) {
-  return markup
+function stripTags(markup) {
+  return String(markup)
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')
     .replace(/<[^>]+>/g, ' ');
@@ -53,8 +57,16 @@ function toText(markup) {
 
 /** 只挑“像正文”的长中文片段，避免把导航词、站点名当成泄漏。 */
 function contentRuns(markup) {
-  const runs = toText(markup).match(/[\u4e00-\u9fff][\u4e00-\u9fff\w，。！？、：；“”‘’（）《》—…·\-]{9,}/g) || [];
+  const runs = stripTags(markup).match(/[\u4e00-\u9fff][\u4e00-\u9fff\w，。！？、：；“”‘’（）《》—…·\-]{9,}/g) || [];
   return [...new Set(runs.map((run) => run.trim()))];
+}
+
+/** 文章正文容器（Redefine 的 .article-content）到版权块之间才是作者写的内容。 */
+function articleRegion(html) {
+  const start = html.indexOf('class="article-content');
+  if (start < 0) return html;
+  const end = html.indexOf('article-copyright', start + 1);
+  return end > start ? html.slice(start, end) : html.slice(start);
 }
 
 const files = await walk(publicDir);
@@ -68,8 +80,22 @@ let report;
 try {
   report = JSON.parse(await readFile(reportPath, 'utf8'));
 } catch {
-  failures.push(`缺少构建报告：output/gate-report.json（先跑 npm run gate:build）`);
+  failures.push('缺少构建报告：output/gate-report.json（先跑 npm run gate:build）');
 }
+
+let privateTitles = [];
+try {
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  privateTitles = (manifest.posts || []).map((post) => String(post.title || ''));
+} catch {
+  if ((report && report.scope) === 'posts') {
+    failures.push('缺少私密文章清单：output/private-posts.json');
+  }
+}
+
+const scope = (report && report.scope) || 'site';
+const publicPages = new Set((report && report.publicPages) || []);
+const skipped = new Set((report && report.skipped) || []);
 
 for (const asset of ['js/site-gate.js', 'css/site-gate.css']) {
   try {
@@ -79,8 +105,7 @@ for (const asset of ['js/site-gate.js', 'css/site-gate.css']) {
   }
 }
 
-/* 1. 每个页面都必须是外壳（admin/ 等刻意排除的除外） */
-const skipped = new Set((report && report.skipped) || []);
+/* 1. 该锁的锁上、该公开的别锁 */
 for (const relative of skipped) {
   if (!gateBuild.DEFAULT_SKIP_PREFIXES.some((prefix) => relative.startsWith(prefix))) {
     failures.push(`构建报告跳过了不该跳过的页面：${relative}`);
@@ -97,6 +122,12 @@ for (const file of htmlFiles) {
     continue;
   }
 
+  if (scope === 'posts' && publicPages.has(relative)) {
+    if (PAYLOAD_RE.test(html)) failures.push(`public/${relative} 是公开页面却带了密文负载`);
+    if (NOINDEX_RE.test(html)) failures.push(`public/${relative} 是公开页面却被加了 noindex`);
+    continue;
+  }
+
   if (!PAYLOAD_RE.test(html)) {
     failures.push(`页面没有被加密：public/${relative}`);
     continue;
@@ -105,12 +136,25 @@ for (const file of htmlFiles) {
   if (/hexo-configurations|window\.theme\s*=/.test(html)) {
     failures.push(`public/${relative} 的外壳里还留着主题配置脚本（站点文案明文可见）`);
   }
-  shellText.push(toText(html.replace(PAYLOAD_RE, ' ')));
+  if (!NOINDEX_RE.test(html)) {
+    failures.push(`public/${relative} 缺少 noindex（锁屏页会被搜索引擎收录）`);
+  }
+  shellText.push(stripTags(html.replace(PAYLOAD_RE, ' ')));
 }
 
 /* 2. 密码能解回原文，且与报告里的哈希一致 */
 const plainTexts = new Map();
 if (report) {
+  const accounted = new Set([
+    ...report.pages.map((entry) => entry.path),
+    ...(report.publicPages || []),
+    ...(report.skipped || []),
+  ]);
+  for (const file of htmlFiles) {
+    const relative = path.relative(publicDir, file).split(path.sep).join('/');
+    if (!accounted.has(relative)) failures.push(`页面没有进构建报告：${relative}`);
+  }
+
   for (const entry of report.pages) {
     const file = path.join(publicDir, ...entry.path.split('/'));
     const html = contents.get(file);
@@ -133,23 +177,16 @@ if (report) {
       failures.push(`${entry.path} 解不开：${error.message}`);
     }
   }
-
-  const gatedPages = htmlFiles
-    .map((file) => path.relative(publicDir, file).split(path.sep).join('/'))
-    .filter((relative) => !report.skipped.includes(relative));
-  for (const relative of gatedPages) {
-    if (!report.pages.some((entry) => entry.path === relative)) {
-      failures.push(`页面没有进构建报告：${relative}`);
-    }
-  }
 }
 
 /* 3. 全产物搜不到“只属于正文”的文本 */
-const shellCorpus = [...shellText, ...contents.values()].join('\n');
+const shellCorpus = [shellText.join('\n'), ...privateTitles].join('\n');
 const canaries = new Set();
 for (const plain of plainTexts.values()) {
-  for (const run of contentRuns(plain)) {
-    if (!shellCorpus.includes(run)) canaries.add(run);
+  const source = scope === 'posts' ? articleRegion(plain) : plain;
+  for (const run of contentRuns(source)) {
+    if (shellCorpus.includes(run)) continue;
+    canaries.add(run);
   }
 }
 
@@ -162,27 +199,9 @@ for (const [file, content] of contents) {
   }
 }
 
-/* 4. 锁屏页不得进搜索引擎索引；robots.txt 归编辑台的线上比对管，门闩不碰 */
-for (const file of htmlFiles) {
-  const relative = path.relative(publicDir, file).split(path.sep).join('/');
-  if (skipped.has(relative)) continue;
-  if (!/<meta name="robots" content="noindex, nofollow">/.test(contents.get(file))) {
-    failures.push(`${relative} 缺少 noindex（锁屏页会被搜索引擎收录）`);
-  }
-}
-
-for (const xml of ['search.xml', 'atom.xml']) {
-  const file = path.join(publicDir, xml);
-  const content = contents.get(file);
-  if (content === undefined) continue;
-  for (const canary of canaries) {
-    if (content.includes(canary)) failures.push(`${xml} 里仍有正文片段`);
-  }
-}
-
 if (failures.length) {
   console.error(failures.map((failure) => `- ${failure}`).join('\n'));
   process.exit(1);
 }
 
-console.log(`PASS: 整站加密校验通过（${(report && report.pages.length) || 0} 个页面为密文外壳，跳过 ${skipped.size} 个，正文片段 ${canaries.size} 条，产物内未出现明文）`);
+console.log(`PASS: 加密产物校验通过（范围 ${scope}，密文页面 ${(report && report.pages.length) || 0} 个，公开页面 ${publicPages.size} 个，跳过 ${skipped.size} 个，正文片段 ${canaries.size} 条，产物内未出现明文）`);

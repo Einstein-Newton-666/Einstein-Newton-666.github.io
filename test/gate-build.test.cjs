@@ -68,6 +68,7 @@ test('带密码构建：页面只剩锁屏与密文，正文不再出现在产�
     password: PASSWORD,
     salt: SALT,
     iterations: ITERATIONS,
+    scope: 'site',
   });
 
   assert.equal(outcome.skipped, false);
@@ -103,7 +104,7 @@ test('带密码构建：页面只剩锁屏与密文，正文不再出现在产�
 
 test('admin/ 不在门内：编辑台照旧是明文页面', () => {
   const site = makeSite();
-  gateBuild.runGateBuild({ publicDir: site.publicDir, reportPath: site.reportPath, password: PASSWORD, salt: SALT, iterations: ITERATIONS });
+  gateBuild.runGateBuild({ publicDir: site.publicDir, reportPath: site.reportPath, password: PASSWORD, salt: SALT, iterations: ITERATIONS, scope: 'site' });
 
   const admin = fs.readFileSync(path.join(site.publicDir, 'admin', 'index.html'), 'utf8');
   assert.ok(admin.includes('编辑台自己用令牌登录'));
@@ -113,7 +114,7 @@ test('admin/ 不在门内：编辑台照旧是明文页面', () => {
 test('公开全文副本被清空，锁屏页带 noindex 且不动 robots.txt', () => {
   const site = makeSite();
   const robotsBefore = fs.readFileSync(path.join(site.publicDir, 'robots.txt'), 'utf8');
-  gateBuild.runGateBuild({ publicDir: site.publicDir, reportPath: site.reportPath, password: PASSWORD, salt: SALT, iterations: ITERATIONS });
+  gateBuild.runGateBuild({ publicDir: site.publicDir, reportPath: site.reportPath, password: PASSWORD, salt: SALT, iterations: ITERATIONS, scope: 'site' });
 
   const search = fs.readFileSync(path.join(site.publicDir, 'search.xml'), 'utf8');
   assert.ok(!search.includes(CANARY), 'search.xml 里还有正文');
@@ -132,17 +133,17 @@ test('公开全文副本被清空，锁屏页带 noindex 且不动 robots.txt', 
 
 test('重复执行会挡住二次加密', () => {
   const site = makeSite();
-  gateBuild.runGateBuild({ publicDir: site.publicDir, reportPath: site.reportPath, password: PASSWORD, salt: SALT, iterations: ITERATIONS });
+  gateBuild.runGateBuild({ publicDir: site.publicDir, reportPath: site.reportPath, password: PASSWORD, salt: SALT, iterations: ITERATIONS, scope: 'site' });
 
   assert.throws(
-    () => gateBuild.runGateBuild({ publicDir: site.publicDir, reportPath: site.reportPath, password: PASSWORD, salt: SALT, iterations: ITERATIONS }),
+    () => gateBuild.runGateBuild({ publicDir: site.publicDir, reportPath: site.reportPath, password: PASSWORD, salt: SALT, iterations: ITERATIONS, scope: 'site' }),
     /已经加密过/,
   );
 });
 
 test('报告里的明文哈希与解出来的正文一致', async () => {
   const site = makeSite();
-  gateBuild.runGateBuild({ publicDir: site.publicDir, reportPath: site.reportPath, password: PASSWORD, salt: SALT, iterations: ITERATIONS });
+  gateBuild.runGateBuild({ publicDir: site.publicDir, reportPath: site.reportPath, password: PASSWORD, salt: SALT, iterations: ITERATIONS, scope: 'site' });
 
   const report = JSON.parse(fs.readFileSync(site.reportPath, 'utf8'));
   for (const entry of report.pages) {
@@ -167,7 +168,136 @@ test('产物结构不认识时报错，不静默放过', () => {
   fs.writeFileSync(path.join(dir, 'broken.html'), '<p>没有 html 骨架</p>');
 
   assert.throws(
-    () => gateBuild.runGateBuild({ publicDir: dir, reportPath: path.join(dir, 'report.json'), password: PASSWORD, salt: SALT, iterations: ITERATIONS }),
+    () => gateBuild.runGateBuild({ publicDir: dir, reportPath: path.join(dir, 'report.json'), password: PASSWORD, salt: SALT, iterations: ITERATIONS, scope: 'site' }),
     /结构不认识/,
+  );
+});
+
+/* --------------------------- 逐篇模式（private: true） --------------------------- */
+
+const PRIVATE_TITLE = '小高の飞行器安装日记';
+const PRIVATE_FILE = '2026/09/16/xiaogao-hikouki-install-diary/index.html';
+const PRIVATE_URL = '/2026/09/16/xiaogao-hikouki-install-diary/';
+const PUBLIC_FILE = '2026/08/15/welcome/index.html';
+
+function makePartialSite() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gate-posts-'));
+  const publicDir = path.join(dir, 'public');
+  fs.mkdirSync(path.join(publicDir, '2026', '09', '16', 'xiaogao-hikouki-install-diary'), { recursive: true });
+  fs.mkdirSync(path.join(publicDir, '2026', '08', '15', 'welcome'), { recursive: true });
+  fs.mkdirSync(path.join(publicDir, 'admin'), { recursive: true });
+
+  // 首页是公开列表页：标题与占位摘要可见，正文不在里面
+  fs.writeFileSync(path.join(publicDir, 'index.html'), page('首页', `🔒 本文已加密，需要访问密码 ${PRIVATE_TITLE}`));
+  fs.writeFileSync(path.join(publicDir, ...PRIVATE_FILE.split('/')), page(PRIVATE_TITLE, CANARY));
+  fs.writeFileSync(path.join(publicDir, ...PUBLIC_FILE.split('/')), page('你好，世界', '公开文章的正文'));
+  fs.writeFileSync(path.join(publicDir, 'admin', 'index.html'), page('编辑台', '编辑台自己用令牌登录'));
+
+  fs.writeFileSync(path.join(publicDir, 'search.xml'),
+    '<search>'
+    + `<entry><title>${PRIVATE_TITLE}</title><url>${PRIVATE_URL}</url><content><![CDATA[<p>${CANARY}</p>]]></content></entry>`
+    + '<entry><title>你好，世界</title><url>/2026/08/15/welcome/</url><content><![CDATA[<p>公开文章的正文</p>]]></content></entry>'
+    + '</search>');
+  fs.writeFileSync(path.join(publicDir, 'atom.xml'),
+    '<feed>'
+    + `<entry><id>https://example.com${PRIVATE_URL}</id><content type="html">${CANARY}</content></entry>`
+    + '<entry><id>https://example.com/2026/08/15/welcome/</id><content type="html">公开文章的正文</content></entry>'
+    + '</feed>');
+
+  const manifestPath = path.join(dir, 'output', 'private-posts.json');
+  fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
+  fs.writeFileSync(manifestPath, JSON.stringify({
+    posts: [{ file: PRIVATE_FILE, url: PRIVATE_URL, title: PRIVATE_TITLE }],
+  }));
+
+  return { dir, publicDir, manifestPath, reportPath: path.join(dir, 'output', 'gate-report.json') };
+}
+
+test('逐篇模式：只锁标记过的文章，公开页面原样保留', async () => {
+  const site = makePartialSite();
+  const outcome = gateBuild.runGateBuild({
+    publicDir: site.publicDir,
+    reportPath: site.reportPath,
+    manifestPath: site.manifestPath,
+    password: PASSWORD,
+    salt: SALT,
+    iterations: ITERATIONS,
+    scope: 'posts',
+  });
+
+  const report = outcome.report;
+  assert.equal(report.scope, 'posts');
+  assert.deepEqual(report.pages.map((entry) => entry.path), [PRIVATE_FILE]);
+  assert.deepEqual(report.skipped, ['admin/index.html']);
+  assert.ok(report.publicPages.includes('index.html'));
+  assert.ok(report.publicPages.includes(PUBLIC_FILE));
+
+  const locked = fs.readFileSync(path.join(site.publicDir, ...PRIVATE_FILE.split('/')), 'utf8');
+  assert.ok(locked.includes('id="einblog-gate-payload"'), '私密文章应上锁');
+  assert.ok(!locked.includes(CANARY), '私密正文不该留明文');
+  assert.ok(locked.includes(`<title>${PRIVATE_TITLE}`), '标题按设计保留');
+
+  const publicPage = fs.readFileSync(path.join(site.publicDir, ...PUBLIC_FILE.split('/')), 'utf8');
+  assert.ok(!publicPage.includes('einblog-gate-payload'), '公开文章不该被上锁');
+  assert.ok(publicPage.includes('公开文章的正文'), '公开文章正文要原样保留');
+  assert.ok(publicPage.includes('id="swup"'), '公开页面的主题内容不该被动过');
+
+  const home = fs.readFileSync(path.join(site.publicDir, 'index.html'), 'utf8');
+  assert.ok(!home.includes('einblog-gate-payload'), '首页不该被上锁');
+  assert.ok(home.includes('🔒 本文已加密'), '首页应保留占位摘要');
+
+  const payload = browserGate.parsePayload(readPayload(path.join(site.publicDir, ...PRIVATE_FILE.split('/'))));
+  const key = await browserGate.deriveKey(PASSWORD, payload);
+  const content = await browserGate.decryptPayload(payload, key);
+  assert.ok(content.bodyHtml.includes(CANARY), '密文里应能解出私密正文');
+  assert.ok(!/Swup/.test(content.bodyHtml), '上锁页面应摘掉 Swup');
+});
+
+test('逐篇模式：RSS/搜索只清私密条目，公开条目保持全文', () => {
+  const site = makePartialSite();
+  gateBuild.runGateBuild({
+    publicDir: site.publicDir,
+    reportPath: site.reportPath,
+    manifestPath: site.manifestPath,
+    password: PASSWORD,
+    salt: SALT,
+    iterations: ITERATIONS,
+    scope: 'posts',
+  });
+
+  const search = fs.readFileSync(path.join(site.publicDir, 'search.xml'), 'utf8');
+  assert.ok(!search.includes(CANARY), '私密条目正文没清干净');
+  assert.ok(search.includes('公开文章的正文'), '公开条目不该被清');
+  assert.ok(search.includes(`<title>${PRIVATE_TITLE}</title>`), '私密条目应保留标题');
+
+  const feed = fs.readFileSync(path.join(site.publicDir, 'atom.xml'), 'utf8');
+  assert.ok(!feed.includes(CANARY), '私密订阅条目正文没清干净');
+  assert.ok(feed.includes('正文已加密'), '私密条目应留提示语');
+  assert.ok(feed.includes('公开文章的正文'), '公开订阅条目不该被清');
+});
+
+test('逐篇模式：清单缺失或对不上产物时直接失败', () => {
+  const site = makePartialSite();
+  const base = {
+    publicDir: site.publicDir,
+    reportPath: site.reportPath,
+    password: PASSWORD,
+    salt: SALT,
+    iterations: ITERATIONS,
+    scope: 'posts',
+  };
+
+  assert.throws(() => gateBuild.runGateBuild(Object.assign({}, base, { manifestPath: path.join(site.dir, 'nope.json') })), /缺少私密文章清单/);
+
+  const brokenManifest = path.join(site.dir, 'broken.json');
+  fs.writeFileSync(brokenManifest, JSON.stringify({ posts: [{ file: '2026/01/01/missing/index.html', url: '/2026/01/01/missing/', title: '不存在' }] }));
+  assert.throws(() => gateBuild.runGateBuild(Object.assign({}, base, { manifestPath: brokenManifest })), /没有对应产物/);
+});
+
+test('范围写错时报错，不默认放行', () => {
+  const site = makePartialSite();
+  assert.throws(
+    () => gateBuild.runGateBuild({ publicDir: site.publicDir, reportPath: site.reportPath, password: PASSWORD, salt: SALT, iterations: ITERATIONS, scope: 'whatever' }),
+    /BLOG_GATE_SCOPE/,
   );
 });

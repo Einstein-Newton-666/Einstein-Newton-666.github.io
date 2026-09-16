@@ -1,22 +1,27 @@
 'use strict';
 
 /* ---------------------------------------------------------------------------
- * 访问密码的门闩：在 `hexo generate` 之后把 public/ 里的产物整体加密。
+ * 访问密码的门闩：在 `hexo generate` 之后直接改写 public/ 里的产物。
  *
  * 为什么放在生成之后、而不是写成 Hexo 过滤器：
  *   Hexo 会把渲染结果缓存进 db.json，只对“变过的文件”重跑过滤器。过滤器方案
  *   一旦命中缓存就会把明文重新吐回产物里，而这是“看起来加了锁、实际漏了内容”
  *   的静默失败。直接改 public/ 里的最终文件，跟缓存、增量生成都无关。
  *
- * 处理方式：每个 HTML 保留 <head>（站点配置、主题早期脚本、样式都在这），
- * 把 <body> 整体加密成负载，页面上只留锁屏 + 解密脚本。
+ * 处理方式：每个上锁的 HTML 保留 <head> 里的元数据，把 head 里的脚本与整个
+ * <body> 一起加密成负载，页面上只留锁屏 + 解密脚本。
  *   - 顺带摘掉 Swup（主题的 SPA 切换）：未解锁的下一页永远是一张锁屏外壳，
  *     Swup 拿不到 #swup 容器只会报错，干脆让导航回到整页加载。
  *   - search.xml / atom.xml 是两份公开全文副本，一并清空正文。
- *   - 锁屏页加 noindex：全网都是同一张锁屏，没有收录价值。这里刻意不动
- *     robots.txt——编辑台的 tools/editor/verify-deploy.mjs 会拿线上 robots.txt
- *     与本地产物逐字节比对，改写它等于打坏别人的校验。
+ *   - 锁屏页加 noindex：没有收录价值。这里刻意不动 robots.txt——编辑台的
+ *     tools/editor/verify-deploy.mjs 会拿线上 robots.txt 与本地产物逐字节比对。
  *   - admin/ 不在门内：在线编辑台自己用 GitHub PAT 登录，加密了反而没法用。
+ *
+ * 两种范围，由 BLOG_GATE_SCOPE 决定：
+ *   - site（默认，fail-closed）：除 admin/ 外每个页面都上锁，RSS/搜索清空全部正文。
+ *   - posts（逐篇）：只有 front-matter 写了 `private: true` 的文章上锁（清单由
+ *     scripts/gate-private.js 在生成时写出），公开页面原样保留，RSS/搜索只清私密条目。
+ *   范围是显式开关而不是“有没有私密文章”推断出来的：否则哪天漏打标记就会静默全站公开。
  *
  * 未设置 BLOG_GATE_PASSWORD 时整脚本跳过（本地开发、PR 校验照旧是明文站点）；
  * 部署流程里有守卫，缺 Secret 直接失败，绝不会把不设防的站点发出去。
@@ -34,6 +39,7 @@ const GATE_CSS_HREF = '/css/site-gate.css';
 const GATE_SCRIPT_SRC = '/js/site-gate.js';
 const DEFAULT_PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const DEFAULT_REPORT_PATH = path.join(__dirname, '..', 'output', 'gate-report.json');
+const DEFAULT_MANIFEST_PATH = path.join(__dirname, '..', 'output', 'private-posts.json');
 const DEFAULT_SKIP_PREFIXES = ['admin/'];
 
 const SWUP_LIB_RE = /<script\b[^>]*\bsrc="[^"]*Swup[^"]*"[^>]*>\s*<\/script>/gi;
@@ -177,17 +183,39 @@ function gateHtml(html, key, salt, iterations) {
   };
 }
 
-function cleanSearchIndex(xml) {
-  const replaced = (xml.match(SEARCH_CONTENT_RE) || []).length;
-  return { result: xml.replace(SEARCH_CONTENT_RE, '<content><![CDATA[]]></content>'), replaced };
+/**
+ * 清空正文副本。`paths` 为 null 表示整站模式（所有条目都清），
+ * 给定文章路径列表时只清这些条目（逐篇模式：公开文章的 RSS/搜索照旧全文）。
+ */
+function cleanSearchIndex(xml, paths = null) {
+  let replaced = 0;
+  const result = xml.replace(/<entry>[\s\S]*?<\/entry>/g, (entry) => {
+    if (paths && !paths.some((item) => entry.includes(`<url>${item}</url>`))) return entry;
+    const next = entry.replace(SEARCH_CONTENT_RE, '<content><![CDATA[]]></content>');
+    if (next !== entry) replaced += 1;
+    return next;
+  });
+  return { result, replaced };
 }
 
-function cleanFeed(xml) {
-  const replaced = (xml.match(FEED_CONTENT_RE) || []).length;
-  return {
-    result: xml.replace(FEED_CONTENT_RE, '$1（正文已加密，请到站点输入访问密码查看）$2'),
-    replaced,
-  };
+function cleanFeed(xml, paths = null) {
+  let replaced = 0;
+  const result = xml.replace(/<entry>[\s\S]*?<\/entry>/g, (entry) => {
+    if (paths && !paths.some((item) => entry.includes(item))) return entry;
+    const next = entry.replace(FEED_CONTENT_RE, '$1（正文已加密，请到站点输入访问密码查看）$2');
+    if (next !== entry) replaced += 1;
+    return next;
+  });
+  return { result, replaced };
+}
+
+function readPrivateManifest(manifestPath) {
+  if (!fs.existsSync(manifestPath)) {
+    throw new Error(`逐篇模式缺少私密文章清单 ${manifestPath}：请先跑 hexo generate（scripts/gate-private.js 会写它）`);
+  }
+  const parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const posts = Array.isArray(parsed.posts) ? parsed.posts : [];
+  return posts;
 }
 
 function runGateBuild(options = {}) {
@@ -197,26 +225,45 @@ function runGateBuild(options = {}) {
   const log = options.log || (() => {});
   const password = options.password !== undefined ? options.password : process.env.BLOG_GATE_PASSWORD;
   const iterations = options.iterations || gateCrypto.KDF_ITERATIONS;
+  const scope = options.scope || process.env.BLOG_GATE_SCOPE || 'site';
+  const manifestPath = options.manifestPath || DEFAULT_MANIFEST_PATH;
 
   if (!password) {
-    log('未设置 BLOG_GATE_PASSWORD：跳过整站加密，产物保持明文（本地开发/PR 校验的正常路径）');
+    log('未设置 BLOG_GATE_PASSWORD：跳过加密，产物保持明文（本地开发/PR 校验的正常路径）');
     return { skipped: true };
+  }
+  if (!['site', 'posts'].includes(scope)) {
+    throw new Error(`BLOG_GATE_SCOPE 只能是 site（整站）或 posts（逐篇），收到：${scope}`);
   }
   if (!fs.existsSync(publicDir)) throw new Error(`产物目录不存在：${publicDir}（先跑 hexo generate）`);
 
-  const salt = options.salt || gateCrypto.readSalt(options.saltPath);
+  const salt = options.salt || gateCrypto.readSalt();
   const key = gateCrypto.deriveKey(password, salt, iterations);
+
+  const privatePosts = scope === 'posts' ? readPrivateManifest(manifestPath) : [];
+  const lockedFiles = new Set(privatePosts.map((item) => item.file));
+  // 条目匹配用两种写法：search.xml 的 <url> 带前导斜杠，atom.xml 的 <id>/<link> 是
+  // 绝对地址（去掉前导斜杠去匹配更稳，不必知道站点域名）
+  const lockedPaths = privatePosts.map((item) => String(item.url || '').replace(/^\/+/, ''));
+  const lockedUrls = lockedPaths.map((item) => `/${item}`);
+  if (scope === 'posts' && !privatePosts.length) {
+    log('警告：逐篇模式下没有任何文章标记 private: true，本次构建会全站公开');
+  }
 
   const htmlFiles = walkFiles(publicDir, '.html');
   if (!htmlFiles.length) throw new Error(`产物里没有 HTML：${publicDir}`);
 
-  const report = { generatedAt: new Date().toISOString(), pages: [], assets: [], skipped: [] };
+  const report = { generatedAt: new Date().toISOString(), scope, pages: [], publicPages: [], assets: [], skipped: [] };
 
   for (const file of htmlFiles) {
     const relative = path.relative(publicDir, file).split(path.sep).join('/');
     if (skipPrefixes.some((prefix) => relative.startsWith(prefix))) {
       report.skipped.push(relative);
       log(`跳过（不在门内）：${relative}`);
+      continue;
+    }
+    if (scope === 'posts' && !lockedFiles.has(relative)) {
+      report.publicPages.push(relative);
       continue;
     }
     const html = fs.readFileSync(file, 'utf8');
@@ -233,19 +280,27 @@ function runGateBuild(options = {}) {
     log(`已加密：${relative}`);
   }
 
+  if (scope === 'posts') {
+    for (const item of privatePosts) {
+      if (!htmlFiles.some((file) => path.relative(publicDir, file).split(path.sep).join('/') === item.file)) {
+        throw new Error(`清单里的私密文章没有对应产物：${item.file}`);
+      }
+    }
+  }
+
   const searchPath = path.join(publicDir, 'search.xml');
   if (fs.existsSync(searchPath)) {
-    const { result, replaced } = cleanSearchIndex(fs.readFileSync(searchPath, 'utf8'));
+    const { result, replaced } = cleanSearchIndex(fs.readFileSync(searchPath, 'utf8'), scope === 'posts' ? lockedUrls : null);
     fs.writeFileSync(searchPath, result);
-    report.assets.push({ path: 'search.xml', entries: replaced, note: '清空正文，只保留标题与链接' });
+    report.assets.push({ path: 'search.xml', entries: replaced, note: scope === 'posts' ? '清空私密文章条目的正文' : '清空全部正文' });
     log(`已清空搜索索引正文：search.xml（${replaced} 条）`);
   }
 
   const feedPath = path.join(publicDir, 'atom.xml');
   if (fs.existsSync(feedPath)) {
-    const { result, replaced } = cleanFeed(fs.readFileSync(feedPath, 'utf8'));
+    const { result, replaced } = cleanFeed(fs.readFileSync(feedPath, 'utf8'), scope === 'posts' ? lockedPaths : null);
     fs.writeFileSync(feedPath, result);
-    report.assets.push({ path: 'atom.xml', entries: replaced, note: '正文替换为提示语' });
+    report.assets.push({ path: 'atom.xml', entries: replaced, note: scope === 'posts' ? '清空私密文章条目的正文' : '清空全部正文' });
     log(`已清空订阅正文：atom.xml（${replaced} 条）`);
   }
 
@@ -258,7 +313,9 @@ function runGateBuild(options = {}) {
 
   fs.mkdirSync(path.dirname(reportPath), { recursive: true });
   fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
-  log(`加密完成：${report.pages.length} 个页面，报告写入 ${reportPath}`);
+  log(scope === 'posts'
+    ? `加密完成（逐篇）：上锁 ${report.pages.length} 个页面，公开 ${report.publicPages.length} 个，报告写入 ${reportPath}`
+    : `加密完成（整站）：${report.pages.length} 个页面，报告写入 ${reportPath}`);
 
   return { skipped: false, report };
 }
@@ -277,6 +334,7 @@ module.exports = {
   PAYLOAD_ID,
   PAYLOAD_MARK,
   DEFAULT_SKIP_PREFIXES,
+  DEFAULT_MANIFEST_PATH,
   escapeHtml,
   sha256,
   walkFiles,
@@ -286,5 +344,6 @@ module.exports = {
   gateHtml,
   cleanSearchIndex,
   cleanFeed,
+  readPrivateManifest,
   runGateBuild,
 };
