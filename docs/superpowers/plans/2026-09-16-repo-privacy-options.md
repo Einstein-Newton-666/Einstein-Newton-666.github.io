@@ -65,13 +65,13 @@ git log --oneline --all -- source/_posts/xiaogao-hikouki-install-diary.md
 | 线上回归 | HTTP 全绿 + 真实浏览器 8/8（首页公开、占位摘要、公开文章正常、私密文章锁屏 → 错密码被拒 → 正确密码解锁） |
 | 本地 git 远端 | `origin` = `einblog-source`（`main` 已跟踪），公开仓库留作 `Einstein-Newton-666.github.io` remote 供 CI 推送 |
 
-### 还剩两步收尾（可选，按需做）
+### 还剩一步收尾（可选，按需做）
 
-1. 公开仓库 **Settings → General → Default branch** 改成 `pages`，然后删掉 `main`
-   （GitHub 不允许删默认分支，所以顺序不能反）。删掉后旧源码提交不可达；
-   要彻底干净就删库重建（同名 URL 不变，会有几分钟下线）。
-2. 观察几天确认稳定后，从源码仓库删掉 `.github/workflows/pages.yml`
-   （它在私有仓库里本来就是空转的，靠 `if: github.repository == '<owner>.github.io'` 跳过）。
+- ~~公开仓库默认分支改 `pages` 并删掉 `main`~~ **已完成**：默认分支已切到 `pages`，`main` 已删除
+  （旧的 `blob/main/source/_posts/*.md` 现在返回 404）。旧提交不可达，但 GitHub 可能仍保留一段时间；
+  要彻底干净就删库重建（同名 URL 不变，会有几分钟下线）。
+- 源码仓库里的 `.github/workflows/pages.yml` 现在空转（`if` 要求运行在公开部署仓库里）。
+  留着它是有意的：万一要切回 GitHub Actions 发布方式，它是现成模板；确认稳定后可删。
 
 ### 迁移步骤（留存备查）
 
