@@ -11,6 +11,19 @@
   const DEFAULT_ENDPOINT = 'http://127.0.0.1:4001';
   const STORAGE_KEY = 'einblog.admin.preview-endpoint.v1';
 
+  /**
+   * 浏览器会拦截 HTTPS 页面发往 http:// 的请求（混合内容，哪怕目标是 localhost）。
+   * 线上 /admin/ 是 https，所以默认不能去试 http 的本地预览服务，否则每次预览都白失败一次。
+   * 本地开发（http）与 file:// 打开时才允许尝试。
+   */
+  function shouldAttemptExact(protocol, endpoint) {
+    const pageScheme = String(protocol || '').replace(':', '').toLowerCase();
+    const endpointScheme = (String(endpoint || '').match(/^([a-z][a-z0-9+.-]*):\/\//i) || [])[1];
+    if (!endpointScheme) return false;
+    if (pageScheme === 'https' && endpointScheme.toLowerCase() === 'http') return false;
+    return true;
+  }
+
   function escapeHtml(text) {
     return String(text ?? '')
       .replace(/&/g, '&amp;')
@@ -130,19 +143,20 @@
 
   function createController(options = {}) {
     let endpoint = options.endpoint || DEFAULT_ENDPOINT;
-    let mode = 'exact';
+    // 混合内容不可用时直接进入降级模式，避免每次预览都白跑一次被拦的请求
+    let mode = shouldAttemptExact(globalThis.location?.protocol, endpoint) ? 'exact' : 'fallback';
     try {
       const saved = globalThis.localStorage?.getItem(STORAGE_KEY);
-      if (saved) {
-        endpoint = saved;
-        mode = 'exact';
-      }
+      if (saved) endpoint = saved;
+      mode = shouldAttemptExact(globalThis.location?.protocol, endpoint) ? 'exact' : 'fallback';
     } catch (error) {
       /* 隐私模式下忽略 */
     }
 
     function setEndpoint(value) {
       endpoint = String(value || DEFAULT_ENDPOINT).replace(/\/+$/, '');
+      // 换了地址就按新地址重新判断能不能用精确预览
+      mode = shouldAttemptExact(globalThis.location?.protocol, endpoint) ? 'exact' : 'fallback';
       try {
         globalThis.localStorage?.setItem(STORAGE_KEY, endpoint);
       } catch (error) {
@@ -208,5 +222,5 @@
     };
   }
 
-  return { createController, renderFallback, rewriteAssetSources, escapeHtml, DEFAULT_ENDPOINT, STORAGE_KEY };
+  return { createController, renderFallback, rewriteAssetSources, shouldAttemptExact, escapeHtml, DEFAULT_ENDPOINT, STORAGE_KEY };
 }));

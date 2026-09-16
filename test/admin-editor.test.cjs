@@ -820,6 +820,21 @@ test('仓库名异常时链接仍然合法，不抛错', () => {
   }
 });
 
+test('HTTPS 页面不默认尝试 http://127.0.0.1 的精确预览（避免混合内容被拦）', () => {
+  const httpEndpoint = 'http://127.0.0.1:4001';
+  const httpsEndpoint = 'https://127.0.0.1:4001';
+
+  // 线上 /admin/ 是 https，混合内容会被浏览器拦截，必须默认降级
+  assert.equal(preview.shouldAttemptExact('https:', httpEndpoint), false);
+  // 同源 https 的本地服务（自签证书）允许尝试
+  assert.equal(preview.shouldAttemptExact('https:', httpsEndpoint), true);
+  // 本地开发是 http，允许尝试
+  assert.equal(preview.shouldAttemptExact('http:', httpEndpoint), true);
+  // 用 file:// 直接打开编辑器时也允许尝试
+  assert.equal(preview.shouldAttemptExact('file:', httpEndpoint), true);
+  assert.equal(preview.shouldAttemptExact(undefined, httpEndpoint), true);
+});
+
 /* ------------------------- 模块装配守卫 ------------------------- */
 
 test('编辑器模块都能在 node 中 require 且导出预期接口', () => {
