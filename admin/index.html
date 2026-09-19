@@ -1,0 +1,364 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="no-referrer">
+  <title>博客在线编辑台</title>
+  <link rel="icon" href="/images/brand/favicon-avatar.png">
+  
+  
+  <link rel="stylesheet" href="/css/admin-editor.css?v=mu8e5p9i">
+<meta name="generator" content="Hexo 8.1.2"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><link rel="alternate" href="/atom.xml" title="Einstein-Newton-666 的博客" type="application/atom+xml">
+</head>
+<body class="admin-body">
+
+<div class="admin-shell">
+  <header class="admin-topbar">
+    <span class="admin-brand">✏️ 博客编辑台</span>
+    <button type="button" class="admin-btn admin-btn--tiny admin-list-toggle" id="listToggle"
+            aria-expanded="false" aria-controls="postSidebar">📄 文章列表</button>
+    <span class="admin-repo" id="repoLabel">—</span>
+    <span class="admin-head">HEAD <code id="headLabel">—</code></span>
+    <span class="admin-topbar__spacer"></span>
+    <label class="admin-endpoint">
+      预览服务
+      <input type="url" id="endpointInput" placeholder="http://127.0.0.1:4001" spellcheck="false">
+    </label>
+    <button type="button" class="admin-btn" id="signOutButton"><span class="admin-wide-only">忘记令牌 / </span>退出</button>
+  </header>
+
+  <div class="admin-login" id="login">
+    <div class="admin-login__card">
+      <h1>连接你的博客仓库</h1>
+      <ol class="admin-login__steps">
+        <li>
+          <a class="admin-btn admin-btn--primary admin-btn--block" id="tokenLink" target="_blank" rel="noopener noreferrer">
+            ① 在 GitHub 上生成令牌（权限已预填）
+          </a>
+          <p class="admin-login__note">
+            打开后只剩两步：<b>Repository access</b> 选 <code>Only select repositories</code> 并勾选本博客仓库，
+            再点最下方 <b>Generate token</b>。权限已预选 <code>Contents: Read and write</code>，名称与有效期说明也填好了。
+          </p>
+        </li>
+        <li>
+          <span class="admin-login__label">② 把生成的令牌粘贴到这里</span>
+          <input type="password" id="tokenInput" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+        </li>
+        <li>
+          <span class="admin-login__label">源码仓库（一般不用改）</span>
+          <input type="text" id="repoInput" value="Einstein-Newton-666/einblog-source" spellcheck="false">
+          <p class="admin-login__note">
+            文章源码在这个<b>私有仓库</b>里；公开的 <code>Einstein-Newton-666.github.io</code>
+            只存放构建产物，往它提交源码等于把私密文章公开，编辑台会拦截。
+          </p>
+        </li>
+      </ol>
+      <p class="admin-login__error" id="loginError"></p>
+      <div class="admin-login__actions">
+        <button type="button" class="admin-btn admin-btn--primary" id="signInButton">登录并读取文章</button>
+        <button type="button" class="admin-btn" id="forgetButton">清除本机令牌</button>
+      </div>
+      <p class="admin-login__hint">
+        令牌只保存在<b>本机浏览器</b>，请求直接发往 <code>api.github.com</code>，不经过本站或任何第三方服务。
+        手机同样可用：粘贴一次后浏览器会记住，不用每次登录。
+      </p>
+      <details class="admin-login__faq">
+        <summary>为什么不能直接用 GitHub 登录？</summary>
+        <p>
+          “用 GitHub 登录”需要一个后台保管 <code>client_secret</code> 来换取访问令牌。
+          本站是 GitHub Pages 上的纯静态站点，没有后台；把密钥放进公开页面等于公开泄漏，所以只能由你自备令牌。
+          令牌权限随时可在 GitHub 上撤销，风险可控。
+        </p>
+        <p>
+          ⚠️ 如果上面的按钮打不开，多半是 <code>github.com</code> 被网络阻断；
+          可改用手机流量、或换一个能正常访问 GitHub 的网络生成令牌。编辑台本身只要网络能访问
+          <code>api.github.com</code> 就能用。
+        </p>
+      </details>
+    </div>
+  </div>
+
+  <div class="admin-workspace" id="workspace" hidden>
+    <aside class="admin-sidebar" id="postSidebar">
+      <div class="admin-sidebar__actions">
+        <button type="button" class="admin-btn admin-btn--primary admin-btn--block" id="newPostButton">＋ 新建文章</button>
+        <button type="button" class="admin-btn admin-btn--block" id="reloadButton">↻ 重新读取列表</button>
+      </div>
+      <input type="search" class="admin-search" id="filterInput" placeholder="筛选文件名…" spellcheck="false">
+      <div class="admin-post-list" id="postList"></div>
+    </aside>
+
+    <main class="admin-main">
+      <div class="admin-placeholder" id="placeholder">
+        <h2>先选一篇文章开始编辑</h2>
+        <ul>
+          <li>电脑端：左侧列表点选文章</li>
+          <li>手机端：点顶部「📄 文章列表」展开列表，选完会自动收起</li>
+          <li>可改标题、日期、分类、标签与正文；配图拖进编辑区即上传</li>
+          <li>保存会直接提交到 <code>main</code> 分支，GitHub Actions 自动发布</li>
+        </ul>
+        
+        <div class="admin-drafts" id="draftPanel" hidden></div>
+      </div>
+
+      <div class="admin-editor" id="editor" hidden>
+        <div class="admin-editor__column">
+          <div class="admin-editor__head">
+            <span class="admin-path" id="currentPath"></span>
+            <a class="admin-link" id="publishLink" hidden target="_blank" rel="noopener"></a>
+          </div>
+
+          <div class="admin-toolbar">
+            <button type="button" class="admin-tool" data-action="heading" title="切换二级标题">H2</button>
+            <button type="button" class="admin-tool" data-action="bold" title="加粗 Ctrl+B"><b>B</b></button>
+            <button type="button" class="admin-tool" data-action="italic" title="斜体"><i>I</i></button>
+            <button type="button" class="admin-tool" data-action="strike" title="删除线"><s>S</s></button>
+            <button type="button" class="admin-tool" data-action="code" title="行内代码">&lt;/&gt;</button>
+            <span class="admin-toolbar__sep"></span>
+            <button type="button" class="admin-tool" data-action="bullet" title="无序列表">• 列表</button>
+            <button type="button" class="admin-tool" data-action="ordered" title="有序列表">1. 列表</button>
+            <button type="button" class="admin-tool" data-action="quote" title="引用">❝</button>
+            <button type="button" class="admin-tool" data-action="table" title="插入表格">▦ 表格</button>
+            <button type="button" class="admin-tool" data-action="fence" title="代码块">▤ 代码块</button>
+            <span class="admin-toolbar__sep"></span>
+            <button type="button" class="admin-tool" data-action="link" title="插入链接 Ctrl+K">🔗 链接</button>
+            <button type="button" class="admin-tool" data-action="formula" title="插入整行公式（自动开启 mathjax）">∑ 公式</button>
+          </div>
+
+          <div class="admin-meta" id="metaForm">
+            <label class="admin-field admin-field--wide">
+              <span>标题</span>
+              <input type="text" id="titleInput" spellcheck="false">
+            </label>
+            <label class="admin-field">
+              <span>日期（北京时间）</span>
+              <input type="text" id="dateInput" placeholder="YYYY-MM-DD HH:mm:ss" spellcheck="false">
+            </label>
+            <label class="admin-field">
+              <span>分类（逗号分隔）</span>
+              <input type="text" id="categoriesInput" placeholder="日志" spellcheck="false">
+            </label>
+            <label class="admin-field">
+              <span>标签（逗号分隔）</span>
+              <input type="text" id="tagsInput" placeholder="随笔, 飞行器" spellcheck="false">
+            </label>
+            <label class="admin-field">
+              <span>封面（/ 开头的站内路径）</span>
+              <input type="text" id="coverInput" placeholder="/images/brand/xxx.webp" spellcheck="false">
+            </label>
+            <label class="admin-field">
+              <span>摘要（列表卡片显示；加密文章也会显示它）</span>
+              <input type="text" id="excerptInput" spellcheck="false">
+            </label>
+            <label class="admin-check">
+              <input type="checkbox" id="mathjaxInput">
+              <span>公式 mathjax</span>
+            </label>
+          </div>
+
+          <div class="admin-drop" id="editorPane">
+            <textarea id="markdown" class="admin-markdown" spellcheck="false" placeholder="在这里写 Markdown 正文…&#10;把图片直接拖进来或 Ctrl+V 粘贴，会自动放进文章同名文件夹。"></textarea>
+          </div>
+
+          <div class="admin-upload-panel" id="uploadPanel" hidden>
+            <h3>本次待上传的配图</h3>
+            <ul class="admin-upload-list" id="uploadList"></ul>
+          </div>
+
+          <div class="admin-commit">
+            <input type="text" id="commitMessage" spellcheck="false">
+            <div class="admin-commit__actions">
+              <button type="button" class="admin-btn admin-btn--primary" id="saveButton" title="提交到 main 分支，GitHub Actions 会自动构建并发布">保存并发布</button>
+              <button type="button" class="admin-btn admin-btn--danger" id="deletePostButton">删除文章</button>
+              <label class="admin-btn admin-btn--file">
+                添加配图
+                <input type="file" id="fileInput" accept="image/*" multiple hidden>
+              </label>
+            </div>
+          </div>
+
+          <div class="admin-conflict" id="conflictBox" hidden>
+            <p id="conflictText"></p>
+            <div class="admin-conflict__actions">
+              <button type="button" class="admin-btn admin-btn--primary" id="conflictKeep">保留我的内容并同步远端</button>
+              <button type="button" class="admin-btn" id="conflictTake">放弃我的改动</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-editor__column admin-editor__column--preview">
+          <div class="admin-preview__head">
+            <span>预览</span>
+            <span class="admin-badge" id="previewMode">检测中…</span>
+          </div>
+          <iframe class="admin-preview" id="previewFrame" title="文章预览" sandbox="allow-same-origin"></iframe>
+          <ul class="admin-warnings" id="warnings" hidden></ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="admin-tabbar" role="tablist">
+    <button type="button" class="admin-tab admin-tab--active" id="tabEdit" role="tab">✍️ 编辑</button>
+    <button type="button" class="admin-tab" id="tabPreview" role="tab">👁 预览</button>
+  </div>
+
+  <footer class="admin-status">
+    <span class="admin-status__text" id="statusText">准备中…</span>
+    <span class="admin-status__meta" id="wordCount"></span>
+    <span class="admin-status__meta" id="permalink"></span>
+  </footer>
+</div>
+
+<div class="admin-busy" id="busy" hidden>
+  <div class="admin-busy__box">
+    <span class="admin-busy__spinner"></span>
+    <span id="busyText">处理中…</span>
+  </div>
+</div>
+
+<div class="admin-toasts" id="toasts"></div>
+
+<div class="admin-modal" id="modal" hidden>
+  <div class="admin-modal__backdrop" id="modalBackdrop"></div>
+  <div class="admin-modal__box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h2 id="modalTitle">标题</h2>
+    <p class="admin-modal__text" id="modalText"></p>
+    <label class="admin-field" id="modalFieldWrap" hidden>
+      <span id="modalFieldLabel">文件名</span>
+      <input type="text" id="modalInput" autocomplete="off" spellcheck="false" autocapitalize="off">
+    </label>
+    <p class="admin-modal__error" id="modalError"></p>
+    <div class="admin-modal__actions">
+      <button type="button" class="admin-btn admin-btn--primary" id="modalOk">确定</button>
+      <button type="button" class="admin-btn" id="modalExtra" hidden>次要操作</button>
+      <button type="button" class="admin-btn" id="modalCancel">取消</button>
+    </div>
+  </div>
+</div>
+
+<script src="/admin/js/editor-doc.js?v=mu8e5p9i"></script>
+<script src="/admin/js/editor-publish.js?v=mu8e5p9i"></script>
+<script src="/admin/js/editor-toolbar.js?v=mu8e5p9i"></script>
+<script src="/admin/js/editor-preview.js?v=mu8e5p9i"></script>
+<script src="/admin/js/editor-upload.js?v=mu8e5p9i"></script>
+<script src="/admin/js/editor-app.js?v=mu8e5p9i"></script>
+</body>
+</html>

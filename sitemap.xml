@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 自定义模板（_config.yml 的 sitemap.template）：首页/标签/分类条目不写 <lastmod>，
+     避免用构建时刻冒充修改时间；文章与页面条目保留各自 front-matter 的 updated/date。
+     详见 _config.yml 的 sitemap 段说明。 -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <url>
+    <loc>https://einstein-newton-666.github.io/2026/09/16/xiaogao-hikouki-install-diary/</loc>
+    
+    <lastmod>2026-09-19</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://einstein-newton-666.github.io/about/</loc>
+    
+    <lastmod>2026-08-17</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://einstein-newton-666.github.io/2026/08/15/welcome/</loc>
+    
+    <lastmod>2026-08-15</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://einstein-newton-666.github.io/categories/</loc>
+    
+    <lastmod>2026-08-15</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://einstein-newton-666.github.io/tags/</loc>
+    
+    <lastmod>2026-08-15</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+
+  <url>
+    <loc>https://einstein-newton-666.github.io/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  
+  <url>
+    <loc>https://einstein-newton-666.github.io/tags/%E9%9A%8F%E7%AC%94/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://einstein-newton-666.github.io/tags/%E7%AC%AC%E4%B8%80%E7%AF%87/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://einstein-newton-666.github.io/tags/%E9%A3%9E%E8%A1%8C%E5%99%A8/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+
+  
+  <url>
+    <loc>https://einstein-newton-666.github.io/categories/%E6%97%A5%E5%BF%97/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+</urlset>
