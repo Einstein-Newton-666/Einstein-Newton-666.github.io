@@ -1,0 +1,132 @@
+[
+  {
+    "slot": "hero-morning",
+    "fileMobile": "hero-morning-mobile.webp",
+    "file": "hero-morning.webp",
+    "file4k": "hero-morning-4k.webp",
+    "thumb": "hero-morning-thumb.webp",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7094123",
+    "originalSource": "https://x.com/RyanRodero/status/2093024273753637029",
+    "author": "Ryan Christian",
+    "originalDimensions": { "width": 4096, "height": 2304 },
+    "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
+  },
+  {
+    "slot": "hero-day",
+    "fileMobile": "hero-day-mobile.webp",
+    "file": "hero-day.webp",
+    "file4k": "hero-day-4k.webp",
+    "thumb": "hero-day-thumb.webp",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7010930",
+    "originalSource": "https://i.pximg.net/img-original/img/2025/10/21/01/09/35/136518892_p0.png",
+    "originalDimensions": { "width": 5000, "height": 3000 },
+    "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
+  },
+  {
+    "slot": "hero-sunset",
+    "fileMobile": "hero-sunset-mobile.webp",
+    "file": "hero-sunset.webp",
+    "file4k": "hero-sunset-4k.webp",
+    "thumb": "hero-sunset-thumb.webp",
+    "sourcePage": "https://wall.alphacoders.com/big.php?i=1090380",
+    "author": "とちちま",
+    "originalDimensions": { "width": 3840, "height": 2400 },
+    "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
+  },
+  {
+    "slot": "hero-night",
+    "fileMobile": "hero-night-mobile.webp",
+    "file": "hero-night.webp",
+    "file4k": "hero-night-4k.webp",
+    "thumb": "hero-night-thumb.webp",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7054689",
+    "originalSource": "https://i.pximg.net/img-original/img/2023/05/03/01/56/28/107754378_p0.png",
+    "originalDimensions": { "width": 5333, "height": 3000 },
+    "processing": "1280、2560 与 3840 三档均从原始高分辨率文件直接缩放、轻微锐化并编码为 WebP"
+  },
+  {
+    "slot": "cover-welcome",
+    "file": "firefly-side.webp",
+    "sourcePage": "https://firefly.cuteleaf.cn/"
+  },
+  {
+    "slot": "cover-tech",
+    "file": "tech-lab.webp",
+    "sourcePage": "https://konachan.net/post/show/340800"
+  },
+  {
+    "slot": "cover-life",
+    "file": "book-spring.webp",
+    "sourcePage": "https://art.alphacoders.com/arts/view/122414"
+  },
+  {
+    "slot": "avatar",
+    "file": "castorice-avatar.webp",
+    "sourcePage": "https://wall.alphacoders.com/big.php?i=1395160"
+  },
+  {
+    "slot": "favicon",
+    "file": "favicon-avatar.png",
+    "derivedFrom": "castorice-avatar.webp",
+    "processing": "由角色头像居中裁成圆形并缩放为 192×192；再量化到 256 色调色板 PNG（95KB → 16KB）。主题的 rel=icon、apple-touch-icon、shortcut icon 三个标签共用这一个文件，所以体积直接计入每次页面访问。"
+  },
+  {
+    "slot": "inner-categories",
+    "file": "category-library-glow.webp",
+    "file4k": "category-library-glow-4k.webp",
+    "author": "Tadokiari",
+    "sourcePage": "https://wall.alphacoders.com/big.php?i=1317278",
+    "originalDimensions": { "width": 8736, "height": 4896 },
+    "processing": "标准版与 4K 版均从原始 PNG 直接缩放并编码为 WebP"
+  },
+  {
+    "slot": "inner-logs",
+    "file": "log-gothic-library.webp",
+    "file4k": "log-gothic-library-4k.webp",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=4068034",
+    "originalSource": "https://safebooru.org/images/3892/a649b622a6d9860f29525da95edf1247d3480ac9.jpg",
+    "originalDimensions": { "width": 9045, "height": 5109 },
+    "processing": "标准版与 4K 版均从原始 9045×5109 JPEG 直接缩放、居中裁切为 16:9、轻微锐化并编码为 WebP"
+  },
+  {
+    "slot": "inner-tags",
+    "file": "tag-cloud-city.webp",
+    "file4k": "tag-cloud-city-4k.webp",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=7085343",
+    "originalDimensions": { "width": 4000, "height": 1857 },
+    "processing": "标准版与 4K 版均从 4000 像素原图直接编码为 WebP；为保留建筑和瀑布纹理采用质量 74",
+    "sizeException": "tag-cloud-city-4k.webp 为 1848076 bytes；继续压缩会损伤建筑细节和原有绘画纹理"
+  },
+  {
+    "slot": "inner-archives",
+    "file": "article-digital-library.webp",
+    "file4k": "article-digital-library-4k.webp",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=6716883",
+    "originalDimensions": { "width": 7200, "height": 4050 },
+    "processing": "标准版与 4K 版均从 7200 像素原图直接缩放并编码为 WebP"
+  },
+  {
+    "slot": "inner-post",
+    "file": "article-digital-library.webp",
+    "file4k": "article-digital-library-4k.webp",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=6716883",
+    "originalDimensions": { "width": 7200, "height": 4050 },
+    "processing": "标准版与 4K 版均从 7200 像素原图直接缩放并编码为 WebP"
+  },
+  {
+    "slot": "inner-about",
+    "file": "about-sky-terminal.webp",
+    "file4k": "about-sky-terminal-4k.webp",
+    "sourcePage": "https://safebooru.org/index.php?page=post&s=view&id=6507788",
+    "originalDimensions": { "width": 5910, "height": 2944 },
+    "processing": "标准版与 4K 版均从原始 PNG 直接缩放并编码为 WebP"
+  },
+  {
+    "slot": "inner-notfound",
+    "file": "notfound-quiet-window.webp",
+    "file4k": "notfound-quiet-window-4k.webp",
+    "derivedFrom": "本地图库 local-originals/134501086_p0.jpg（无网络来源页）",
+    "originalDimensions": { "width": 6104, "height": 3508 },
+    "processing": "居中裁为 16:9 后分别缩放为 1920×1080 与 3840×2160，轻微锐化并编码为 WebP（质量 78 / 76）"
+  }
+]

@@ -1,0 +1,1286 @@
+/* ==========================================================================
+   博客在线编辑台样式
+
+   两个前提，改这个文件时请一起守住：
+
+   1. 本页是独立文档（admin-page.ejs 里 layout: false），不加载主题样式，
+      也不加载任何 CSS 框架的 preflight。所以下面必须自带一份最小归零，
+      否则「隐藏元素、链接下划线、表单字体、列表符号」这些默认样式会失真。
+   2. 本文件只被 /admin/ 引用，因此可以使用元素选择器（权重 0,0,1）做归零：
+      权重足够低，后面的 .admin-* 类规则永远能盖住它。
+
+   与主题样式完全隔离：只作用于 .admin-* 命名空间，不覆盖 Redefine 的任何规则。
+   ========================================================================== */
+
+:root {
+  --admin-primary: #1a73e8;
+  --admin-primary-dark: #1668d3;
+  --admin-danger: #d93025;
+  --admin-warn: #b06000;
+  --admin-ok: #0d904f;
+  --admin-bg: #eef1f5;
+  --admin-surface: #fff;
+  --admin-text: #202124;
+  --admin-subtle: #5f6368;
+  --admin-border: #dadce0;
+  --admin-mono: Consolas, Monaco, 'Courier New', monospace;
+}
+
+/* ------------------------------ 最小归零 ------------------------------
+ * 本页不加载主题样式，也不加载任何 CSS 框架的 preflight，
+ * 下面这份归零必须自带，否则链接下划线、表单字体、列表符号都会失真。
+ * 全部用元素选择器（权重 0,0,1），保证后面的 .admin-* 类规则永远能盖住。
+ * -------------------------------------------------------------------- */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body,
+h1, h2, h3, h4, h5, h6,
+p, ul, ol, li, figure, blockquote {
+  margin: 0;
+  padding: 0;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button, input, textarea, select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: 0;
+}
+
+img, svg {
+  max-width: 100%;
+}
+
+html, body.admin-body {
+  height: 100%;
+}
+
+body.admin-body {
+  margin: 0;
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  font-family: -apple-system, 'Segoe UI', 'Noto Sans SC', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.admin-body *,
+body.admin-body *::before,
+body.admin-body *::after {
+  box-sizing: border-box;
+}
+
+/* 100dvh = 当前可视高度。手机浏览器里 100vh 是「地址栏收起后」的大视口，
+   配合 body{overflow:hidden} 会把底部标签栏、状态栏顶到屏幕外且无法滚到，
+   于是「编辑 / 预览」切换按钮在手机上点不到。老浏览器不认 dvh 时退回 100vh。
+
+   另外 --admin-app-height 由 editor-app.js 用 window.innerHeight 写进来：
+   有些手机浏览器（老 Chromium 内核、X5/XWeb 等）既不认 dvh，100vh 又比可视区大，
+   底部照样被裁；用 JS 量出来的像素值最保险。 */
+.admin-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: var(--admin-app-height, 100vh);
+  overflow: hidden;
+  /* 横屏刘海机：内容不要钻到刘海下面 */
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+@supports (height: 100dvh) {
+  .admin-shell {
+    height: var(--admin-app-height, 100dvh);
+  }
+}
+
+/* ---------------------------------- 顶栏 --------------------------------- */
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  /* viewport-fit=cover 之后页面会铺到状态栏/刘海下面，顶栏必须自己让开安全区，
+     否则手机上最上面那一行会被状态栏盖掉（看起来就是「上面的不显示了」）。 */
+  padding-top: calc(10px + env(safe-area-inset-top, 0px));
+  background: var(--admin-surface);
+  border-bottom: 1px solid var(--admin-border);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+}
+
+.admin-brand {
+  font-weight: 700;
+  color: var(--admin-primary);
+  white-space: nowrap;
+}
+
+/* 手机端用来展开/收起文章列表，宽屏隐藏（列表本来就常驻） */
+.admin-list-toggle {
+  display: none;
+}
+
+/* 顶栏按钮的长文案：窄屏只留短的一半，免得顶栏折成三行 */
+.admin-wide-only {
+  display: inline;
+}
+
+.admin-repo,
+.admin-head {
+  font-size: 12px;
+  color: var(--admin-subtle);
+}
+
+.admin-head code {
+  font-family: var(--admin-mono);
+  background: #f1f3f4;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.admin-topbar__spacer {
+  flex: 1;
+}
+
+.admin-endpoint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--admin-subtle);
+}
+
+.admin-endpoint input {
+  width: 210px;
+  padding: 6px 8px;
+  border: 1px solid var(--admin-border);
+  border-radius: 6px;
+  font-family: var(--admin-mono);
+  font-size: 12px;
+}
+
+/* ---------------------------------- 按钮 --------------------------------- */
+
+.admin-btn {
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--admin-border);
+  background: #fff;
+  color: var(--admin-text);
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s, border-color .15s;
+}
+
+.admin-btn:hover {
+  background: #eef3fd;
+  border-color: #c5d9f5;
+}
+
+.admin-btn:active {
+  transform: translateY(1px);
+}
+
+.admin-btn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.admin-btn--primary {
+  background: var(--admin-primary);
+  border-color: var(--admin-primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.admin-btn--primary:hover {
+  background: var(--admin-primary-dark);
+}
+
+.admin-btn--danger {
+  color: var(--admin-danger);
+  border-color: #f3c0bc;
+}
+
+.admin-btn--danger:hover {
+  background: #fdecea;
+}
+
+.admin-btn--block {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.admin-btn--tiny {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.admin-btn--file {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ---------------------------------- 登录 --------------------------------- */
+
+.admin-login {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: auto;
+}
+
+.admin-login__card {
+  width: min(560px, 100%);
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  padding: 26px 28px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, .08);
+}
+
+.admin-login__card h1 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  color: var(--admin-primary);
+}
+
+.admin-login__hint {
+  margin: 0 0 18px;
+  color: var(--admin-subtle);
+  font-size: 13px;
+}
+
+.admin-login__hint code {
+  font-family: var(--admin-mono);
+  background: #f1f3f4;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.admin-login__error {
+  min-height: 20px;
+  margin: 6px 0 10px;
+  color: var(--admin-danger);
+  font-size: 13px;
+}
+
+.admin-login__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ------------------------------ 登录分步引导 ------------------------------ */
+
+.admin-login__steps {
+  margin: 0 0 6px;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-login__steps li {
+  font-size: 13px;
+}
+
+.admin-login__label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+.admin-login__steps input {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 10px;
+  width: 100%;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  color: var(--admin-text);
+}
+
+.admin-login__steps input:focus {
+  outline: 2px solid rgba(26, 115, 232, .4);
+  outline-offset: 1px;
+  border-color: var(--admin-primary);
+}
+
+.admin-login__note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--admin-subtle);
+}
+
+.admin-login__note code,
+.admin-login__hint code,
+.admin-login__faq code {
+  font-family: var(--admin-mono);
+  background: #f1f3f4;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.admin-login__hint {
+  margin: 16px 0 0;
+}
+
+.admin-login__faq {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--admin-subtle);
+}
+
+.admin-login__faq summary {
+  cursor: pointer;
+  color: var(--admin-primary);
+}
+
+.admin-login__faq ol {
+  margin: 10px 0 0 18px;
+  padding: 0;
+}
+
+.admin-login__faq li {
+  margin: 4px 0;
+}
+
+.admin-login__faq p {
+  margin: 8px 0 0;
+  line-height: 1.7;
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--admin-subtle);
+}
+
+.admin-field input {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 9px 10px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  color: var(--admin-text);
+}
+
+.admin-field input:focus,
+.admin-search:focus,
+.admin-markdown:focus {
+  outline: 2px solid rgba(26, 115, 232, .4);
+  outline-offset: 1px;
+  border-color: var(--admin-primary);
+}
+
+/* -------------------------------- 工作区 -------------------------------- */
+
+.admin-workspace {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 0;
+}
+
+.admin-sidebar {
+  background: var(--admin-surface);
+  border-right: 1px solid var(--admin-border);
+  padding: 12px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-sidebar__actions {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-search {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 8px 10px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  width: 100%;
+}
+
+.admin-post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.admin-sidebar__empty {
+  color: var(--admin-subtle);
+  font-size: 13px;
+  text-align: center;
+  padding: 14px 0;
+}
+
+/* 列表读取失败时的面板：要说清「没读到」和「真的没有」的区别 */
+.admin-sidebar__failed {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #f3c0bc;
+  background: #fdecea;
+  border-radius: 10px;
+}
+
+.admin-sidebar__failed .admin-sidebar__empty {
+  color: var(--admin-danger);
+  padding: 0;
+  text-align: left;
+  word-break: break-word;
+}
+
+.admin-sidebar__note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--admin-subtle);
+}
+
+.admin-post {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #f8f9fa;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+}
+
+.admin-post:hover {
+  background: #eef3fd;
+}
+
+.admin-post--active {
+  background: #e8f0fe;
+  border-color: var(--admin-primary);
+}
+
+.admin-post__title {
+  font-size: 13px;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.admin-post__meta {
+  font-size: 11px;
+  color: var(--admin-subtle);
+}
+
+.admin-main {
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+}
+
+.admin-placeholder {
+  margin: auto;
+  max-width: 560px;
+  padding: 28px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+}
+
+.admin-placeholder h2 {
+  margin: 0 0 12px;
+  font-size: 17px;
+  color: var(--admin-primary);
+}
+
+.admin-placeholder ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--admin-subtle);
+  font-size: 13px;
+}
+
+.admin-placeholder code {
+  font-family: var(--admin-mono);
+  background: #f1f3f4;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+/* ---------------------------- 本机草稿总览 ---------------------------- */
+
+.admin-drafts {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--admin-border);
+}
+
+.admin-drafts h3 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: var(--admin-warn);
+}
+
+.admin-drafts__note {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--admin-subtle);
+}
+
+.admin-draft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: #fffdf5;
+  cursor: pointer;
+}
+
+.admin-draft:hover {
+  background: #fff7e0;
+  border-color: #f0d9a8;
+}
+
+.admin-draft__title {
+  font-size: 13px;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.admin-draft__meta {
+  font-size: 11px;
+  color: var(--admin-subtle);
+  word-break: break-all;
+}
+
+/* -------------------------------- 编辑区 -------------------------------- */
+
+.admin-editor {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--admin-border);
+  width: 100%;
+  min-height: 0;
+}
+
+.admin-editor__column {
+  background: var(--admin-surface);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.admin-editor__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--admin-border);
+  font-size: 12px;
+  color: var(--admin-subtle);
+}
+
+.admin-path {
+  font-family: var(--admin-mono);
+  word-break: break-all;
+}
+
+.admin-link {
+  color: var(--admin-ok);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-tool {
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--admin-border);
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  flex: 0 0 auto;          /* 窄屏工具条横向滚动时按钮保持自然宽度，不被压扁 */
+}
+
+.admin-tool:hover {
+  background: #eef3fd;
+}
+
+.admin-toolbar__sep {
+  width: 1px;
+  background: var(--admin-border);
+  margin: 0 4px;
+  flex: 0 0 auto;
+}
+
+.admin-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-meta .admin-field {
+  margin-bottom: 0;
+}
+
+.admin-field--wide {
+  grid-column: 1 / -1;
+}
+
+.admin-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--admin-subtle);
+}
+
+.admin-drop {
+  flex: 1;
+  min-height: 260px;
+  display: flex;
+}
+
+.admin-markdown {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  resize: none;
+  padding: 14px;
+  font-family: var(--admin-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--admin-text);
+  background: #fcfdff;
+  tab-size: 2;
+}
+
+.admin-upload-panel {
+  border-top: 1px solid var(--admin-border);
+  padding: 10px 12px;
+}
+
+.admin-upload-panel h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--admin-subtle);
+}
+
+.admin-upload-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-upload {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+
+.admin-upload span:last-child {
+  display: flex;
+  gap: 6px;
+}
+
+.admin-commit {
+  border-top: 1px solid var(--admin-border);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-commit input[type="text"] {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 8px 10px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  width: 100%;
+}
+
+.admin-commit__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-conflict {
+  margin: 0 12px 12px;
+  border: 1px solid #f3c0bc;
+  background: #fdecea;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 13px;
+}
+
+.admin-conflict p {
+  margin: 0 0 10px;
+}
+
+.admin-conflict__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* -------------------------------- 预览区 -------------------------------- */
+
+.admin-preview__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--admin-border);
+  font-size: 12px;
+  color: var(--admin-subtle);
+}
+
+.admin-badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: #f1f3f4;
+}
+
+.admin-badge--ok {
+  background: #e6f4ea;
+  color: var(--admin-ok);
+}
+
+.admin-badge--warn {
+  background: #fef7e0;
+  color: var(--admin-warn);
+}
+
+.admin-preview {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: #fff;
+  min-height: 320px;
+}
+
+.admin-warnings {
+  margin: 0;
+  padding: 8px 12px 12px 30px;
+  font-size: 12px;
+  color: var(--admin-warn);
+  border-top: 1px solid var(--admin-border);
+}
+
+.admin-warning--error {
+  color: var(--admin-danger);
+  font-weight: 600;
+}
+
+/* --------------------------------- 状态栏 -------------------------------- */
+
+.admin-status {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 16px;
+  padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+  background: var(--admin-surface);
+  border-top: 1px solid var(--admin-border);
+  font-size: 12px;
+  color: var(--admin-subtle);
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+}
+
+.admin-status__text--warn {
+  color: var(--admin-warn);
+}
+
+.admin-status__meta {
+  font-family: var(--admin-mono);
+}
+
+/* ------------------------------ 遮罩与提示 ------------------------------ */
+
+.admin-busy {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(255, 255, 255, .7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.admin-busy__box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  padding: 14px 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+  font-size: 13px;
+}
+
+.admin-busy__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #c5d9f5;
+  border-top-color: var(--admin-primary);
+  border-radius: 50%;
+  animation: admin-spin .8s linear infinite;
+}
+
+@keyframes admin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.admin-toasts {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 60;
+  max-width: min(420px, 90vw);
+}
+
+.admin-toast {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #323232;
+  color: #fff;
+  font-size: 13px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+  opacity: 1;
+  transition: opacity .4s, transform .4s;
+}
+
+.admin-toast--ok {
+  background: #0d652d;
+}
+
+.admin-toast--warn {
+  background: #8a5300;
+}
+
+.admin-toast--error {
+  background: #a50e0e;
+}
+
+.admin-toast--out {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+/* ------------------------- 编辑 / 预览切换（移动端） ------------------------- */
+
+.admin-tabbar {
+  display: none;
+  background: var(--admin-surface);
+  border-top: 1px solid var(--admin-border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  flex: 0 0 auto;
+}
+
+.admin-tab {
+  flex: 1;
+  font-family: inherit;
+  font-size: 14px;
+  padding: 12px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--admin-subtle);
+  cursor: pointer;
+}
+
+.admin-tab--active {
+  color: var(--admin-primary);
+  font-weight: 600;
+  box-shadow: inset 0 -3px 0 var(--admin-primary);
+}
+
+/* --------------------------------- 弹窗 --------------------------------- */
+
+.admin-modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.admin-modal__backdrop {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(32, 33, 36, .45);
+}
+
+.admin-modal__box {
+  position: relative;
+  width: min(460px, 100%);
+  max-height: 86vh;
+  max-height: 86dvh;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--admin-surface);
+  border-radius: 14px;
+  padding: 20px 22px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .24);
+}
+
+.admin-modal__box h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  color: var(--admin-primary);
+}
+
+.admin-modal__text {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--admin-subtle);
+  line-height: 1.7;
+}
+
+.admin-modal__text code {
+  font-family: var(--admin-mono);
+  background: #f1f3f4;
+  padding: 1px 5px;
+  border-radius: 4px;
+  word-break: break-all;
+}
+
+.admin-modal__error {
+  min-height: 18px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--admin-danger);
+}
+
+.admin-modal__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.admin-modal__actions .admin-btn {
+  flex: 1;
+  text-align: center;
+}
+
+/* --------------------------------- 响应式 -------------------------------- */
+
+@media (max-width: 1080px) {
+  .admin-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-preview {
+    min-height: 420px;
+  }
+}
+
+/* 手机端（含横屏）与窄窗口。
+ *
+ * 为什么不能只写 max-width: 手机横过来宽度就有 780~930px，纯宽度断点会全部失效：
+ * 底部「编辑/预览」标签栏消失、文章列表不再折叠、字号又回到 13px，
+ * 表现出来就是「手机端上面的不显示了 / 文章打不开」。所以再补一条
+ * 「矮屏 + 粗指针（触屏）」的判定，笔记本接鼠标时 pointer 是 fine，不会被误伤。 */
+@media (max-width: 760px), (max-height: 540px) and (pointer: coarse) {
+  /* 手机端用纵向 flex 而不是网格：列表收起时主体才能自动占满整屏
+     （网格的 auto/1fr 两行在只剩一个子元素时会把主体塞进 auto 行）。 */
+  .admin-workspace {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .admin-main {
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* 手机上文章列表默认收起，编辑区拿回整屏高度；
+     点顶栏「📄 文章列表」展开，选中文章后由脚本自动收起。 */
+  .admin-sidebar {
+    display: none;
+    flex: 0 0 auto;
+    max-height: 42vh;
+  }
+
+  .admin-workspace.admin-list-open .admin-sidebar {
+    display: flex;
+  }
+
+  .admin-list-toggle {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .admin-wide-only {
+    display: none;
+  }
+
+  .admin-topbar {
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  .admin-topbar__spacer {
+    display: none;
+  }
+
+  /* 顶栏只剩「品牌 + 文章列表 + 退出」：仓库名、HEAD、本机预览地址
+     在手机上既占行又没用（HTTPS 页面连不上 http 本地预览服务）。 */
+  .admin-repo,
+  .admin-head,
+  .admin-endpoint {
+    display: none;
+  }
+
+  .admin-brand {
+    font-size: 14px;
+  }
+
+  /* iOS Safari 会在聚焦 font-size < 16px 的输入框时自动放大整页，
+     而本页是 overflow:hidden 的定高布局，放大后很难缩回去。
+     所以窄屏下所有可输入控件统一 16px。 */
+  .admin-markdown,
+  .admin-search,
+  .admin-field input,
+  .admin-login__steps input,
+  .admin-commit input[type="text"],
+  .admin-endpoint input {
+    font-size: 16px;
+  }
+
+  /* 手机上编辑与预览分屏显示，用底部标签切换，避免两栏都被压扁 */
+  .admin-tabbar {
+    display: flex;
+  }
+
+  .admin-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-editor__column--preview {
+    display: none;
+  }
+
+  body.admin-show-preview .admin-editor__column:not(.admin-editor__column--preview) {
+    display: none;
+  }
+
+  body.admin-show-preview .admin-editor__column--preview {
+    display: flex;
+  }
+
+  /* 触控友好：加大点击目标 */
+  .admin-tool,
+  .admin-btn,
+  .admin-tab {
+    min-height: 40px;
+  }
+
+  .admin-toolbar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-meta {
+    grid-template-columns: 1fr;
+  }
+
+  /* 手机端**不做字段重排**：顺序和电脑端完全一致 ——
+     文件路径 → 工具条 → 文章信息（标题/日期/分类…）→ 正文 → 配图 → 提交/保存。
+     曾经为了让正文上移而把元信息排到最后，结果标题/日期掉到保存按钮后面，
+     反而更像坏了；两边顺序一致才好对照。这里显式写 order:0，是为了把上一版的
+     重排彻底覆盖掉（同时留个显眼的说明，避免以后又"优化"一遍）。 */
+  .admin-editor__head,
+  .admin-conflict,
+  .admin-toolbar,
+  .admin-drop,
+  .admin-upload-panel,
+  .admin-meta,
+  .admin-commit {
+    order: 0;
+  }
+
+  /* 窄屏下 .admin-toolbar 设了 overflow-x:auto，而按 CSS 规则它的 overflow-y 会跟着
+     变成 auto，于是「自动最小尺寸」归零 —— 整个列纵向溢出时它会被压扁，
+     表现就是工具条只露出上半截（用户截图里就是这个）。除正文块外一律不参与压缩。 */
+  .admin-editor__head,
+  .admin-toolbar,
+  .admin-meta,
+  .admin-upload-panel,
+  .admin-commit,
+  .admin-conflict {
+    flex-shrink: 0;
+  }
+
+  /* 正文块保持可伸缩，让 textarea 自己滚，而不是把别的块挤扁 */
+  .admin-drop {
+    flex: 1 1 auto;
+    min-height: 200px;
+  }
+
+  .admin-preview {
+    min-height: 260px;
+  }
+
+  .admin-commit__actions .admin-btn,
+  .admin-commit__actions .admin-btn--file {
+    flex: 1;
+    text-align: center;
+  }
+
+  .admin-login {
+    padding: 16px 12px;
+  }
+
+  .admin-login__card {
+    padding: 20px 18px;
+  }
+
+  /* 提示条往上抬，别压住底部标签栏 */
+  .admin-toasts {
+    left: 12px;
+    right: 12px;
+    max-width: none;
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* 矮屏且够宽（桌面小窗口、平板分屏）：顶栏收紧，正文区不再强撑最小高度。
+   触屏的矮屏已经被上面那条「(max-height: 540px) and (pointer: coarse)」当成手机处理了。 */
+@media (min-width: 761px) and (max-height: 520px) {
+  .admin-drop {
+    min-height: 120px;
+  }
+
+  .admin-topbar {
+    padding: 6px 10px;
+  }
+}
+
+@media print {
+  .admin-topbar,
+  .admin-sidebar,
+  .admin-status,
+  .admin-toolbar,
+  .admin-tabbar,
+  .admin-modal {
+    display: none;
+  }
+}
+
+/* =============================== 最后兜底 ===============================
+ * hidden 属性必须被显式压住。
+
+ * 原因：本页所有面板都靠 el.hidden = true 显示/隐藏，而
+ * .admin-workspace{display:grid}、.admin-busy{display:flex}、
+ * .admin-modal{display:flex}、.admin-field{display:flex} 这些作者样式
+ * 会盖掉浏览器默认的 [hidden]{display:none} —— 作者样式优先于 UA 样式表。
+ * 少这一条，页面一打开就是「加载遮罩 + 弹窗常驻」，登录后工作区也露不出来。
+
+ * 为什么放在文件最后：真实浏览器里 !important 已经保证它赢，位置无所谓；
+ * 放在最后可以让不实现权重/重要性的工具（例如 tools/editor/verify-admin-dom.mjs
+ * 用的 jsdom，其 getComputedStyle 只按出现顺序取最后一条）也得出同样的结论，
+ * 于是「弹窗没有常驻」这件事在没有浏览器的机器上也能被自动验证。
+ * ====================================================================== */
+
+[hidden] {
+  display: none !important;
+}
