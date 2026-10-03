@@ -1,0 +1,1515 @@
+/* 标题衬线字体：scripts/title-font.js 在构建时把 Noto Serif SC 600 裁成标题实际用到的字。
+   原来的 STSong / Songti SC 在 Windows、安卓上都没有，访客拿到的是 SimSun —— 它是给小字号
+   设计的，放大到标题字号笔画又细又虚。字重写成区间：导航品牌 520、横幅 700、归档标题 400
+   都直接用这一个 600 的文件，不让浏览器再合成假粗体。子集里没有的字按字回退到后面的宋体。 */
+@font-face {
+  font-family: 'Anime Title Serif';
+  src: url('/fonts/title-serif.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --anime-gold: #d2a548;
+  --anime-title-serif: 'Anime Title Serif', STSong, 'Songti SC', SimSun, serif;
+  --anime-teal: #3b8588;
+  --anime-paper: #f7faf9;
+  /* 首页横幅上那层「整幅的纱」的浓度：0 = 关掉，越大越压暗。
+     白天那张插画过亮（实测一成多像素 >85% 亮度），这个值是要调的那个旋钮。 */
+  --anime-hero-veil: .16;
+  /* 首页横幅之下的兜底色。取深色不取白：它只在横幅盖不住时露出来，露白像坏掉，露深色像留白。
+     （曾经改成「跟模式走、浅色下用冷白 #eef3f6」，结果手机地址栏一收起、横幅盖不住时，
+     浅色页底部就多出一条白边 —— 作者原来的判断是对的，别再改回浅色。） */
+  --anime-hero-backdrop: #0b1620;
+}
+
+html[data-anime-page] body {
+  background: var(--anime-paper);
+}
+
+/* 主题给 .page-container 写死了 background: var(--background-color)（白），整站于是垫在
+   一张纯白纸上 —— 平时全靠首屏那块 fixed 横幅盖住，横幅一短（手机地址栏收起）、一挂
+   （CDN 断，横幅不再是 fixed）或页面横向溢出，露出来的就是这张纸。
+   data-anime-page 是 anime-theme.js 运行时给内页打的，首页没有这个属性，所以原来那条
+   透明覆盖根本够不到首页；这里不再加前缀，底色交还给 body 和各页自己的背景层。 */
+html .page-container {
+  background: transparent;
+}
+
+html[data-anime-page] .page-container {
+  position: relative;
+  z-index: 0;
+  min-height: 100dvh;
+  isolation: isolate;
+}
+
+/* 首页整屏都靠那块 fixed 横幅当背景，横幅之下的兜底色不能是白。:has() 让这条只落在
+   首页（只有首页有 .home-banner-background）；不认 :has() 的浏览器保持现状，不会更糟。
+   html 和 body 都要写：html 有背景时它就负责铺满画布，body 只画自己的盒子。 */
+html:has(.home-banner-background),
+html:has(.home-banner-background) body {
+  background-color: var(--anime-hero-backdrop);
+}
+
+/* 暗色模式下横幅本来就压过一档（内页那套 ::before 滤镜 + 深色遮罩），纱归零，免得叠两次 */
+html.dark {
+  --anime-hero-veil: 0;
+}
+
+html[data-anime-page] .page-container::before,
+html[data-anime-page] .page-container::after {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  content: '';
+  pointer-events: none;
+}
+
+html[data-anime-page] .page-container::before {
+  background-image: var(--anime-page-image);
+  background-position: var(--anime-page-position-desktop, 50% center);
+  background-size: cover;
+  filter: saturate(.95) brightness(1) contrast(1.06);
+}
+
+/* 浅色内页的遮罩只留一层薄纱。
+   原来这里是 .42→.64 的白纱，再叠 ::before 的 brightness(1.04) —— 两下都往白里推，
+   插画的暗部和亮部被一起夹到接近纸色，整张图就没了（对比同目录下的 /archives/ 与首页，
+   一眼可见）。可读性也不需要整页再兜一遍：内页正文装在玻璃卡里（48% 底 + blur(14px)），
+   那才是负责可读的一层。
+   暗色那套（brightness(.55) 压暗 + .40→.62 暗纱）**不要一起改**：压暗是保留结构的，
+   深色模式下插画仍然清楚 —— 这个不对称是有依据的。 */
+html[data-anime-page] .page-container::after {
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(247, 250, 249, .18), rgba(247, 250, 249, .38) 72%);
+}
+
+html[data-anime-page] .main-content-container {
+  background: transparent;
+}
+
+html .navbar-container {
+  border-bottom: 1px solid rgba(255, 255, 255, .36);
+  background: rgba(255, 255, 255, .24);
+  box-shadow: none;
+  backdrop-filter: blur(10px) saturate(115%);
+  -webkit-backdrop-filter: blur(10px) saturate(115%);
+}
+
+html.dark .navbar-container {
+  border-bottom-color: rgba(255, 255, 255, .1);
+  background: rgba(12, 18, 24, .42);
+}
+
+html[data-anime-page] .navbar-container {
+  background: rgba(255, 255, 255, .18);
+}
+
+html.dark[data-anime-page] .navbar-container {
+  background: rgba(12, 18, 24, .34);
+}
+
+/* 页脚保持通栏（主题原样）。曾试过让它和内容列同宽（max-width 1080 + 居中 + 圆角），
+   用来消掉手机上左边缘那条「没有内容的白板」，但作者最终选择通栏 —— 页脚是收尾的横条，
+   铺满整幅更像一条分界，而不是又一张浮起来的卡片。所以这里不再加任何宽度约束。
+   注意：宽度回到通栏后，那条白板会重新出现，这是已知取舍。 */
+
+/* 内页的页脚是**透明**的（主题只给首页那一版白底），浅色模式下文字直接压在插画上 ——
+   原来靠内页那层 42–64% 的白纱兜着可读性，白纱收薄之后就不能再指望它了，所以必须自带底。
+
+   底要多厚是实测出来的（同一视口、浅色、逐档截图对比）：
+     · 全透明           → 文字压在插画上读不出来（插画是有细节的，不是均匀浅底）
+     · .82 + blur14（旧）→ 清楚，但在浅色页上是一条平板的白带，插画在页脚处整块断掉
+     · .42 + blur20      → 插画化成一团柔和的底色，文字仍然读得清
+     · .32 + blur20（现）→ 再透一档，作者选定；代价是最后一行「博客已运行 …」最吃力
+   模糊比填充更管用：它把背景的细节抹平（不再和字抢），填充只负责把对比度抬起来。
+
+   限定在 [data-anime-page]（内页）：首页页脚压在深色夜景上，同样的数值会发闷、
+   灰字直接掉出去（实测过）；首页保持主题原来那版 0.8 白底。暗色模式本来就够，不动。 */
+html[data-anime-page]:not(.dark) .footer {
+  background: rgba(252, 253, 253, .32);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* 窄屏的面板左右内边距被主题压到了 3.2px。
+   主题在 ≤640 有**两段互相覆盖**的规则，后面那段赢：
+     @media (max-width:640px) { .page-template-container { padding: 22px } }
+     @media (max-width:640px) { .page-template-container { padding: 1.2rem 0.2rem } }   ← 赢
+   于是左右只剩 0.2rem = 3.2px，标题和分类卡片整个贴在玻璃边缘上（实测面板 x28、标题 x31）。
+   收窄是为省地方，但不能省到贴边；按主题自己那档 22px 补回来。
+   html 前缀是必要的：主题两段同特异性，只靠源码顺序不可靠。 */
+@media (max-width: 640px) {
+  html .page-template-container {
+    padding: 1.2rem 22px;
+  }
+}
+
+/* 窄屏内容区贴着导航栏。主题在 ≤640 把内容区的上间距清零了：
+     基础      .page-container .main-content-container .main-content-body → padding: 38px 0
+     ≤768      … → padding: 30.4px 0
+     ≤640      … → padding-top: 0   （后一条把前一条盖掉）
+   而 ≤640 正是手机档，于是玻璃面板直接顶在导航栏下缘（实测导航栏 y0–56、面板 y56，间隙 0px），
+   两张东西连成一片。桌面是 38px（导航栏 y0–70、面板 y108），窄屏不该比桌面还挤。
+   只给内页补：首页没有 data-anime-page，那块是横幅、不该被推下去。
+   特异性 (0,4,1) 压过主题的 (0,3,0)，不依赖源码顺序。
+   注：本文件里任何注释都不要出现注释的定界符本身 —— CSS 注释不能嵌套，外层会在那里提前结束，
+   后面的规则就被当成裸 CSS 吞掉。这个坑真踩过：在本条注释里写了一个行内注释，
+   结果本条规则整段失效，而基于文本正则的校验器完全查不出来（后来补了解析级检查才发现）。 */
+@media (max-width: 640px) {
+  html[data-anime-page] .page-container .main-content-container .main-content-body {
+    padding-top: 20px;
+  }
+}
+
+html[data-anime-page] .navbar-container .navbar-item a.active {
+  color: var(--anime-teal);
+}
+
+/* 主题的页面版导航最大宽度是 1000px，而宋体品牌（约 317px）加菜单（约 682px）正好占满，
+   两者贴死成“…的博客首页”（实测间距 1px）。压小页面版品牌字号，让中间留出余量。 */
+.navbar-container .navbar-content:not(.has-home-banner) .logo-title,
+.navbar-container .navbar-content:not(.has-home-banner) .logo-title h1 {
+  font-size: 1.4rem;
+}
+
+/* 769-1100px 区间导航栏会被压垮：主题用 float 排的菜单被挤成逐字换行（“分/类”），品牌也断成
+   两行，总高超过固定的 70px，文字就露到导航栏外面（实测 780-820px 溢出 7px）。
+   三层处理：① 品牌与菜单都不许被压缩、不许换行；② 空间不足先整体缩小；
+   ③ 再不够就提前切汉堡菜单（主题自带的切换点是 768px，太晚）。 */
+.navbar-container .navbar-content .left,
+.navbar-container .navbar-content .right {
+  flex: 0 0 auto;
+}
+
+.navbar-container .navbar-content .logo-title {
+  white-space: nowrap;
+}
+
+/* 放在内页品牌规则之后：特异性相同（各 4 个类），靠源码顺序生效，两条都覆盖到。 */
+@media (max-width: 1100px) {
+  .navbar-container .navbar-content .left .logo-title,
+  .navbar-container .navbar-content .left .logo-title h1 {
+    font-size: 1.15rem;
+  }
+
+  .navbar-container .navbar-content .right .desktop .navbar-list .navbar-item {
+    font-size: .875rem;
+  }
+
+  .navbar-container .navbar-content .right .desktop .navbar-list .navbar-item.search {
+    margin-left: 14px;
+  }
+}
+
+/* 选择器带 html 前缀：本文件先于 style.css 加载，同特异性会被主题的基础规则覆盖。 */
+@media (max-width: 900px) {
+  html .navbar-container .right .desktop .navbar-list {
+    display: none;
+  }
+
+  html .navbar-container .right .mobile .icon-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+/* 首页横幅上的导航文字保持主题默认的深色（品牌 --first-text-color、菜单 --default-text-color），
+   与内页一致，也和改动前一样。实测这层 24% 白玻璃压在插画上时深色字约 1.6-2.6:1、白字约 4.2-6.9:1：
+   白字更清楚，但会改变原有的样子，所以按作者决定保留深色。
+   若之后仍想提升首页可读性，正确方向是"滚过 hero 后用内页那套浅底深字"（那时白字会掉到 1.4:1），
+   而不是只调整一种文字颜色。 */
+
+/* 首页没有 data-anime-page，主题也不给当前项上色，所以这里补一条与内页
+   （html[data-anime-page] .navbar-container .navbar-item a.active）相同的青色，
+   让"当前所在页"在首页同样是绿色。其余文字仍走上面的主题默认深色。 */
+html .navbar-container .navbar-content.has-home-banner .navbar-item a.active,
+html .navbar-container .navbar-content.has-home-banner .navbar-item a.active i {
+  color: var(--anime-teal);
+}
+
+html[data-anime-page] :is(.page-template-container, .archive-container, .article-content-container, .toc-content-container) {
+  border: 1px solid rgba(255, 255, 255, .72);
+  border-radius: 8px;
+  background: rgba(250, 252, 251, .48);
+  box-shadow: 0 14px 36px rgba(22, 43, 51, .12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html[data-anime-page] :is(.page-template-container, .archive-container) h1,
+html[data-anime-page] .article-title {
+  font-family: var(--anime-title-serif);
+  letter-spacing: 0;
+}
+
+/* 分类页那张分类卡片。主题给的是 --second-background-color，浅色下就是**不透明**的
+   rgb(250,250,250) —— 压在 48% 的玻璃面板上像贴了一张白纸，背后的插画整块断掉。
+   改成半透明，和面板走同一套玻璃语言。
+   特异性算过：html 前缀把它提到 (0,3,1)，刚好压过主题的基础色 (0,3,0)；
+   hover 由下面自己给（主题的 :hover 是 (0,4,0)，我这条带 html 是 (0,4,1)），
+   否则悬停时会跳回那层不透明的白。 */
+/* 尺寸也一起改：主题给的是 width: 40%（窄屏 80%），而列表是 flex + justify-content: center，
+   于是「日志 2」那样一张小卡片被撑到 295px 宽、还居中 —— 左边和「分类」标题对不齐，
+   卡片里面也空掉一大半。改成按内容收缩，列表改成左对齐，卡片左缘和标题对齐。 */
+html .category-list-content .all-category-list {
+  justify-content: flex-start;
+  padding-left: 0;
+  gap: 14px;
+}
+
+html .category-list-content .all-category-list > .all-category-list-item {
+  width: fit-content;
+  padding: 18px 26px;
+  background-color: rgba(250, 252, 251, .55);
+}
+
+html .category-list-content .all-category-list > .all-category-list-item:hover {
+  background-color: rgba(250, 252, 251, .74);
+}
+
+html.dark .category-list-content .all-category-list > .all-category-list-item {
+  background-color: rgba(21, 31, 39, .55);
+}
+
+html.dark .category-list-content .all-category-list > .all-category-list-item:hover {
+  background-color: rgba(21, 31, 39, .74);
+}
+
+html.dark[data-anime-page] body {
+  background: #111a21;
+}
+
+html.dark[data-anime-page] .page-container::before {
+  filter: saturate(.72) brightness(.55);
+}
+
+html.dark[data-anime-page] .page-container::after {
+  background: linear-gradient(180deg, rgba(13, 22, 28, .40), rgba(13, 22, 28, .62) 72%);
+}
+
+html.dark[data-anime-page] :is(.page-template-container, .archive-container, .article-content-container, .toc-content-container) {
+  border-color: rgba(255, 255, 255, .1);
+  background: rgba(21, 31, 39, .48);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .24);
+}
+
+.home-content-container .home-article-list .home-article-item {
+  background: rgba(250, 252, 251, .80);
+}
+
+html.dark .home-content-container .home-article-list .home-article-item {
+  background: rgba(21, 31, 39, .80);
+}
+
+.home-banner-background {
+  /* 100vw 量的是「含滚动条」的窗口宽：1920 的窗口里它等于 1920，而布局视口只有 1906
+     —— 横幅比视口宽 14px，多出来的那一条压在滚动条槽里，实测右边缘 x=459..472 是
+     1160/1160 像素的纯白（#fff），360/390/414/540/640/768/900/1280 每个宽度都有一条。
+     100% 取的就是布局视口宽，不再越界。 */
+  width: 100% !important;
+  /* 100svh 是「地址栏还占着位置时」的高度。手机往下滚、地址栏收起后可视区会变高，横幅却
+     仍按收起前的矮值渲染，屏幕底部就短一条 —— 下面是 .page-container 的白底，于是滚到底
+     时屏幕最下缘左右两边都是白的（390×844 实测 y=832..843）。100lvh 取「地址栏收起后」
+     的高度，只会盖多不会盖少；前一行给不认 lvh 的浏览器兜底（老内核里 100vh 就是大视口）。 */
+  height: 100vh !important;
+  height: 100lvh !important;
+  transform: none !important;
+  /* 主题给的是 Tailwind 的 scale-125 / sm:scale-110，而 Tailwind 编译出来用的是
+     独立的 scale 属性（.sm\:scale-110{scale:var(--tw-scale-x) var(--tw-scale-y)}），
+     不是 transform。只写 transform: none 盖不住它：元素仍按 1.1 倍渲染（1920 的视口
+     实测占 2112×1188），而选图档位是按 innerWidth×DPR 算的，少算这 10%，在
+     2560 宽等临界尺寸下就变成放大采样 → 变糊。 */
+  scale: none !important;
+}
+
+.home-banner-background::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  /* 渐变的重量跟着文字走：文字块（宽 min(720px, 64vw)）贴着 1200 宽内容盒的左缘，
+     1440 宽时落在屏幕 8%~58%，1920 宽时 19%~56%。更早那版最重的一段（.56）也在左边，
+     但那时文字是居中的，左边没有字，白压暗了画面；现在字确实在这里，只保留 .16 这一档，
+     右侧 70% 以后回到原图。
+     最后一层是**整幅的纱**：白天那张插画有一成多像素接近纯白（1440×950 实测 90 分位
+     89%、过亮占比 12.6%），只靠左边这层渐变压不住整屏观感；纱的浓度做成变量，
+     要更深/更浅只改 --anime-hero-veil 一个数。 */
+  background:
+    linear-gradient(90deg, rgba(10, 20, 28, .10) 0%, rgba(10, 20, 28, .16) 12%, rgba(10, 20, 28, .14) 52%, rgba(10, 20, 28, 0) 72%),
+    linear-gradient(0deg, rgba(9, 17, 23, .12), transparent 42%),
+    rgba(12, 22, 30, var(--anime-hero-veil, 0));
+  pointer-events: none;
+}
+
+.home-banner-background img {
+  object-fit: cover;
+  object-position: var(--anime-hero-position-desktop, 50% center);
+  transform: none !important;
+  transition: opacity .24s ease;
+}
+
+/* 宽屏把横幅的横向切片钉回几何中心。
+   注意这一层量的是它自己的盒子：.home-banner-background 是 fixed + height:100lvh
+   （不是 .home-banner-container 那套 640~900px / 92svh 的夹取，那些数字跟这里无关）。
+   所以窗口宽高比 = 视口宽 / 视口高，画幅则是 1.600~1.778：
+   769×900 只有 0.854、1440×900 与 1280×800 是 1.600、1600×900 与 1920×1080 是 1.778。
+   也就是说 1440 宽、900 高的窗口并没「宽到不裁」，真正完全不裁要 1600 宽以上
+   （或 16:9 屏）。
+
+   那这条规则今天改了什么？什么都没改 —— 四张图的 desktopPosition 本来就都是
+   50% center。它固定的是「换图只换图」这个前提：以后谁把某一张的 desktopPosition
+   调走，769~1600px 这段窗口仍会比画幅窄（50% 与 46% 在 769×900 上差 16px），
+   那次调整就会变成又一次横移。真正的位移来源在 anime-theme.js 的 applyHomeScene：
+   换 src 的空档里留在屏幕上的是旧图像素，却已经按新图的 object-position 在裁。
+
+   手机档不在这里：窄屏窗口宽高比只有 0.5 上下，390×844 上 morning 看到原图的
+   52%~80%、night 看到 33%~61%，差 17~19 个百分点（约 60px 屏幕位移）。那里的横向切片
+   必须逐张对准主体（见 anime-home-scenes.js 的 mobilePosition），「主体可见」与
+   「切换零位移」在窄屏不可兼得，要彻底解决得把 *-mobile.webp 重裁成竖版、主体居中。 */
+@media (min-width: 769px) {
+  .home-banner-background img {
+    object-position: 50% center;
+  }
+}
+
+/* 正文列右边贴屏幕
+   主题的 .main-content-body 是 padding: 38px 0（只有纵向），左右靠 justify-content: center
+   居中。但首页侧栏是 240px 固定宽 + 两侧 margin，正文又是 80%(PC)/86%(平板)% —— 两者相加要
+   1580px 以上才装得下，此前的 641~1366px 一律是「填满」而不是「居中」：正文列右边缘直接
+   压在视口边上（实测右边距 0），左边却有侧栏 margin 给的 19/38px。补一段等宽的 padding-right
+   把右边找平；641px 以下侧栏隐藏、正文按 90% 居中，本来就对称，不动。
+   选择器要带上 .page-container .main-content-container —— 主题编译出来的是这三个类
+   (0,3,0)，只写 `html .main-content-body` (0,1,1) 会被它的 padding 简写盖掉。 */
+/* 只作用于带侧栏的首页：内页没有侧栏，正文本来就居中，补了反而整列左移 19px，
+   和导航品牌对不齐。用 :has 看结构而不是看 data-anime-page —— 后者是页脚脚本运行后才打上的，
+   先渲染后改就是一次横跳。 */
+@media (min-width: 641px) {
+  html .page-container .main-content-container .main-content-body:has(> .home-sidebar-container) {
+    padding-right: 19px;
+  }
+}
+
+@media (min-width: 769px) {
+  html .page-container .main-content-container .main-content-body:has(> .home-sidebar-container) {
+    padding-right: 38px;
+  }
+}
+
+/* 内页导航与正文列同宽，品牌字和面板落在同一条左缘上。
+   正文列是 80% 宽、上限 1080px（global.content_max_width）；主题的内页导航是 100% 宽、
+   上限 1000px，两者只在 1250px 这一个宽度上重合，其余宽度左缘差 0~40px。
+   只从 1250px 起接管：80% 在那里正好等于原来的 1000px，是实测放得下品牌 + 整排菜单的宽度；
+   更窄时保持主题原样（上限 1000、两侧自然留白），不去动 769~1100 那段已经调好的导航。 */
+@media (min-width: 1250px) {
+  html .navbar-container .navbar-content:not(.has-home-banner) {
+    width: 80%;
+    max-width: 1080px;
+  }
+}
+
+/* 只有一页时主题照样画出一个「1」，点了没有用。有翻页链接才显示。 */
+html .home-paginator:not(:has(a)),
+html .paginator:not(:has(a)) {
+  display: none;
+}
+
+/* 归档时间线：主题在日期上画空心圆，又在每个标题前再画一个小灰点，
+   一条一篇时就成了上下两个标记。标题前那颗去掉，日期的圆点足够。 */
+html .archive-list-container .article-item span.article-title::after {
+  display: none;
+}
+
+.home-banner-container {
+  height: 92svh !important;
+  min-height: 640px !important;
+  max-height: 900px !important;
+  color: #fff;
+}
+
+.home-banner-container .content {
+  box-sizing: border-box;
+  /* 文字块贴左而不是在 1200 宽的盒子里居中：首页导航也是 1200 宽居中，品牌字就在这条左缘上。
+     原来居中时横幅标题比导航品牌向右多出 240px，两条左缘各走各的。
+     上内边距 124px：导航栏 70px 高，原来 76px 让首行小字只离导航底边十几像素。 */
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  width: min(1200px, calc(100% - 80px)) !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 auto !important;
+  padding: 124px 0 118px;
+  text-align: left !important;
+}
+
+.home-banner-container .description {
+  display: block !important;
+  width: min(720px, 64vw) !important;
+  color: #fff;
+  text-align: left !important;
+  text-shadow: 0 2px 20px rgba(4, 10, 14, .38);
+}
+
+.anime-hero-copy {
+  animation: anime-hero-reveal .58s ease-out both;
+}
+
+.anime-hero-kicker {
+  display: block;
+  margin-bottom: 14px;
+  color: #f3d58e;
+  font: 700 .78rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0;
+}
+
+.anime-hero-copy h1 {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: .18em;
+  margin: 0;
+  color: #fff;
+  font-family: var(--anime-title-serif);
+  font-size: 3.1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.anime-hero-copy h1 > span {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.anime-hero-scene {
+  margin: 18px 0 0;
+  color: rgba(255, 255, 255, .96);
+  font: 600 1.15rem/1.7 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: 0;
+}
+
+.anime-hero-note {
+  max-width: 34rem;
+  margin: 8px 0 0;
+  color: rgba(255, 255, 255, .82);
+  font: 400 .94rem/1.75 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: 0;
+}
+
+.anime-scene-switcher {
+  position: absolute;
+  right: 5vw;
+  bottom: 78px;
+  z-index: 3;
+  display: flex;
+  gap: 9px;
+}
+
+.anime-scene-switcher button {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  padding: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .66);
+  border-radius: 7px;
+  background: rgba(17, 26, 32, .38);
+  box-shadow: 0 6px 18px rgba(6, 12, 16, .22);
+  cursor: pointer;
+  transition: transform .2s ease, border-color .2s ease, background-color .2s ease;
+}
+
+.anime-scene-switcher button::after {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+  content: '';
+}
+
+.anime-scene-switcher button:hover,
+.anime-scene-switcher button:focus-visible {
+  border-color: #fff;
+  outline: 2px solid #f3d58e;
+  outline-offset: 2px;
+  transform: translateY(-3px);
+}
+
+.anime-scene-switcher button.is-active {
+  border-color: #f3d58e;
+  background: rgba(210, 165, 72, .3);
+}
+
+.anime-scene-switcher button.is-active::after {
+  background: #f3d58e;
+}
+
+.anime-scene-switcher img {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+/* 放在横幅文字那条左缘上（内容盒 min(1200px, 100% - 80px) 居中），和右侧缩略图同一条中线。
+   原来是 left: 50%，正好压在每张插画的主体上（夜景里是女孩的背包）。 */
+.anime-scroll-cue {
+  position: absolute;
+  bottom: 86px;
+  left: max(40px, calc(50% - 600px));
+  z-index: 3;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, .58);
+  border-radius: 50%;
+  background: rgba(17, 26, 32, .34);
+  color: #fff;
+  cursor: pointer;
+  place-items: center;
+}
+
+.anime-scroll-cue:hover,
+.anime-scroll-cue:focus-visible {
+  border-color: #f3d58e;
+  color: #f3d58e;
+  outline: 2px solid #f3d58e;
+  outline-offset: 2px;
+}
+
+.home-banner-container + .main-content-container .main-content-body {
+  position: relative;
+  z-index: 4;
+  margin-top: -88px;
+}
+
+/* 右侧悬浮工具条（齿轮那一列）必须画在首页正文之上。
+   工具条自己是 position: fixed，主题没给 z-index（auto）；上面那条规则为了让正文压住横幅
+   底边，给首页的 .main-content-body 发了 position: relative + z-index: 4。同一个层叠上下文
+   里 z-index 4 的整块正文画在 auto 之上，而正文盒子是全宽的、从横幅下方一直铺到页脚 ——
+   右下角的工具条整条落在它盒子里，于是「看得见、点不动」：透明不等于穿透，命中测试按盒子
+   算，不看背景是不是空的（实测 .main-content-body 的 computed background 就是 rgba(0,0,0,0)）。
+   `+` 兄弟选择器只在首页命中（全站只有首页有 .home-banner-container），所以只有首页的齿轮失灵。
+   抬到正文之上即可，但必须留在导航/搜索灯箱/门闩那一层（1001 起）之下，别把弹层压住。 */
+html .right-side-tools-container {
+  z-index: 10;
+}
+
+.home-sidebar-container .sidebar-content {
+  border-top: 3px solid var(--anime-gold);
+}
+
+.home-sidebar-container .avatar img {
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--anime-gold), 0 8px 24px rgba(12, 24, 31, .16);
+  object-fit: cover;
+}
+
+.home-sidebar-container .site-info .site-name,
+.navbar-container .navbar-content .left .logo-title {
+  font-family: var(--anime-title-serif);
+  letter-spacing: 0;
+}
+
+.home-content-container .home-article-list {
+  display: grid;
+  gap: 22px;
+}
+
+.home-content-container .home-article-list .home-article-item {
+  display: grid;
+  grid-template-columns: 224px minmax(0, 1fr);
+  min-height: 208px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.home-content-container .home-article-list .home-article-item .home-article-thumbnail {
+  position: relative;
+  height: auto !important;
+  min-height: 208px;
+  overflow: hidden;
+  border-radius: 0;
+  background: #e8eeee;
+}
+
+.home-content-container .home-article-list .home-article-item .home-article-thumbnail a {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.home-content-container .home-article-list .home-article-item .home-article-thumbnail img {
+  position: absolute;
+  inset: 0;
+  top: 0 !important;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% center;
+  transform: none !important;
+  transition: filter .2s ease, transform .2s ease !important;
+}
+
+.home-content-container .home-article-list .home-article-item .home-article-thumbnail:hover img {
+  filter: saturate(1.08) brightness(1.03);
+  transform: scale(1.025) !important;
+}
+
+.home-content-container .home-article-list .home-article-item > .flex {
+  min-width: 0;
+  justify-content: center;
+}
+
+.home-content-container .home-article-list .home-article-title {
+  font-family: var(--anime-title-serif);
+  letter-spacing: 0;
+}
+
+html.dark .home-sidebar-container .avatar img {
+  border-color: #222d35;
+}
+
+html.dark .home-content-container .home-article-list .home-article-item .home-article-thumbnail img {
+  filter: brightness(.82) saturate(.9);
+}
+
+@keyframes anime-hero-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  html[data-anime-page] .page-container::before {
+    background-position: var(--anime-page-position-mobile, 50% center);
+  }
+
+  /* 这里原来还写了 border-left/right: 0 和 border-radius: 0，本意是做「窄屏通栏」。
+     但实测 .page-template-container 在手机上本来就是内缩的（x28–523，因为它长在内容列里），
+     那三条并没有换来通栏，只是把圆角和左右描边去掉了 —— 剩下一个方角、无边的板子。
+     去掉它们，窄屏保留和桌面一致的 8px 圆角与描边；只留 blur 降档（14px → 10px）。 */
+  html[data-anime-page] :is(.page-template-container, .archive-container, .article-content-container) {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* 窄屏文字是贴着底边排的（.content{align-items:flex-end}），所以这里留的是自下而上的渐变，
+     但原来底边 .58 太重，同样把画面压闷了；配合上面的横向改动一起收一档。 */
+  .home-banner-background::after {
+    background: linear-gradient(0deg, rgba(9, 17, 23, .30) 0%, rgba(9, 17, 23, .12) 58%, rgba(9, 17, 23, 0) 100%);
+  }
+
+  .home-banner-background img {
+    object-position: var(--anime-hero-position-mobile, 50% center);
+  }
+
+  .home-banner-container {
+    height: 92svh !important;
+    min-height: 620px !important;
+    max-height: 780px !important;
+  }
+
+  .home-banner-container .content {
+    align-items: flex-end !important;
+    width: calc(100% - 40px) !important;
+    padding: 84px 0 188px;
+  }
+
+  .home-banner-container .description {
+    width: 100% !important;
+  }
+
+  .anime-hero-copy h1 {
+    font-size: 2.15rem;
+  }
+
+  .anime-hero-scene {
+    margin-top: 12px;
+    font-size: 1rem;
+  }
+
+  .anime-hero-note {
+    margin-top: 5px;
+    font-size: .86rem;
+    line-height: 1.65;
+  }
+
+  .anime-scene-switcher {
+    right: 20px;
+    bottom: 102px;
+    gap: 7px;
+  }
+
+  .anime-scene-switcher button {
+    width: 46px;
+    height: 46px;
+  }
+
+  .anime-scroll-cue {
+    bottom: 102px;
+    left: 20px;
+    width: 38px;
+    height: 38px;
+    transform: none;
+  }
+
+  .home-banner-container + .main-content-container .main-content-body {
+    margin-top: -50px;
+  }
+
+  .home-content-container .home-article-list .home-article-item {
+    grid-template-columns: 1fr;
+  }
+
+  .home-content-container .home-article-list .home-article-item .home-article-thumbnail {
+    min-height: 210px;
+    max-height: 240px;
+  }
+}
+
+@media (max-width: 420px) {
+  .anime-hero-copy h1 {
+    font-size: 1.95rem;
+  }
+}
+
+/* 主题在 ≤640px 时用 display:none 硬隐藏了首页侧栏，_config.redefine.yml 里的
+   show_on_mobile 实际不起作用，手机上首页只剩横幅加一张卡片、没有头像/公告/统计/快捷入口。
+   这里恢复侧栏，并把内容区改成纵向排列，避免 240px 侧栏和正文挤在同一行。
+   注意本文件在主题 style.css 之前加载，同特异性的规则会被主题覆盖，所以这里用 html 前缀提高权重。 */
+@media (max-width: 640px) {
+  html .home-sidebar-container {
+    display: block;
+    width: 100%;
+    margin: 0 0 22px;
+  }
+
+  html .main-content-body {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   文章正文排版
+   主题的正文小标题是 Geist 无衬线、h2 2.5rem / 650（40px，正文 16px 的 2.5 倍），
+   和页面标题的宋体不是一套语言，也压得正文像附属品。字号收到正文的 1.25~2 倍，
+   改用标题衬线字体（子集里已经收了正文小标题的字，见 scripts/title-font.js）。
+   选择器带 html 前缀：主题是 .markdown-body h2:not(.not-markdown)，(0,2,1)。
+   --------------------------------------------------------------------------- */
+html .markdown-body :is(h1, h2, h3, h4, h5, h6):not(.not-markdown) {
+  font-family: var(--anime-title-serif);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+html .markdown-body h1:not(.not-markdown) {
+  font-size: 2rem;
+  line-height: 1.35;
+  border-bottom-width: 1px;
+}
+
+html .markdown-body h2:not(.not-markdown) {
+  font-size: 1.6rem;
+  line-height: 1.4;
+  padding: 0 0 6px;
+  border-bottom-width: 1px;
+}
+
+html .markdown-body h3:not(.not-markdown) {
+  font-size: 1.3rem;
+  line-height: 1.45;
+}
+
+html .markdown-body h4:not(.not-markdown) {
+  font-size: 1.15rem;
+  line-height: 1.5;
+}
+
+html .markdown-body :is(h5, h6):not(.not-markdown) {
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+/* 中文正文 1.5 倍行高偏紧，1.8 读长段落更松快。只动段落和列表，
+   不改主题的 articles.style.line_height —— 那个变量还管着 body 和所有标题。 */
+html .markdown-body :is(p, li):not(.not-markdown) {
+  line-height: 1.8;
+}
+
+@media (max-width: 768px) {
+  html .markdown-body h1:not(.not-markdown) {
+    font-size: 1.6rem;
+  }
+
+  html .markdown-body h2:not(.not-markdown) {
+    font-size: 1.4rem;
+  }
+
+  html .markdown-body h3:not(.not-markdown) {
+    font-size: 1.2rem;
+  }
+}
+
+/* 目录面板：它是 .post-page-container（flex 行）的子项，默认 stretch 被拉到 max-height，
+   四条目录 200px 高的内容撑出一块 690px 的玻璃板，下面大半是空的。按内容收缩。 */
+html .post-page-container .toc-content-container {
+  align-self: flex-start;
+}
+
+/* 页面标题（分类 / 标签）：主题是 3.2rem 粗体，下面往往只有一两张小卡片，头重脚轻。 */
+html .page-title-header {
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 4px 0 24px;
+}
+
+@media (max-width: 640px) {
+  html .page-title-header {
+    font-size: 1.8rem;
+    margin-bottom: 18px;
+  }
+}
+
+/* 首页侧栏第二张卡片又写了一遍站点名，而且在 240px 里被折成两行。
+   站点名导航栏和横幅上已经各有一处，这里只留公告和快捷链接。 */
+html .home-sidebar-container .sidebar-links .site-info .site-name {
+  display: none;
+}
+
+/* 手机首页：侧栏公告不显示。侧栏排到文章后面之后，公告那一句正好贴在页脚签名上面，
+   两句前半截一模一样（都从同一句话起头），读起来像重复。这里刻意不复述这两个句子：
+   站点整站上锁时，页面里出现过的整句文字若又在这份全局 CSS 的注释里留一份明文，
+   test/verify-gate.mjs 的明文比对会（正确地）把它报成泄漏。
+   桌面上公告在侧栏顶部、离页脚很远，照常显示。整个 .site-info 一起藏：站点名已经藏了，
+   只藏公告会剩一个空的半透明小框。 */
+@media (max-width: 640px) {
+  html .home-sidebar-container .sidebar-links .site-info {
+    display: none;
+  }
+}
+
+/* 手机首页：侧栏排到文章列表后面。
+   原来头像 + 统计 + 公告 + 链接两张卡片压在最上面，第一屏看不到一篇文章。 */
+@media (max-width: 640px) {
+  html .home-sidebar-container {
+    order: 2;
+    margin: 8px 0 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   页脚：沿用主题原结构（参考 Redefine 官方站的页脚），只改样式。
+     宽屏（≥1024，主题的 lg）：左侧「由 Hexo 驱动 / 主题 Redefine」两行小字，
+       中间版权 · 统计 · 运行时间三行，右侧签名 —— 左右对称，中间只有三行，页脚不再是五行一长条。
+     窄屏：全部居中，签名在最上，驱动信息缩成一行放到最后。
+   运行时间保留主题的滚轮数字（Odometer）。
+   --------------------------------------------------------------------------- */
+html footer.footer {
+  --anime-footer-text: var(--third-text-color);
+  padding: 18px 20px 20px;
+  color: var(--anime-footer-text);
+}
+
+/* 暗色下主题的 --third-text-color（#9595a2）压在深色页脚上发暗，页脚文字整体提亮一档 */
+html.dark footer.footer {
+  --anime-footer-text: #b4b4c0;
+}
+
+/* 内页页脚是 .32 的薄玻璃压在插画上，文字调深一档，玻璃本身不动（那是作者逐档选定的） */
+html[data-anime-page]:not(.dark) footer.footer {
+  --anime-footer-text: #4a5458;
+}
+
+html .footer .info-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  font-variant-numeric: tabular-nums;
+  color: var(--anime-footer-text);
+}
+
+html .footer .info-container a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition: color .2s ease, text-decoration-color .2s ease;
+}
+
+html .footer .info-container a:is(:hover, :focus-visible) {
+  color: var(--primary-color);
+  text-decoration-color: currentColor;
+}
+
+/* 签名：和其余页脚文字同一套黑体、同一个颜色，靠字号与字距分出主次 */
+html .footer .customize-info {
+  margin: 0 0 2px;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: .08em;
+}
+
+html .footer .post-count {
+  margin: 0;
+}
+
+/* 驱动信息：主题在宽屏把它绝对定位到左侧；这里统一成小一号、淡一点 */
+html .footer .info-container > div:has(a[href="https://hexo.io"]) {
+  font-size: 13px;
+  line-height: 1.7;
+  opacity: .85;
+}
+
+html .footer .info-container > div:has(a[href="https://hexo.io"]) :is(span, a) {
+  font-size: inherit;
+}
+
+@media (min-width: 1024px) {
+  /* 签名放到右侧，和左侧的驱动信息对称：两行、离页面边缘同距（外侧对齐）；字号比左侧大一号。
+     两块文字宽度不同（签名约宽 30px），靠中间一侧的空隙因此差 30px —— 外侧对齐与内侧对齐
+     只能二选一，这里选外侧，和 Redefine 官方站的页脚一致。
+     离边 120px 而不是贴边：右下角工具按钮占着距右边 38~80px 这一段，短页面（日志）滚不到
+     「隐藏按钮」的位置时它会停在签名旁边，96px 只隔 16px 显得挤；左边跟着取同一个值，两侧才对称。 */
+  html .footer .customize-info {
+    position: absolute;
+    top: 50%;
+    right: 120px;
+    margin: 0;
+    translate: 0 -50%;
+    text-align: right;
+    /* 比左侧驱动信息（13px）大一号：签名是这一栏的内容，驱动信息只是附注 */
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: .06em;
+  }
+
+  /* 两段各占一行：右侧成为两行的块，和左侧两行驱动信息同高、镜像对齐 */
+  html .footer .customize-info .motto-line {
+    display: block;
+  }
+
+  html .footer .info-container > div:has(a[href="https://hexo.io"]) {
+    left: 120px;
+  }
+}
+
+@media (max-width: 1023px) {
+  /* 窄屏：驱动信息缩成一行，排到最后 */
+  html .footer .info-container > div:has(a[href="https://hexo.io"]) {
+    order: 10;
+    margin-top: 2px;
+    font-size: 12.5px;
+  }
+
+  html .footer .info-container > div:has(a[href="https://hexo.io"]) > span {
+    display: inline;
+  }
+
+  html .footer .info-container > div:has(a[href="https://hexo.io"]) > span + span::before {
+    content: '·';
+    margin: 0 .5em;
+    opacity: .55;
+  }
+}
+
+@media (max-width: 640px) {
+  html footer.footer {
+    padding: 16px 12px 18px;
+  }
+
+  html .footer .info-container {
+    font-size: 13.5px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   右下角工具按钮（齿轮 + 回到顶部）。
+   手机上它们 38px、白底不透明、离右边 12px，正好压在卡片正文上 —— 实测第二篇摘要
+   「欢迎来到这片记录技术、生活与灵感的私」被截在按钮底下。卡片文字右缘在距屏幕右边
+   ~47px 处（卡片外边距 19 + 内边距 28），按钮缩到 32px、贴到右边 6px，就落在这段留白里。
+   底色改成薄玻璃，悬停/聚焦时恢复实色，找得到、但平时不抢眼。
+   --------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  html .page-container .right-side-tools-container {
+    right: 6px;
+    bottom: 18px;
+  }
+
+  html .side-tools-container .right-bottom-tools {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 4px;
+    border-radius: 10px;
+    font-size: .95rem;
+    background-color: rgba(250, 252, 251, .58) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: .78;
+    transition: opacity .2s ease;
+  }
+
+  html.dark .side-tools-container .right-bottom-tools {
+    background-color: rgba(21, 31, 39, .58) !important;
+  }
+
+  html .side-tools-container .right-bottom-tools:is(:hover, :focus-visible, :active) {
+    opacity: 1;
+  }
+
+  html .side-tools-container .right-bottom-tools .percent {
+    font-size: .72rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   导航栏：滚过横幅后底色加厚一档。
+   横幅上它是 24% 的薄玻璃，通透好看；可一旦滚到正文，下面压着的就是卡片标题，
+   站名和「小高の飞行器安装日记」两层字叠在一起互相干扰。body.navbar-shrink 是主题
+   在滚过导航栏高度后加的，正好当「已经离开横幅顶部」的开关。
+   特异性 (0,2,2) 压过内页的 html[data-anime-page] .navbar-container (0,2,1)。
+   --------------------------------------------------------------------------- */
+html .navbar-container {
+  transition: background-color .25s ease, border-color .25s ease;
+}
+
+/* .66 实测不够：导航栏下面多半压着卡片自己的白玻璃，白上加白看不出变化，缩略图的颜色
+   仍从站名后面透出来。.80 + 更重的模糊，把底下的东西糊成一块柔和的色，站名才真正「落在底上」。 */
+html body.navbar-shrink .navbar-container {
+  border-bottom-color: rgba(255, 255, 255, .5);
+  background: rgba(250, 252, 251, .80);
+  backdrop-filter: blur(16px) saturate(115%);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+}
+
+html.dark body.navbar-shrink .navbar-container {
+  border-bottom-color: rgba(255, 255, 255, .08);
+  background: rgba(12, 18, 24, .80);
+}
+
+/* 文章头部的信息项（日期 / 分类 / 标签 / 字数 / 阅读时长）整项不拆行。
+   去掉重复的更新日期后，手机上那一行的宽度变了，「⏱ 1 分钟」被拆成「1」和「分钟」两行。
+   每一项自己不断，放不下时整项换到下一行。 */
+html .article-meta-info .article-meta-item {
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+   文章封面上的标题胶囊。
+   手机上主题给的是 text-3xl（30px），胶囊左右各 24px 外边距，「你好，世界 —— 第一 / 篇日志」
+   在词中间断行，胶囊还挤满了整张封面。窄屏收一档字号和边距；text-wrap: balance
+   让两行长度接近，不再出现上长下短、把一个词拆开的断法（桌面也一起受益）。
+   --------------------------------------------------------------------------- */
+html .article-title .article-title-cover {
+  text-wrap: balance;
+}
+
+@media (max-width: 640px) {
+  html .article-title .article-title-cover {
+    margin: 14px;
+    padding: 10px 14px;
+    font-size: 1.4rem;
+    line-height: 1.4;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   标签页：改成带篇数的胶囊列表（_config.redefine.yml 的 page_templates.tags_style）。
+   云模式按篇数放大字号，只有 3 个标签时「随笔」被放到 5rem、另外两个 1rem，像排版出错。
+   列表模式自带篇数徽标，但主题给它配了按篇数加模糊（1 篇的标签 blur 3px）、flex: 1 撑满整行、
+   居中排列，这里全部去掉，做成和分类页卡片同一套半透明胶囊，左对齐。
+   --------------------------------------------------------------------------- */
+html .tagcloud-content .tag-list {
+  justify-content: flex-start;
+  gap: 12px;
+  line-height: 1.5;
+}
+
+html .tagcloud-content .tag-list li a {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 10px 14px 10px 18px;
+  border-radius: 999px;
+  font-size: 1rem;
+  filter: none !important;
+  background-color: rgba(250, 252, 251, .55);
+  box-shadow: 0 2px 10px rgba(12, 24, 31, .08);
+}
+
+html.dark .tagcloud-content .tag-list li a {
+  background-color: rgba(21, 31, 39, .55);
+}
+
+html .tagcloud-content .tag-list[data-show-value] li a::after {
+  margin-left: 8px;
+  padding: 1px 8px;
+  min-width: 0;
+  border-radius: 999px;
+  font-size: .8rem;
+}
+
+/* ---------------------------------------------------------------------------
+   页面标题统一。
+   分类/标签页是宋体 2.2rem 的 .page-title-header；日志页（以及单个分类、单个标签页）用的是
+   主题的 .category-name / .tag-name —— 2.8rem 粗黑体、前面一个实心文件夹图标、下面一条分隔线，
+   和其余页面完全不是一套。归档页干脆没有标题（scripts/page-polish.js 补上了）。
+   全部对齐到 .page-title-header 那一套。图标去掉：其余页面标题都没有图标，只有这里留着就不统一。
+   --------------------------------------------------------------------------- */
+html :is(.category-name, .tag-name) {
+  margin: 4px 0 24px;
+  padding-bottom: 0;
+  border-bottom: 0;
+  font-family: var(--anime-title-serif);
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+html :is(.category-name, .tag-name) i {
+  display: none;
+}
+
+/* 标题下面紧跟年份时间线（日志、归档、单个分类/标签页）：原来标题到「2026」的距离
+   比「2026」到文章列表还小，标题像贴在内容上。多留一段，让标题和列表分成两层。 */
+html :is(.category-name, .tag-name, .archive-page-title) {
+  margin-bottom: 34px;
+}
+
+@media (max-width: 640px) {
+  html :is(.category-name, .tag-name) {
+    font-size: 1.8rem;
+  }
+
+  /* 窄屏收一点，但带时间线的几个页面要一致（归档页标题也是 .page-title-header，不能漏） */
+  html :is(.category-name, .tag-name, .archive-page-title) {
+    margin-bottom: 26px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   时间线里的年份（归档 / 日志 / 单个分类、标签页）让位给页面标题。
+   主题给「2026」的是 text-3xl 粗体（桌面 30px，手机 27px），而页面标题手机上只有 25.9px ——
+   年份比标题还大，层级倒过来了。年份是分组标记，不是标题：收到比页面标题小一档、字重降一级，
+   数字等宽。旁边的篇数徽标跟着缩一点，不然比年份还抢眼。
+   --------------------------------------------------------------------------- */
+html .archive-list-container .archive-year {
+  font-size: 1.5rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+}
+
+html .archive-list-container .archive-year-post-count {
+  font-size: .75rem;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  html .archive-list-container .archive-year {
+    font-size: 1.3rem;
+  }
+}
+
+/* 长标题换行时不留单字孤行（「你好，世界 —— 第一篇日 / 志」）。
+   text-wrap: pretty 让浏览器在最后几行之间重新分配，末行至少带走两三个字；
+   不认这个值的浏览器照旧按普通方式换行，不会更糟。 */
+html :is(.archive-list-container .article-title, .home-article-title, .page-title-header, .article-title h1) {
+  text-wrap: pretty;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anime-hero-copy {
+    animation: none;
+  }
+
+  .home-banner-background img,
+  .anime-scene-switcher button,
+  .home-content-container .home-article-list .home-article-item .home-article-thumbnail img {
+    transition: none !important;
+  }
+
+  .anime-scroll-cue {
+    scroll-behavior: auto;
+  }
+}
+
+/* ==================== 快搜弹层：玻璃 + 放大 ====================
+   站点只有这一个搜索界面（导航右上角那个放大镜），所以它同时承担「快搜」与「完整搜索」：
+   面板比主题默认更大更宽，结果条目按站内的玻璃语言重做，命中高亮用站点的金色。
+   主题的行为逻辑不碰，这里只覆盖样式；脚本见 source/js/site-search-popup.js。
+
+   权重说明（都踩过）：主题 `.search-header .search-input-field-pre { display: flex }` 是 (0,4,0)、
+   结果标题那条是 (1,4,1)；这份 CSS 先于主题 style.css 加载，**持平等于输**，所以下面
+   每个选择器都一路写到底。 */
+
+/* 遮罩：压暗背景并把背景糊掉，弹出的这块玻璃才有「浮上来」的感觉。
+   主题只给了 35% 纯黑、没有任何模糊，压在插画上仍然是一幅很清楚的图。
+   backdrop-filter 作用在遮罩**背后**（也就是整页背景），不会糊到弹层自己。 */
+html .search-pop-overlay.active {
+  background: rgba(6, 12, 18, .48);
+  backdrop-filter: blur(10px) saturate(112%);
+  -webkit-backdrop-filter: blur(10px) saturate(112%);
+}
+
+html.dark .search-pop-overlay.active {
+  background: rgba(2, 5, 9, .62);
+}
+
+/* 结果放不下时：结果区滚动，底部留一道渐隐 + 一行「共 N 条结果」，见结尾那几条规则 */
+html .search-pop-overlay .search-popup {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: min(920px, 90vw);
+  height: auto;
+  min-height: 340px;
+  max-height: 74vh;
+  border: 1px solid rgba(255, 255, 255, .72);
+  border-radius: 10px;
+  background: rgba(250, 252, 251, .34);
+  box-shadow: 0 18px 48px rgba(22, 43, 51, .22);
+  backdrop-filter: blur(20px) saturate(115%);
+  -webkit-backdrop-filter: blur(20px) saturate(115%);
+}
+
+html.dark .search-pop-overlay .search-popup {
+  border-color: rgba(255, 255, 255, .1);
+  background: rgba(21, 31, 39, .42);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .34);
+}
+
+/* 头部：去掉主题那层浅灰实底，只留一条分隔线 */
+html .search-pop-overlay .search-popup .search-header {
+  border-bottom: 1px solid rgba(255, 255, 255, .55);
+  border-radius: 0;
+  background: transparent;
+}
+
+html.dark .search-pop-overlay .search-popup .search-header {
+  border-bottom-color: rgba(255, 255, 255, .1);
+}
+
+/* 输入行：字放大一号，给左侧的放大镜让出位置 */
+html .search-pop-overlay .search-popup .search-header .search-input-container {
+  position: relative;
+}
+
+html .search-pop-overlay .search-popup .search-header .search-input-container .search-input {
+  padding-left: 30px;
+  font-size: 1.25rem;
+}
+
+html .search-pop-overlay .search-popup .search-header .search-input-container .site-search-field-icon {
+  position: absolute;
+  top: 50%;
+  left: 4px;
+  transform: translateY(-50%);
+  color: var(--anime-teal);
+  font-size: 1.05rem;
+  pointer-events: none;
+}
+
+/* 主题的键盘图标下线：放大镜 + 下面这颗「清空」胶囊接替它的职责 */
+html .search-pop-overlay .search-popup .search-header .search-input-field-pre {
+  display: none;
+}
+
+html .search-pop-overlay .search-popup .search-header .site-search-popup-clear {
+  align-self: center;
+  flex: 0 0 auto;
+  margin-right: 8px;
+  padding: 3px 10px;
+  border: 1px solid rgba(59, 133, 136, .35);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .72);
+  color: var(--anime-teal);
+  font-size: .82rem;
+  cursor: pointer;
+  transition: background-color .18s ease;
+}
+
+html .search-pop-overlay .search-popup .search-header .site-search-popup-clear:hover {
+  background: rgba(59, 133, 136, .16);
+}
+
+html.dark .search-pop-overlay .search-popup .search-header .site-search-popup-clear {
+  border-color: rgba(59, 133, 136, .5);
+  background: rgba(21, 31, 39, .72);
+}
+
+html .search-pop-overlay .search-popup .search-header .site-search-popup-clear[hidden] {
+  display: none;
+}
+
+/* 结果区：占满剩余高度，滚动交给它。
+   结果多的时候弹层长到 max-height 就停住，这里自己滚 —— 所以要让人一眼看出「下面还有」：
+   细滚动条 + 底部渐隐（脚本按能不能再滚切换 data-more）+ 头部「共 N 条结果」。 */
+html .search-pop-overlay .search-popup #search-result {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 180px;
+  padding: 14px 22px 18px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 133, 136, .45) transparent;
+}
+
+html .search-pop-overlay .search-popup #search-result::-webkit-scrollbar {
+  width: 8px;
+}
+
+html .search-pop-overlay .search-popup #search-result::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: rgba(59, 133, 136, .4);
+  background-clip: content-box;
+}
+
+html .search-pop-overlay .search-popup #search-result::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 133, 136, .6);
+  background-clip: content-box;
+}
+
+/* 还能往下滚时：底部一道渐隐（在弹层上叠一层，不挡点击） */
+html .search-pop-overlay .search-popup::after {
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  left: 1px;
+  height: 56px;
+  border-radius: 0 0 10px 10px;
+  background: linear-gradient(180deg, rgba(250, 252, 251, 0), rgba(250, 252, 251, .72));
+  content: '';
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+}
+
+html .search-pop-overlay .search-popup[data-more='true']::after {
+  opacity: 1;
+}
+
+html.dark .search-pop-overlay .search-popup::after {
+  background: linear-gradient(180deg, rgba(21, 31, 39, 0), rgba(21, 31, 39, .8));
+}
+
+/* 头部的「共 N 条结果」：结果多到要滚时，先告诉人一共有多少条。
+   颜色不能直接用 --third-text-color —— 那是给不透明底设计的浅灰，压在这块亮玻璃上几乎看不见
+   （第一版就是这样，截图里只有一团糊影）。用正文色 + 透明度，明暗两套都清楚。 */
+html .search-pop-overlay .search-popup .search-header .site-search-popup-count {
+  align-self: center;
+  flex: 0 0 auto;
+  margin-right: 8px;
+  color: var(--default-text-color);
+  font-size: .82rem;
+  white-space: nowrap;
+  opacity: .75;
+}
+
+html .search-pop-overlay .search-popup .search-header .site-search-popup-count[hidden] {
+  display: none;
+}
+
+/* 结果条目：虚线下划线 + 小圆点 → 玻璃卡片 + 文章图标；选中项（键盘 ↑↓）加青色描边 */
+html .search-pop-overlay .search-popup #search-result .search-result-list li {
+  margin: 0 0 10px;
+  padding: 13px 15px;
+  border: 1px solid rgba(255, 255, 255, .7);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .42);
+  transition: background-color .18s ease, border-color .18s ease;
+}
+
+html .search-pop-overlay .search-popup #search-result .search-result-list li:last-child {
+  margin-bottom: 0;
+}
+
+html .search-pop-overlay .search-popup #search-result .search-result-list li:hover,
+html .search-pop-overlay .search-popup #search-result .search-result-list li.is-selected {
+  border-color: rgba(59, 133, 136, .5);
+  background: rgba(255, 255, 255, .78);
+}
+
+html.dark .search-pop-overlay .search-popup #search-result .search-result-list li {
+  border-color: rgba(255, 255, 255, .08);
+  background: rgba(21, 31, 39, .38);
+}
+
+html.dark .search-pop-overlay .search-popup #search-result .search-result-list li:hover,
+html.dark .search-pop-overlay .search-popup #search-result .search-result-list li.is-selected {
+  background: rgba(21, 31, 39, .7);
+}
+
+html .search-pop-overlay .search-popup #search-result .search-result-list li .search-result-title {
+  gap: 8px;
+  padding-left: 0;
+  font-size: 1.05rem;
+}
+
+/* 主题的项目符号（::after 小圆点）让位给文章图标 */
+html .search-pop-overlay .search-popup #search-result .search-result-list li .search-result-title::after {
+  content: none;
+}
+
+html .search-pop-overlay .search-popup .site-search-result-icon {
+  flex: 0 0 auto;
+  color: var(--anime-teal);
+  font-size: .9rem;
+}
+
+html .search-pop-overlay .search-popup #search-result .search-result-list li .search-result {
+  padding-left: 0;
+  line-height: 1.9;
+}
+
+/* 命中高亮：主题是虚线下划线，改成站点那套金色底 */
+html .search-pop-overlay .search-popup #search-result .search-result-list li .search-keyword {
+  padding: 0 1px;
+  border-bottom: 0;
+  border-radius: 3px;
+  background: rgba(210, 165, 72, .3);
+  color: inherit;
+}
+
+html.dark .search-pop-overlay .search-popup #search-result .search-result-list li .search-keyword {
+  background: rgba(210, 165, 72, .34);
+}
+
+/* 无结果 / 加载中的提示居中一点 */
+html .search-pop-overlay .search-popup #search-result #no-result {
+  margin: auto;
+}
+
+@media (max-width: 640px) {
+  html .search-pop-overlay .search-popup {
+    width: calc(100% - 20px);
+    min-height: 300px;
+    max-height: 80vh;
+  }
+
+  html .search-pop-overlay .search-popup .search-header .search-input-container .search-input {
+    font-size: 1.1rem;
+  }
+
+  html .search-pop-overlay .search-popup #search-result {
+    padding: 12px 14px 16px;
+  }
+}
